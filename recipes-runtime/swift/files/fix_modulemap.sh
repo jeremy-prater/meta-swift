@@ -43,6 +43,8 @@ function fix_glibc_modulemap() {
             if [[ "$orig_inc" == "uuid/uuid.h" ]]; then
                 # no idea why ;)
                 echo "#include <linux/uuid.h>" >>"$repl_inc"
+            elif [[ $orig_inc == *"gnueabi"* ]]; then
+                echo "#include <${orig_inc#*/}>" >>"$repl_inc"
             else
                 echo "#include <$orig_inc>" >>"$repl_inc"
             fi
