@@ -1,7 +1,7 @@
 
 DESCRIPTION = "swift 5.1.2 - ARM v7 SDK"
 HOMEPAGE = "https://swift.org/download/#releases"
-LICENSE = "apache"
+LICENSE = "Apache-2.0"
 LIC_FILES_CHKSUM = "file://LICENSE.txt;md5=2380e856fbdbc7ccae6bd699d53ec121"
 
 SOURCE_FILE_x86 = "swift-5.1.2-RELEASE-ubuntu16.04.tar.gz"
