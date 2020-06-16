@@ -1,10 +1,11 @@
-
 DESCRIPTION = "swift 5.1.2 - ARM v7 Binaries"
 HOMEPAGE = "https://swift.org/download/#releases"
-LICENSE = "apache"
+LICENSE = "Apache-2.0"
 LIC_FILES_CHKSUM = "file://LICENSE.txt;md5=2380e856fbdbc7ccae6bd699d53ec121"
 
 SOURCE_FILE_ARM = "swift-5.1.2-armv7-Ubuntu1604.tgz"
+
+RDEPENDS_${PN} = " libicuuc-swift libicui18n-swift"
 
 SRC_URI = "https://github.com/uraimo/buildSwiftOnARM/releases/download/5.1.2/${SOURCE_FILE_ARM};unpack=0;name=arm \
            file://fix_modulemap.sh \
@@ -31,7 +32,29 @@ do_install() {
 
     echo "Fixing module map"
     ${WORKDIR}/fix_modulemap.sh ${D}${bindir}/../lib/swift/linux/armv7/glibc.modulemap
+    
+    rm -rf ${D}${libdir}/python2.7
+    rm -rf ${D}${libdir}/lldb/clang
+    rm -rf ${D}${libdir}/lldb
+    rm -rf ${D}${libdir}/liblldb*
+    rm -rf ${D}${libdir}/lib_InternalSwiftSyntaxParser.so
+    rm -rf ${D}${libdir}/swift/migrator
+    rm -rf ${D}${libdir}/swift/pm
+    rm -rf ${D}/usr/libexec
+    rm -rf ${D}/CONTROL
+    rm -rf ${D}${bindir}
 }
 
-FILES_${PN} = "*"
-FILES_${PN}-dev = "*"
+SOLIBS = ".so"
+FILES_SOLIBSDEV = ""
+
+#FILES_${PN} = "*"
+FILES_${PN}-dev_append = " ${libdir}/swift/Block"
+FILES_${PN}-dev_append = " ${libdir}/swift/clang"
+FILES_${PN}-dev_append = " ${libdir}/swift/C*"
+FILES_${PN}-dev_append = " ${libdir}/swift/dispatch"
+FILES_${PN}-dev_append = " ${libdir}/swift/linux/armv7"
+FILES_${PN}-dev_append = " ${libdir}/swift/os"
+FILES_${PN}-dev_append = " ${libdir}/swift/shims"
+FILES_${PN}-dev_append = " ${libdir}/swift_static"
+
