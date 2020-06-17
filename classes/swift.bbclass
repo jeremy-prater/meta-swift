@@ -56,6 +56,8 @@ python swift_do_configure() {
             "-use-ld=lld",
             "-tools-directory",
             "/usr/bin",
+            
+            "-Xlinker", "-rpath", "-Xlinker", "/usr/lib/swift/linux",
 
             "-Xlinker",
             "-L${STAGING_DIR_TARGET}/lib",
