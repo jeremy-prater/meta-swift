@@ -15,9 +15,7 @@ STAGING_ICU_DIR_NATIVE = "${STAGING_DATADIR_NATIVE}/${BPN}/${PV}"
 
 CPPFLAGS_append_libc-uclibc = " -DU_TIMEZONE=0"
 
-BINCONFIG = "${bindir}/icu-config"
-
-inherit autotools pkgconfig binconfig
+inherit autotools pkgconfig
 
 # ICU needs the native build directory as an argument to its --with-cross-build option when
 # cross-compiling. Taken the situation that different builds may share a common sstate-cache
@@ -34,11 +32,21 @@ do_install_append_class-native() {
 	cp -r ${B}/lib ${D}/${STAGING_ICU_DIR_NATIVE}
 	cp -r ${B}/bin ${D}/${STAGING_ICU_DIR_NATIVE}
 	cp -r ${B}/tools ${D}/${STAGING_ICU_DIR_NATIVE}
+
+    rm -r ${D}${STAGING_BINDIR_NATIVE}
+    rm -r ${D}${STAGING_SBINDIR_NATIVE}
+    rm -r ${D}${STAGING_LIBDIR_NATIVE}
+    rm -r ${D}${STAGING_DATADIR_NATIVE}/icu
 }
 
 do_install_append() {
     rm -rf ${D}/usr/lib/icu
     rm -rf ${D}/usr/share/icu
+    rm -f ${D}/${libdir}/*.so
+    rm -rf ${D}/${bindir}
+    rm -rf ${D}/usr/sbin
+    rm -rf ${D}/${includedir}
+    rm -rf ${D}/usr/lib/pkgconfig
 }
 
 PACKAGES =+ "libicudata-swift libicuuc-swift libicui18n-swift libicule-swift libiculx-swift libicutu-swift libicuio-swift"
@@ -53,5 +61,5 @@ FILES_libiculx-swift = "${libdir}/libiculx.so.*"
 FILES_libicutu-swift = "${libdir}/libicutu.so.*"
 FILES_libicuio-swift = "${libdir}/libicuio.so.*"
 
-BBCLASSEXTEND = "native nativesdk"
+BBCLASSEXTEND = "native"
 

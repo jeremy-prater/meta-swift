@@ -36,6 +36,7 @@ do_install() {
 
     # Install SPM in the rootfs
     tar -xzf ${WORKDIR}/${SOURCE_FILE_x86} --strip-components=1 -C ${D}${bindir}/../../
+    rm -rf ${D}${bindir}/../../usr/include/unicode
     
     # Create the cross-compiling swiftc
     tar -xzf ${WORKDIR}/${SOURCE_FILE_x86} --strip-components=1 -C ${D}${bindir}/../../opt/swift-arm
