@@ -1,0 +1,25 @@
+From e6cd4c5b8484edbfe7df4712b2db8bf4fee7a28e Mon Sep 17 00:00:00 2001
+From: Kevin Peizner <kevin.peizner@racepointenergy.com>
+Date: Wed, 7 Oct 2020 15:36:18 -0700
+Subject: [PATCH] Silence implicit-int-float-conversion & unused-result
+
+Hopefully these will be fixed upstream, but for now  surpress these
+warnings, otherwise the build fails because -Werror is turned on.
+---
+ cmake/modules/DispatchCompilerWarnings.cmake | 3 +++
+ 1 file changed, 3 insertions(+)
+
+diff --git a/cmake/modules/DispatchCompilerWarnings.cmake b/cmake/modules/DispatchCompilerWarnings.cmake
+index 35b80f3..246a5e4 100644
+--- a/cmake/modules/DispatchCompilerWarnings.cmake
++++ b/cmake/modules/DispatchCompilerWarnings.cmake
+@@ -40,6 +40,9 @@ else()
+   add_compile_options($<$<OR:$<COMPILE_LANGUAGE:C>,$<COMPILE_LANGUAGE:CXX>>:-Wunreachable-code>)
+   add_compile_options($<$<OR:$<COMPILE_LANGUAGE:C>,$<COMPILE_LANGUAGE:CXX>>:-Wunused>)
+ 
++  add_compile_options($<$<OR:$<COMPILE_LANGUAGE:C>,$<COMPILE_LANGUAGE:CXX>>:-Wno-implicit-int-float-conversion>)
++  add_compile_options($<$<OR:$<COMPILE_LANGUAGE:C>,$<COMPILE_LANGUAGE:CXX>>:-Wno-unused-result>)
++
+   add_compile_options($<$<OR:$<COMPILE_LANGUAGE:C>,$<COMPILE_LANGUAGE:CXX>>:-Wno-unknown-warning-option>)
+   add_compile_options($<$<OR:$<COMPILE_LANGUAGE:C>,$<COMPILE_LANGUAGE:CXX>>:-Wno-trigraphs>)
+   add_compile_options($<$<OR:$<COMPILE_LANGUAGE:C>,$<COMPILE_LANGUAGE:CXX>>:-Wno-four-char-constants>)
