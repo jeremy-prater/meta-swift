@@ -11,7 +11,7 @@ SRC_URI = "https://github.com/apple/swift-corelibs-libdispatch/archive/swift-5.3
            "
 SRC_URI[sha256sum] = "6805b555aab65d740fccaa99570fd29b32efa6c310fd42524913e44509dc4969"
 
-DEPENDS = "swift-test-native libgcc gcc glibc ncurses"
+DEPENDS = "swift-test-native libgcc gcc glibc ncurses swift-stdlib"
 
 S = "${WORKDIR}/swift-corelibs-libdispatch-swift-5.3-RELEASE"
 
@@ -34,13 +34,37 @@ OECMAKE_C_FLAGS += "-B${WORKDIR}/recipe-sysroot/usr/lib/${TARGET_SYS}/9.3.0"
 OECMAKE_CXX_FLAGS += "-B${WORKDIR}/recipe-sysroot/usr/lib/${TARGET_SYS}/9.3.0"
 TARGET_LDFLAGS += "-L${WORKDIR}/recipe-sysroot/usr/lib/${TARGET_SYS}/9.3.0"
 
+TARGET_LDFLAGS += "-L${WORKDIR}/recipe-sysroot/usr/lib/swift/linux"
+
+#OECMAKE_C_FLAGS += "-I${WORKDIR}/recipe-sysroot/usr/include/linux"
+#OECMAKE_CXX_FLAGS += "-I${WORKDIR}/recipe-sysroot/usr/include/linux"
+
 # Enable Swift parts
 EXTRA_OECMAKE += "-DENABLE_SWIFT=YES"
 
-SWIFT_FLAGS = "-target armv7-unknown-linux-gnueabihf -use-ld=lld -L${STAGING_DIR_TARGET}/lib -L${STAGING_DIR_TARGET}/usr/lib -lstdc++"
-#EXTRA_OECMAKE += '-DCMAKE_Swift_FLAGS="${SWIFT_FLAGS} -sdk ${WORKDIR}/recipe-sysroot -L${WORKDIR}/recipe-sysroot"'
-EXTRA_OECMAKE += "-DCMAKE_SYSTEM_PROCESSOR=armv7-a"
+SWIFT_FLAGS = "-target armv7-unknown-linux-gnueabihf -use-ld=lld \
+-resource-dir ${WORKDIR}/recipe-sysroot/usr/lib/swift \
+-Xclang-linker -B${WORKDIR}/recipe-sysroot/usr/lib/${TARGET_SYS}/9.3.0 \
+-Xclang-linker -B${WORKDIR}/recipe-sysroot/usr/lib \
+-Xcc -I${WORKDIR}/recipe-sysroot-native/usr/lib/arm-poky-linux-gnueabi/gcc/arm-poky-linux-gnueabi/9.3.0/include \
+-Xcc -I${WORKDIR}/recipe-sysroot-native/usr/lib/arm-poky-linux-gnueabi/gcc/arm-poky-linux-gnueabi/9.3.0/include-fixed \
+-L${WORKDIR}/recipe-sysroot/usr/lib/${TARGET_SYS}/9.3.0 \
+-L${WORKDIR}/recipe-sysroot/lib \
+-L${WORKDIR}/recipe-sysroot \
+-L${STAGING_DIR_TARGET}/lib \
+-L${STAGING_DIR_TARGET}/usr/lib \
+-L${WORKDIR}/recipe-sysroot/usr/lib \
+-L${WORKDIR}/recipe-sysroot/usr/lib/swift \
+-L${WORKDIR}/recipe-sysroot/usr/lib/swift/linux \
+-sdk ${WORKDIR}/recipe-sysroot \
+-v \
+"
+
 EXTRA_OECMAKE += '-DCMAKE_Swift_FLAGS="${SWIFT_FLAGS}"'
 
-#export EXTRA_OECMAKE
-#export CMAKE_Swift_FLAGS= "-sdk ${WORKDIR}/recipe-sysroot -target armv7-unknown-linux-gnueabih"
+# Ensure the right CPU is targeted
+TARGET_CPU_NAME = "armv7-a"
+#EXTRA_OECMAKE += "-DCMAKE_SYSTEM_PROCESSOR=${TARGET_CPU_NAME}"
+cmake_do_generate_toolchain_file_append() {
+    sed -i 's/set([ ]*CMAKE_SYSTEM_PROCESSOR .*[ ]*)/set(CMAKE_SYSTEM_PROCESSOR ${TARGET_CPU_NAME})/' ${WORKDIR}/toolchain.cmake
+}
