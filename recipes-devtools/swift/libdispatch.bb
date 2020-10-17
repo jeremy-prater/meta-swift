@@ -19,9 +19,15 @@ inherit cmake
 
 HOST_CC_ARCH_prepend = "-target armv7-unknown-linux-gnueabih"
 
-# Required in local.conf:
-#HOSTTOOLS += "ld.lld lld"
-# Use lld
+################################################################################
+# NOTE: The host running bitbake must have lld available and the following     #
+# must be added to the local.conf file:                                        #
+#                                                                              #
+# HOSTTOOLS += "ld.lld lld"                                                    #
+#                                                                              #
+################################################################################
+
+# Use lld (see note above)
 TARGET_LDFLAGS += "-fuse-ld=lld"
 
 # Use Apple's provided clang (it understands Apple's custom compiler flags)
