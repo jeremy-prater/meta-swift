@@ -42,9 +42,6 @@ TARGET_LDFLAGS += "-L${WORKDIR}/recipe-sysroot/usr/lib/${TARGET_SYS}/9.3.0"
 
 TARGET_LDFLAGS += "-L${WORKDIR}/recipe-sysroot/usr/lib/swift/linux"
 
-#OECMAKE_C_FLAGS += "-I${WORKDIR}/recipe-sysroot/usr/include/linux"
-#OECMAKE_CXX_FLAGS += "-I${WORKDIR}/recipe-sysroot/usr/include/linux"
-
 # Enable Swift parts
 EXTRA_OECMAKE += "-DENABLE_SWIFT=YES"
 

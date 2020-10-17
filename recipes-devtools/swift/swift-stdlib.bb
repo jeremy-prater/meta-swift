@@ -1,5 +1,6 @@
 SUMMARY = "Swift standard library"
 HOMEPAGE = "https://swift.org/"
+
 LICENSE = "Apache-2.0"
 LIC_FILES_CHKSUM = "file://${SOURCE_ROOT}/LICENSE.txt;md5=f6c482a0548ea60d6c2e015776534035"
 
@@ -33,6 +34,7 @@ TARGET_LDFLAGS += "-fuse-ld=lld"
 OECMAKE_C_COMPILER = "clang"
 OECMAKE_CXX_COMPILER = "clang++"
 
+# TODO: remove machine specific paths
 # Project specific settings for cross compiling stdlib
 EXTRA_OECMAKE += " -DLLVM_DIR=/usr/lib/llvm-10/cmake"
 EXTRA_OECMAKE += " -DLLVM_BUILD_LIBRARY_DIR=/usr/lib/llvm-10/lib"
