@@ -12,7 +12,7 @@ SRCREV = "dfb10f7f74b73ba5742f3defcbb4d011abe9f2d4"
 
 S = "${WORKDIR}/git"
 
-DEPENDS = "swift-test-native libgcc gcc glibc ncurses swift-stdlib libdispatch libxml2 icu"
+DEPENDS = "swift-native libgcc gcc glibc ncurses swift-stdlib libdispatch libxml2 icu"
 
 inherit cmake
 

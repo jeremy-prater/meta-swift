@@ -11,7 +11,7 @@ SRC_URI = "https://github.com/apple/swift-corelibs-libdispatch/archive/swift-5.3
            "
 SRC_URI[sha256sum] = "6805b555aab65d740fccaa99570fd29b32efa6c310fd42524913e44509dc4969"
 
-DEPENDS = "swift-test-native libgcc gcc glibc ncurses swift-stdlib"
+DEPENDS = "swift-native libgcc gcc glibc ncurses swift-stdlib"
 
 S = "${WORKDIR}/swift-corelibs-libdispatch-swift-5.3-RELEASE"
 

@@ -12,7 +12,7 @@ SRC_URI[sha256sum] = "f9e5bd81441c4ec13dd9ea290e2d7b8fe9b30ef66ad68947481022ea51
 
 SOURCE_ROOT = "${WORKDIR}/swift-swift-5.3-RELEASE"
 S = "${SOURCE_ROOT}"
-DEPENDS = "swift-test-native libgcc glibc gcc-runtime python3-native icu"
+DEPENDS = "swift-native libgcc glibc gcc-runtime python3-native icu apple-llvm"
 
 inherit cmake
 
