@@ -5,15 +5,19 @@ HOMEPAGE = "https://github.com/apple/swift-corelibs-libdispatch"
 LICENSE = "Apache-2.0"
 LIC_FILES_CHKSUM = "file://${S}/LICENSE;md5=1cd73afe3fb82e8d5c899b9d926451d0"
 
-SRC_URI = "https://github.com/apple/swift-corelibs-libdispatch/archive/swift-5.3-RELEASE.tar.gz \
+require swift-version.inc
+PV = "${SWIFT_VERSION}"
+
+SRC_URI = "git://github.com/apple/swift-corelibs-libdispatch.git;branch=${SRCBRANCH} \
            file://0001-Silence-implicit-int-float-conversion-unused-result.patch \
            file://0001-Ensure-swift-support-is-turned-on.patch \
            "
-SRC_URI[sha256sum] = "6805b555aab65d740fccaa99570fd29b32efa6c310fd42524913e44509dc4969"
+SRCBRANCH = "release/${PV}"
+SRCREV = "25ea083a3af4ca09eee2b6dbdf58f1b163f87008"
 
 DEPENDS = "swift-native libgcc gcc glibc ncurses swift-stdlib"
 
-S = "${WORKDIR}/swift-corelibs-libdispatch-swift-5.3-RELEASE"
+S = "${WORKDIR}/git"
 
 inherit cmake
 
