@@ -4,7 +4,7 @@ HOMEPAGE = "https://github.com/apple/swift-corelibs-foundation"
 LICENSE = "Apache-2.0" 
 LIC_FILES_CHKSUM = "file://LICENSE;md5=1cd73afe3fb82e8d5c899b9d926451d0"
 
-require siwft-version.inc
+require swift-version.inc
 PV = "${SWIFT_VERSION}"
 
 SRC_URI = "git://github.com/apple/swift-corelibs-foundation;branch=${SRCBRANCH}"
