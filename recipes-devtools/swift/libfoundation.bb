@@ -64,6 +64,9 @@ SWIFT_FLAGS = "-target armv7-unknown-linux-gnueabihf -use-ld=lld \
 "
 
 EXTRA_OECMAKE += '-DCMAKE_Swift_FLAGS="${SWIFT_FLAGS}"'
+EXTRA_OECMAKE += '-DCMAKE_VERBOSE_MAKEFILE=ON'
+EXTRA_OECMAKE += '-DCF_DEPLOYMENT_SWIFT=ON'
+lcl_maybe_fortify="-D_FORTIFY_SOURCE=0"
 
 EXTRA_OECMAKE+= "-Ddispatch_DIR=${WORKDIR}/recipe-sysroot/usr/lib/swift/dispatch"
 
