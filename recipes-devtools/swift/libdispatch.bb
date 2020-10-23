@@ -77,6 +77,7 @@ cmake_do_generate_toolchain_file_append() {
 
 do_install_append() {
     cp ${B}/cmake/modules/dispatchConfig.cmake ${D}${libdir}/swift/dispatch/dispatchConfig.cmake
+    rm ${D}${libdir}/swift/dispatch/module.modulemap
 }
 
 FILES_${PN} = "\
@@ -93,7 +94,6 @@ FILES_${PN}-dev = "\
     ${libdir}/swift/dispatch/dispatch.h \
     ${libdir}/swift/dispatch/block.h \
     ${libdir}/swift/dispatch/base.h \
-    ${libdir}/swift/dispatch/module.modulemap \
     ${libdir}/swift/dispatch/object.h \
     ${libdir}/swift/dispatch/group.h \
     ${libdir}/swift/dispatch/data.h \
