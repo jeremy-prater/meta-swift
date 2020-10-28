@@ -11,6 +11,7 @@ PV = "${SWIFT_VERSION}"
 SRC_URI = "git://github.com/apple/swift-corelibs-libdispatch.git;branch=${SRCBRANCH} \
            file://0001-Silence-implicit-int-float-conversion-unused-result.patch \
            file://0001-Ensure-swift-support-is-turned-on.patch \
+           file://0001-Make-dispatchConfig.cmake-not-depend-on-build-dir.patch \
            "
 SRCBRANCH = "release/${PV}"
 SRCREV = "25ea083a3af4ca09eee2b6dbdf58f1b163f87008"
@@ -75,11 +76,6 @@ cmake_do_generate_toolchain_file_append() {
     sed -i 's/set([ ]*CMAKE_SYSTEM_PROCESSOR .*[ ]*)/set(CMAKE_SYSTEM_PROCESSOR ${TARGET_CPU_NAME})/' ${WORKDIR}/toolchain.cmake
 }
 
-do_install_append() {
-    cp ${B}/cmake/modules/dispatchConfig.cmake ${D}${libdir}/swift/dispatch/dispatchConfig.cmake
-    rm ${D}${libdir}/swift/dispatch/module.modulemap
-}
-
 FILES_${PN} = "\
     ${libdir}/swift/linux/libswiftDispatch.so \
     ${libdir}/swift/linux/libBlocksRuntime.so \
@@ -88,7 +84,10 @@ FILES_${PN} = "\
 
 # TODO: these are installed into ${libdir}, but that seems wrong...
 FILES_${PN}-dev = "\
-    ${libdir}/swift/dispatch/dispatchConfig.cmake \
+    ${libdir}/swift/dispatch/cmake/dispatchConfig.cmake \
+    ${libdir}/swift/dispatch/cmake/dispatchExports.cmake \
+    ${libdir}/swift/dispatch/cmake/dispatchExports-noconfig.cmake \
+    ${libdir}/swift/dispatch/module.modulemap \
     ${libdir}/swift/dispatch/introspection.h \
     ${libdir}/swift/dispatch/semaphore.h \
     ${libdir}/swift/dispatch/dispatch.h \

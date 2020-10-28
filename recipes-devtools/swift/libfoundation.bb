@@ -68,7 +68,7 @@ EXTRA_OECMAKE += '-DCMAKE_VERBOSE_MAKEFILE=ON'
 EXTRA_OECMAKE += '-DCF_DEPLOYMENT_SWIFT=ON'
 lcl_maybe_fortify="-D_FORTIFY_SOURCE=0"
 
-EXTRA_OECMAKE+= "-Ddispatch_DIR=${WORKDIR}/recipe-sysroot/usr/lib/swift/dispatch"
+EXTRA_OECMAKE+= "-Ddispatch_DIR=${WORKDIR}/recipe-sysroot/usr/lib/swift/dispatch/cmake"
 
 # Ensure the right CPU is targeted
 TARGET_CPU_NAME = "armv7-a"
