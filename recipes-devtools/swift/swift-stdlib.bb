@@ -15,7 +15,7 @@ SRC_URI[sha256sum] = "f9e5bd81441c4ec13dd9ea290e2d7b8fe9b30ef66ad68947481022ea51
 
 SOURCE_ROOT = "${WORKDIR}/swift-swift-${PV}-RELEASE"
 S = "${SOURCE_ROOT}"
-DEPENDS = "swift-native libgcc glibc gcc-runtime python3-native icu apple-llvm"
+DEPENDS = "swift-native libgcc glibc gcc-runtime python3-native icu"
 
 inherit cmake
 
@@ -37,12 +37,17 @@ TARGET_LDFLAGS += "-fuse-ld=lld"
 OECMAKE_C_COMPILER = "clang"
 OECMAKE_CXX_COMPILER = "clang++"
 
-# TODO: remove machine specific paths
-# Project specific settings for cross compiling stdlib
-APPLE_LLVM_DIR = "${WORKDIR}/recipe-sysroot/usr/lib/apple-llvm"
-EXTRA_OECMAKE += " -DLLVM_DIR=/usr/lib/llvm-10/cmake"
-EXTRA_OECMAKE += " -DLLVM_BUILD_LIBRARY_DIR=${APPLE_LLVM_DIR}"
-EXTRA_OECMAKE += " -DLLVM_MAIN_INCLUDE_DIR=${APPLE_LLVM_DIR}/include"
+################################################################################
+# NOTE: The host running bitbake must have llvm available and must define      #
+# HOST_LLVM_PATH as the path to the LLVM installation on the host.             #
+# For example:                                                                 #
+#                                                                              #
+# HOST_LLVM_PATH = "/usr/lib/llvm-10"                                          #
+#                                                                              #
+################################################################################
+EXTRA_OECMAKE += " -DLLVM_DIR=${HOST_LLVM_PATH}/cmake"
+EXTRA_OECMAKE += " -DLLVM_BUILD_LIBRARY_DIR=${HOST_LLVM_PATH}/lib"
+EXTRA_OECMAKE += " -DLLVM_MAIN_INCLUDE_DIR=${HOST_LLVM_PATH}/include"
 
 EXTRA_OECMAKE += " -DSWIFT_BUILD_RUNTIME_WITH_HOST_COMPILER=ON"
 EXTRA_OECMAKE += " -DSWIFT_NATIVE_CLANG_TOOLS_PATH=${WORKDIR}/recipe-sysroot-native/usr/bin"
