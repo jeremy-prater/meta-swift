@@ -51,3 +51,16 @@ ${EXTRA_SWIFTC_FLAGS} \
 "
 
 EXTRA_OECMAKE += '-DCMAKE_Swift_FLAGS="${SWIFT_FLAGS}"'
+
+python do_get_gcc_version () {
+    recipe_sysroot = d.getVar("STAGING_DIR_TARGET", True)
+    cxx_include_base = recipe_sysroot + "/usr/include/c++"
+    cxx_include_list = os.listdir(cxx_include_base)
+    if len(cxx_include_list) != 1:
+        bb.fatal("swift bbclass detected more than one c++ runtime, unable to determine which one to use")
+    cxx_version = cxx_include_list[0]
+    d.setVar('SWIFT_CXX_VERSION', cxx_version)
+}
+
+addtask do_get_gcc_version before do_configure after do_prepare_recipe_sysroot
+
