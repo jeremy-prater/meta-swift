@@ -11,6 +11,8 @@ SRC_DIR = "swift-${PV}-RELEASE-ubuntu18.04"
 SRC_URI = "https://swift.org/builds/swift-${PV}-release/ubuntu1804/swift-${PV}-RELEASE/${SRC_DIR}.tar.gz"
 SRC_URI[sha256sum] = "5ac1fb9b8963e1c44f541f55cbf6cc10faefb1f21598d813f14f8aaeb22b1d80"
 
+DEPENDS = "curl"
+
 S = "${WORKDIR}/${SRC_DIR}"
 
 inherit native
