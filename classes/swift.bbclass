@@ -85,9 +85,6 @@ python swift_do_configure() {
 }
 
 swift_do_compile()  {
-    #Linker isn't finding crtbeginS.o and crtendS.o under ${TARGET_SYS} path
-    #cp -r ${WORKDIR}/recipe-sysroot/usr/lib/${TARGET_SYS}/*/* ${WORKDIR}/recipe-sysroot/usr/lib
-    
     cd ${S}
     
     swift build -v -c release --destination ${WORKDIR}/destination.json ${EXTRA_OESWIFT}

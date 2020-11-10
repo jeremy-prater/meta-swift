@@ -2,4 +2,4 @@ inherit swift-cmake-base
 
 DEPENDS += "swift-stdlib"
 
-TARGET_LDFLAGS += "-L${WORKDIR}/recipe-sysroot/usr/lib/swift/linux"
+TARGET_LDFLAGS += "-L${STAGING_DIR_TARGET}/usr/lib/swift/linux"

@@ -22,8 +22,8 @@ OECMAKE_C_COMPILER = "clang"
 OECMAKE_CXX_COMPILER = "clang++"
 
 # Point clang to where the C++ runtime is for our target arch
-RUNTIME_FLAGS = "-B${WORKDIR}/recipe-sysroot/usr/lib/${TARGET_SYS}/9.3.0"
-TARGET_LDFLAGS += "-L${WORKDIR}/recipe-sysroot/usr/lib/${TARGET_SYS}/9.3.0"
+RUNTIME_FLAGS = "-B${STAGING_DIR_TARGET}/usr/lib/${TARGET_SYS}/9.3.0"
+TARGET_LDFLAGS += "-L${STAGING_DIR_TARGET}/usr/lib/${TARGET_SYS}/9.3.0"
 
 EXTRA_INCLUDE_FLAGS ?= ""
 OECMAKE_C_FLAGS += "${RUNTIME_FLAGS} ${EXTRA_INCLUDE_FLAGS}"
@@ -33,20 +33,19 @@ OECMAKE_CXX_FLAGS += "${RUNTIME_FLAGS} ${EXTRA_INCLUDE_FLAGS}"
 EXTRA_SWIFTC_FLAGS ??= ""
 
 SWIFT_FLAGS = "-target armv7-unknown-linux-gnueabihf -use-ld=lld \
--resource-dir ${WORKDIR}/recipe-sysroot/usr/lib/swift \
--Xclang-linker -B${WORKDIR}/recipe-sysroot/usr/lib/${TARGET_SYS}/9.3.0 \
--Xclang-linker -B${WORKDIR}/recipe-sysroot/usr/lib \
--Xcc -I${WORKDIR}/recipe-sysroot-native/usr/lib/arm-poky-linux-gnueabi/gcc/arm-poky-linux-gnueabi/9.3.0/include \
--Xcc -I${WORKDIR}/recipe-sysroot-native/usr/lib/arm-poky-linux-gnueabi/gcc/arm-poky-linux-gnueabi/9.3.0/include-fixed \
--L${WORKDIR}/recipe-sysroot/usr/lib/${TARGET_SYS}/9.3.0 \
--L${WORKDIR}/recipe-sysroot/lib \
--L${WORKDIR}/recipe-sysroot \
+-resource-dir ${STAGING_DIR_TARGET}/usr/lib/swift \
+-Xclang-linker -B${STAGING_DIR_TARGET}/usr/lib/${TARGET_SYS}/9.3.0 \
+-Xclang-linker -B${STAGING_DIR_TARGET}/usr/lib \
+-Xcc -I${STAGING_DIR_NATIVE}/usr/lib/arm-poky-linux-gnueabi/gcc/arm-poky-linux-gnueabi/9.3.0/include \
+-Xcc -I${STAGING_DIR_NATIVE}/usr/lib/arm-poky-linux-gnueabi/gcc/arm-poky-linux-gnueabi/9.3.0/include-fixed \
+-L${STAGING_DIR_TARGET} \
 -L${STAGING_DIR_TARGET}/lib \
 -L${STAGING_DIR_TARGET}/usr/lib \
--L${WORKDIR}/recipe-sysroot/usr/lib \
--L${WORKDIR}/recipe-sysroot/usr/lib/swift \
--L${WORKDIR}/recipe-sysroot/usr/lib/swift/linux \
--sdk ${WORKDIR}/recipe-sysroot \
+-L${STAGING_DIR_TARGET}/usr/lib \
+-L${STAGING_DIR_TARGET}/usr/lib/swift \
+-L${STAGING_DIR_TARGET}/usr/lib/swift/linux \
+-L${STAGING_DIR_TARGET}/usr/lib/${TARGET_SYS}/9.3.0 \
+-sdk ${STAGING_DIR_TARGET} \
 ${EXTRA_SWIFTC_FLAGS} \
 "
 

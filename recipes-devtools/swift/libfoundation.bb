@@ -38,30 +38,29 @@ OECMAKE_C_COMPILER = "clang"
 OECMAKE_CXX_COMPILER = "clang++"
 
 # Point clang to where the C++ runtime is for our target arch
-OECMAKE_C_FLAGS += "-B${WORKDIR}/recipe-sysroot/usr/lib/${TARGET_SYS}/9.3.0"
-OECMAKE_CXX_FLAGS += "-B${WORKDIR}/recipe-sysroot/usr/lib/${TARGET_SYS}/9.3.0"
-TARGET_LDFLAGS += "-L${WORKDIR}/recipe-sysroot/usr/lib/${TARGET_SYS}/9.3.0"
+OECMAKE_C_FLAGS += "-B${STAGING_DIR_TARGET}/usr/lib/${TARGET_SYS}/9.3.0"
+OECMAKE_CXX_FLAGS += "-B${STAGING_DIR_TARGET}/usr/lib/${TARGET_SYS}/9.3.0"
+TARGET_LDFLAGS += "-L${STAGING_DIR_TARGET}/usr/lib/${TARGET_SYS}/9.3.0"
 
-TARGET_LDFLAGS += "-L${WORKDIR}/recipe-sysroot/usr/lib/swift/linux"
+TARGET_LDFLAGS += "-L${STAGING_DIR_TARGET}/usr/lib/swift/linux"
 
 # Enable Swift parts
 EXTRA_OECMAKE += "-DENABLE_SWIFT=YES"
 
 SWIFT_FLAGS = "-target armv7-unknown-linux-gnueabihf -use-ld=lld \
--resource-dir ${WORKDIR}/recipe-sysroot/usr/lib/swift \
--Xclang-linker -B${WORKDIR}/recipe-sysroot/usr/lib/${TARGET_SYS}/9.3.0 \
--Xclang-linker -B${WORKDIR}/recipe-sysroot/usr/lib \
--Xcc -I${WORKDIR}/recipe-sysroot-native/usr/lib/arm-poky-linux-gnueabi/gcc/arm-poky-linux-gnueabi/9.3.0/include \
--Xcc -I${WORKDIR}/recipe-sysroot-native/usr/lib/arm-poky-linux-gnueabi/gcc/arm-poky-linux-gnueabi/9.3.0/include-fixed \
--L${WORKDIR}/recipe-sysroot/usr/lib/${TARGET_SYS}/9.3.0 \
--L${WORKDIR}/recipe-sysroot/lib \
--L${WORKDIR}/recipe-sysroot \
+-resource-dir ${STAGING_DIR_TARGET}/usr/lib/swift \
+-Xclang-linker -B${STAGING_DIR_TARGET}/usr/lib/${TARGET_SYS}/9.3.0 \
+-Xclang-linker -B${STAGING_DIR_TARGET}/usr/lib \
+-Xcc -I${STAGING_DIR_NATIVE}/usr/lib/arm-poky-linux-gnueabi/gcc/arm-poky-linux-gnueabi/9.3.0/include \
+-Xcc -I${STAGING_DIR_NATIVE}/usr/lib/arm-poky-linux-gnueabi/gcc/arm-poky-linux-gnueabi/9.3.0/include-fixed \
+-L${STAGING_DIR_TARGET} \
 -L${STAGING_DIR_TARGET}/lib \
 -L${STAGING_DIR_TARGET}/usr/lib \
--L${WORKDIR}/recipe-sysroot/usr/lib \
--L${WORKDIR}/recipe-sysroot/usr/lib/swift \
--L${WORKDIR}/recipe-sysroot/usr/lib/swift/linux \
--sdk ${WORKDIR}/recipe-sysroot \
+-L${STAGING_DIR_TARGET}/usr/lib \
+-L${STAGING_DIR_TARGET}/usr/lib/swift \
+-L${STAGING_DIR_TARGET}/usr/lib/swift/linux \
+-L${STAGING_DIR_TARGET}/usr/lib/${TARGET_SYS}/9.3.0 \
+-sdk ${STAGING_DIR_TARGET} \
 -v \
 "
 
@@ -70,7 +69,7 @@ EXTRA_OECMAKE += '-DCMAKE_VERBOSE_MAKEFILE=ON'
 EXTRA_OECMAKE += '-DCF_DEPLOYMENT_SWIFT=ON'
 lcl_maybe_fortify="-D_FORTIFY_SOURCE=0"
 
-EXTRA_OECMAKE+= "-Ddispatch_DIR=${WORKDIR}/recipe-sysroot/usr/lib/swift/dispatch/cmake"
+EXTRA_OECMAKE+= "-Ddispatch_DIR=${STAGING_DIR_TARGET}/usr/lib/swift/dispatch/cmake"
 
 # Ensure the right CPU is targeted
 TARGET_CPU_NAME = "armv7-a"
