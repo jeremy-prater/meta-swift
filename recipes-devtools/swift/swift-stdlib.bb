@@ -8,6 +8,7 @@ require swift-version.inc
 PV = "${SWIFT_VERSION}"
 
 SRC_URI = "https://github.com/apple/swift/archive/swift-${PV}-RELEASE.tar.gz \
+           file://fix_modulemap.sh \
            file://0001-Require-python3-rather-than-python2.patch \
            file://0001-Add-Wno-gnu-include-next-to-swift-reflection-test.patch \
            "
@@ -70,6 +71,8 @@ EXTRA_OECMAKE += " -DSWIFT_INCLUDE_TESTS=OFF"
 EXTRA_OECMAKE += " -DSWIFT_HOST_VARIANT_ARCH=armv7"
 
 EXTRA_OECMAKE += " -DSWIFT_SDK_LINUX_ARCH_armv7_PATH=${WORKDIR}/recipe-sysroot"
+EXTRA_OECMAKE += "-DSWIFT_SDK_LINUX_ARCH_armv7_LIBC_INCLUDE_DIRECTORY=${STAGING_DIR_TARGET}/usr/include"
+EXTRA_OECMAKE += "-DSWIFT_SDK_LINUX_ARCH_armv7_LIBC_ARCHITECTURE_INCLUDE_DIRECTORY=${STAGING_DIR_TARGET}/usr/include"
 
 # Point clang to where the C++ runtime is for our target arch
 RUNTIME_FLAGS = "-B${WORKDIR}/recipe-sysroot/usr/lib/${TARGET_SYS}/9.3.0 -I${WORKDIR}/recipe-sysroot/usr/include/c++/9.3.0"
@@ -86,6 +89,10 @@ OECMAKE_CXX_FLAGS += "${RUNTIME_FLAGS} ${EXTRA_INCLUDE_FLAGS}"
 #}
 
 do_install_append() {
+    ${WORKDIR}/fix_modulemap.sh ${D}${libdir}/swift/linux/armv7/glibc.modulemap
+
+    rm ${D}${libdir}/swift/linux/armv7/glibc.modulemap_orig_*
+
     # remove some dirs from /usr/lib (we don't include them in any packages) 
     rm -r ${D}${libdir}/swift/clang
     rm -r ${D}${libdir}/swift/FrameworkABIBaseline
@@ -105,6 +112,7 @@ FILES_${PN} = "${libdir}/swift/linux/libswiftCore.so \
 
 FILES_${PN}-dev = "${libdir}/swift/shims/* \
                    ${libdir}/swift/linux/armv7/glibc.modulemap \
+                   ${libdir}/swift/linux/armv7/private_includes/* \
                    ${libdir}/swift/linux/armv7/Glibc.swiftmodule \
                    ${libdir}/swift/linux/armv7/Glibc.swiftinterface \
                    ${libdir}/swift/linux/armv7/Swift.swiftmodule \
