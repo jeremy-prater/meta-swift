@@ -63,6 +63,7 @@ python swift_do_configure() {
             "-I${STAGING_DIR_NATIVE}/usr/lib/arm-poky-linux-gnueabi/gcc/arm-poky-linux-gnueabi/9.3.0/include-fixed",
 
             "-resource-dir", "${STAGING_DIR_TARGET}/usr/lib/swift",
+            "-module-cache-path", "${B}/ModuleCache",
             "-Xclang-linker", "-B${STAGING_DIR_TARGET}/usr/lib/${TARGET_SYS}/9.3.0",
             "-Xclang-linker", "-B${STAGING_DIR_TARGET}/usr/lib",
 
