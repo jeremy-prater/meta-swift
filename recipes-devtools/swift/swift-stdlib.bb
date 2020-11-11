@@ -16,27 +16,9 @@ SRC_URI[sha256sum] = "f9e5bd81441c4ec13dd9ea290e2d7b8fe9b30ef66ad68947481022ea51
 
 SOURCE_ROOT = "${WORKDIR}/swift-swift-${PV}-RELEASE"
 S = "${SOURCE_ROOT}"
-DEPENDS = "swift-native libgcc glibc gcc-runtime python3-native icu"
+DEPENDS = "gcc-runtime python3-native icu"
 
-inherit cmake
-
-HOST_CC_ARCH_prepend = "-target armv7-unknown-linux-gnueabih"
-
-################################################################################
-# NOTE: The host running bitbake must have lld available and the following     #
-# must be added to the local.conf file:                                        #
-#                                                                              #
-# HOSTTOOLS += "ld.lld lld"                                                    #
-#                                                                              #
-################################################################################
-
-# Use lld (see note above)
-TARGET_LDFLAGS += "-fuse-ld=lld"
-
-# Use Apple's provided clang (it understands Apple's custom compiler flags)
-# Made available via swift-native package.
-OECMAKE_C_COMPILER = "clang"
-OECMAKE_CXX_COMPILER = "clang++"
+inherit swift-cmake-base
 
 ################################################################################
 # NOTE: The host running bitbake must have llvm available and must define      #
@@ -74,19 +56,7 @@ EXTRA_OECMAKE += " -DSWIFT_SDK_LINUX_ARCH_armv7_PATH=${STAGING_DIR_TARGET}"
 EXTRA_OECMAKE += "-DSWIFT_SDK_LINUX_ARCH_armv7_LIBC_INCLUDE_DIRECTORY=${STAGING_DIR_TARGET}/usr/include"
 EXTRA_OECMAKE += "-DSWIFT_SDK_LINUX_ARCH_armv7_LIBC_ARCHITECTURE_INCLUDE_DIRECTORY=${STAGING_DIR_TARGET}/usr/include"
 
-# Point clang to where the C++ runtime is for our target arch
-RUNTIME_FLAGS = "-B${STAGING_DIR_TARGET}/usr/lib/${TARGET_SYS}/9.3.0 -I${STAGING_DIR_TARGET}/usr/include/c++/9.3.0"
-TARGET_LDFLAGS += "-L${STAGING_DIR_TARGET}/usr/lib/${TARGET_SYS}/9.3.0"
-
-EXTRA_INCLUDE_FLAGS = "-I${STAGING_DIR_TARGET}/usr/include/c++/9.3.0/arm-poky-linux-gnueabi -I${STAGING_DIR_TARGET}"
-OECMAKE_C_FLAGS += "${RUNTIME_FLAGS} ${EXTRA_INCLUDE_FLAGS}"
-OECMAKE_CXX_FLAGS += "${RUNTIME_FLAGS} ${EXTRA_INCLUDE_FLAGS}"
-
-#do_compile () {
-#    oe_runmake swiftImageRegistrationObjectELF-linux-armv7
-#    oe_runmake lib-swift-linux-armv7-swiftrt.o
-#    oe_runmake swift-stdlib
-#}
+EXTRA_INCLUDE_FLAGS = "-I${STAGING_DIR_TARGET}/usr/include/c++/9.3.0/arm-poky-linux-gnueabi -I${STAGING_DIR_TARGET}/usr/include/c++/9.3.0 -I${STAGING_DIR_TARGET}"
 
 do_install_append() {
     ${WORKDIR}/fix_modulemap.sh ${D}${libdir}/swift/linux/armv7/glibc.modulemap

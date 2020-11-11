@@ -1,7 +1,6 @@
-
 inherit cmake
 
-DEPENDS += "swift-native"
+DEPENDS_append += " swift-native libgcc gcc glibc "
 
 HOST_CC_ARCH_prepend = "-target armv7-unknown-linux-gnueabih"
 
