@@ -38,8 +38,8 @@ SWIFT_FLAGS = "-target armv7-unknown-linux-gnueabihf -use-ld=lld \
 -module-cache-path ${B}/ModuleCache \
 -Xclang-linker -B${STAGING_DIR_TARGET}/usr/lib/${TARGET_SYS}/${GCC_VERSION} \
 -Xclang-linker -B${STAGING_DIR_TARGET}/usr/lib \
--Xcc -I${STAGING_DIR_NATIVE}/usr/lib/arm-poky-linux-gnueabi/gcc/arm-poky-linux-gnueabi/${GCC_VERSION}/include \
--Xcc -I${STAGING_DIR_NATIVE}/usr/lib/arm-poky-linux-gnueabi/gcc/arm-poky-linux-gnueabi/${GCC_VERSION}/include-fixed \
+-Xcc -I${STAGING_DIR_NATIVE}/usr/lib/${TARGET_SYS}/gcc/${TARGET_SYS}/${GCC_VERSION}/include \
+-Xcc -I${STAGING_DIR_NATIVE}/usr/lib/${TARGET_SYS}/gcc/${TARGET_SYS}/${GCC_VERSION}/include-fixed \
 -L${STAGING_DIR_TARGET} \
 -L${STAGING_DIR_TARGET}/lib \
 -L${STAGING_DIR_TARGET}/usr/lib \
