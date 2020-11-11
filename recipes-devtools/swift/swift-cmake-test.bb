@@ -6,7 +6,7 @@ SRC_URI = "file://main.swift \
            file://CMakeLists.txt \
 "
 
-inherit swift
+inherit swift-cmake
 
 S = "${WORKDIR}"
 
