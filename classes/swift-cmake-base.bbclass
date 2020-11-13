@@ -20,7 +20,7 @@ TARGET_LDFLAGS += "-fuse-ld=lld"
 OECMAKE_C_COMPILER = "clang"
 OECMAKE_CXX_COMPILER = "clang++"
 
-export GCC_VERSION = "`basename ${STAGING_DIR_TARGET}/usr/include/c++/*`"
+GCC_VERSION="9.3.0"
 
 # Point clang to where the C++ runtime is for our target arch
 RUNTIME_FLAGS = "-B${STAGING_DIR_TARGET}/usr/lib/${TARGET_SYS}/${GCC_VERSION}"
