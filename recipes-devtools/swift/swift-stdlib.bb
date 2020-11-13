@@ -57,8 +57,8 @@ EXTRA_OECMAKE += "-DSWIFT_SDK_LINUX_ARCH_armv7_LIBC_INCLUDE_DIRECTORY=${STAGING_
 EXTRA_OECMAKE += "-DSWIFT_SDK_LINUX_ARCH_armv7_LIBC_ARCHITECTURE_INCLUDE_DIRECTORY=${STAGING_DIR_TARGET}/usr/include"
 
 EXTRA_INCLUDE_FLAGS = "\
-    -I${STAGING_DIR_TARGET}/usr/include/c++/${GCC_VERSION}/arm-poky-linux-gnueabi \
-    -I${STAGING_DIR_TARGET}/usr/include/c++/${GCC_VERSION} \
+    -I${STAGING_DIR_TARGET}/usr/include/c++/current/arm-poky-linux-gnueabi \
+    -I${STAGING_DIR_TARGET}/usr/include/c++/current \
     -I${STAGING_DIR_TARGET}"
 
 do_install_append() {

@@ -20,11 +20,9 @@ TARGET_LDFLAGS += "-fuse-ld=lld"
 OECMAKE_C_COMPILER = "clang"
 OECMAKE_CXX_COMPILER = "clang++"
 
-GCC_VERSION="9.3.0"
-
 # Point clang to where the C++ runtime is for our target arch
-RUNTIME_FLAGS = "-B${STAGING_DIR_TARGET}/usr/lib/${TARGET_SYS}/${GCC_VERSION}"
-TARGET_LDFLAGS += "-L${STAGING_DIR_TARGET}/usr/lib/${TARGET_SYS}/${GCC_VERSION}"
+RUNTIME_FLAGS = "-B${STAGING_DIR_TARGET}/usr/lib/${TARGET_SYS}/current"
+TARGET_LDFLAGS += "-L${STAGING_DIR_TARGET}/usr/lib/${TARGET_SYS}/current"
 
 EXTRA_INCLUDE_FLAGS ?= ""
 OECMAKE_C_FLAGS += "${RUNTIME_FLAGS} ${EXTRA_INCLUDE_FLAGS}"
@@ -36,19 +34,50 @@ EXTRA_SWIFTC_FLAGS ??= ""
 SWIFT_FLAGS = "-target armv7-unknown-linux-gnueabihf -use-ld=lld \
 -resource-dir ${STAGING_DIR_TARGET}/usr/lib/swift \
 -module-cache-path ${B}/ModuleCache \
--Xclang-linker -B${STAGING_DIR_TARGET}/usr/lib/${TARGET_SYS}/${GCC_VERSION} \
+-Xclang-linker -B${STAGING_DIR_TARGET}/usr/lib/${TARGET_SYS}/current \
 -Xclang-linker -B${STAGING_DIR_TARGET}/usr/lib \
--Xcc -I${STAGING_DIR_NATIVE}/usr/lib/${TARGET_SYS}/gcc/${TARGET_SYS}/${GCC_VERSION}/include \
--Xcc -I${STAGING_DIR_NATIVE}/usr/lib/${TARGET_SYS}/gcc/${TARGET_SYS}/${GCC_VERSION}/include-fixed \
+-Xcc -I${STAGING_DIR_NATIVE}/usr/lib/${TARGET_SYS}/gcc/${TARGET_SYS}/current/include \
+-Xcc -I${STAGING_DIR_NATIVE}/usr/lib/${TARGET_SYS}/gcc/${TARGET_SYS}/current/include-fixed \
 -L${STAGING_DIR_TARGET} \
 -L${STAGING_DIR_TARGET}/lib \
 -L${STAGING_DIR_TARGET}/usr/lib \
 -L${STAGING_DIR_TARGET}/usr/lib/swift \
 -L${STAGING_DIR_TARGET}/usr/lib/swift/linux \
--L${STAGING_DIR_TARGET}/usr/lib/${TARGET_SYS}/${GCC_VERSION} \
+-L${STAGING_DIR_TARGET}/usr/lib/${TARGET_SYS}/current \
 -sdk ${STAGING_DIR_TARGET} \
 ${EXTRA_SWIFTC_FLAGS} \
 "
 
 EXTRA_OECMAKE += '-DCMAKE_Swift_FLAGS="${SWIFT_FLAGS}"'
+
+################################################################################
+# Create symlinks to the directories containing the gcc version specific       #
+# headers, objects and libraries we need.                                      #
+#                                                                              #
+# We can't just use ${GCC_VERSION} in the path variables in the recipe         #
+# because bitbake parses and expands variables before GCC_VERSION is           #
+# defined. GCC_VERSION cannot be defined until the sysroot is populated        #
+# because we inspect the sysroot to determine the GCC version number string.   #
+# If there was an env or bitbake var with the GCC version, we could use that   #
+# and avoid all of this but the closest thing we have access to is             #
+# ${GCCVERSION} which yields and incomplete version number (ex: "9.%").        #
+#                                                                              #
+# Also there is some suspicion that these path variables and these symlinks    #
+# may not be necessary if the --gcc-toolchain clang flag was used. But that    #
+# is an unproven theory.                                                       #
+################################################################################
+do_create_gcc_version_symlinks() {
+    GCC_VERSION=`basename ${STAGING_DIR_TARGET}/usr/include/c++/*`
+
+    cd ${STAGING_DIR_TARGET}/usr/lib/${TARGET_SYS}
+    ln -s -r ${GCC_VERSION} current
+
+    cd ${STAGING_DIR_TARGET}/usr/include/c++
+    ln -s -r ${GCC_VERSION} current
+
+    cd ${STAGING_DIR_NATIVE}/usr/lib/${TARGET_SYS}/gcc/${TARGET_SYS}
+    ln -s -r ${GCC_VERSION} current
+}
+
+addtask do_create_gcc_version_symlinks after do_prepare_recipe_sysroot before do_configure
 
