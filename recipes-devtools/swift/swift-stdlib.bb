@@ -16,7 +16,7 @@ SRC_URI[sha256sum] = "f9e5bd81441c4ec13dd9ea290e2d7b8fe9b30ef66ad68947481022ea51
 
 SOURCE_ROOT = "${WORKDIR}/swift-swift-${PV}-RELEASE"
 S = "${SOURCE_ROOT}"
-DEPENDS = "gcc-runtime python3-native icu"
+DEPENDS = "gcc-runtime python3-native icu ncurses"
 
 inherit swift-cmake-base
 
