@@ -8,7 +8,7 @@ HOST_CC_ARCH_prepend = "-target armv7-unknown-linux-gnueabih"
 # NOTE: The host running bitbake must have lld available and the following     #
 # must be added to the local.conf file:                                        #
 #                                                                              #
-# HOSTTOOLS += "ld.lld lld"                                                    #
+# HOSTTOOLS += "ld.lld"                                                        #
 #                                                                              #
 ################################################################################
 
