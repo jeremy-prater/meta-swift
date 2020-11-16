@@ -17,7 +17,7 @@ python swift_do_configure() {
     if len(cxx_include_list) != 1:
         bb.fatal("swift bbclass detected more than one c++ runtime, unable to determine which one to use")
     cxx_version = cxx_include_list[0]
-    
+
     d.setVar('SWIFT_CXX_VERSION', cxx_version)
 
     swift_destination_template = """{
@@ -26,22 +26,22 @@ python swift_do_configure() {
         "toolchain-bin-dir":"${STAGING_DIR_NATIVE}/usr/bin",
         "target":"armv7-unknown-linux-gnueabihf",
         "dynamic-library-extension":"so",
-        "extra-cc-flags":[ 
+        "extra-cc-flags":[
             "-fPIC",
             "-I${STAGING_DIR_TARGET}/usr/include/c++/${SWIFT_CXX_VERSION}",
             "-I${STAGING_DIR_TARGET}/usr/include/c++/${SWIFT_CXX_VERSION}/${TARGET_SYS}",
             "-I${STAGING_DIR_NATIVE}/usr/lib/${TARGET_SYS}/gcc/${TARGET_SYS}/${SWIFT_CXX_VERSION}/include",
             "-I${STAGING_DIR_NATIVE}/usr/lib/${TARGET_SYS}/gcc/${TARGET_SYS}/${SWIFT_CXX_VERSION}/include-fixed"
         ],
-        "extra-swiftc-flags":[ 
+        "extra-swiftc-flags":[
             "-target",
             "armv7-unknown-linux-gnueabihf",
             "-use-ld=lld",
             "-tools-directory",
             "/usr/bin",
-            
+
             "-Xlinker", "-rpath", "-Xlinker", "/usr/lib/swift/linux",
-            
+
             "-Xlinker",
             "-L${STAGING_DIR_TARGET}",
 
@@ -56,7 +56,7 @@ python swift_do_configure() {
 
             "-Xlinker",
             "-L${STAGING_DIR_TARGET}/usr/lib/${TARGET_SYS}/${SWIFT_CXX_VERSION}",
-            
+
             "-I${STAGING_DIR_TARGET}/usr/include/c++/${SWIFT_CXX_VERSION}",
             "-I${STAGING_DIR_TARGET}/usr/include/c++/${SWIFT_CXX_VERSION}/${TARGET_SYS}",
             "-I${STAGING_DIR_NATIVE}/usr/lib/${TARGET_SYS}/gcc/${TARGET_SYS}/${SWIFT_CXX_VERSION}/include",
@@ -69,7 +69,7 @@ python swift_do_configure() {
 
             "-sdk", "${STAGING_DIR_TARGET}"
         ],
-        "extra-cpp-flags":[ 
+        "extra-cpp-flags":[
             "-lstdc++",
         ]
     }"""
@@ -79,7 +79,7 @@ python swift_do_configure() {
     swift_destination =  d.expand(swift_destination_template)
 
     d.delVar("SWIFT_CXX_VERSION")
-    
+
     configJSON = open(workdir + "/destination.json", "w")
     configJSON.write(swift_destination)
     configJSON.close()
@@ -87,7 +87,7 @@ python swift_do_configure() {
 
 swift_do_compile()  {
     cd ${S}
-    
+
     swift build --build-path ${B} -v -c release --destination ${WORKDIR}/destination.json ${EXTRA_OESWIFT}
 }
 
