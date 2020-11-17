@@ -2,7 +2,7 @@ inherit cmake
 
 DEPENDS_append += " swift-native libgcc gcc glibc "
 
-HOST_CC_ARCH_prepend = "-target armv7-unknown-linux-gnueabih"
+HOST_CC_ARCH_prepend = "-target armv7-unknown-linux-gnueabihf"
 
 ################################################################################
 # NOTE: The host running bitbake must have lld available and the following     #
