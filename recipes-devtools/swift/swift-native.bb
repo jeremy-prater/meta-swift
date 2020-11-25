@@ -6,10 +6,21 @@ LIC_FILES_CHKSUM = "file://${S}/usr/share/swift/LICENSE.txt;md5=f6c482a0548ea60d
 require swift-version.inc
 PV = "${SWIFT_VERSION}"
 
-SRC_DIR = "swift-${PV}-RELEASE-ubuntu18.04"
+#######################################################################
+# We use our own Swift 5.3 x86_64 Linux toolchain in order to link    #
+# against the libgcc runtime in our ARM code.                         #
+#######################################################################
+SRC_DIR = "."
+SRC_URI = "https://rpe-downloads-dev.s3-us-west-2.amazonaws.com/swift/swift-${PV}-ubuntu20.04-patched.tar.gz"
+SRC_URI[sha256sum] = "47f9ff1fe255b0c40dadb8c66e356a6be75f55c34f3907e9840c8ff9da6ea5fe"
 
-SRC_URI = "https://swift.org/builds/swift-${PV}-release/ubuntu1804/swift-${PV}-RELEASE/${SRC_DIR}.tar.gz"
-SRC_URI[sha256sum] = "5ac1fb9b8963e1c44f541f55cbf6cc10faefb1f21598d813f14f8aaeb22b1d80"
+
+#######################################################################
+# Once our own toolchain is no longer needed switch back to this src. #
+#######################################################################
+#SRC_DIR = "swift-${PV}-RELEASE-ubuntu18.04"
+#SRC_URI = "https://swift.org/builds/swift-${PV}-release/ubuntu1804/swift-${PV}-RELEASE/${SRC_DIR}.tar.gz"
+#SRC_URI[sha256sum] = "5ac1fb9b8963e1c44f541f55cbf6cc10faefb1f21598d813f14f8aaeb22b1d80"
 
 DEPENDS = "curl"
 
