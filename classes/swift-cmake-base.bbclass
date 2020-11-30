@@ -69,14 +69,20 @@ EXTRA_OECMAKE += '-DCMAKE_Swift_FLAGS="${SWIFT_FLAGS}"'
 do_create_gcc_version_symlinks() {
     GCC_VERSION=`basename ${STAGING_DIR_TARGET}/usr/include/c++/*`
 
-    cd ${STAGING_DIR_TARGET}/usr/lib/${TARGET_SYS}
-    ln -s -r ${GCC_VERSION} current
+    if [ ! -L "${STAGING_DIR_TARGET}/usr/lib/${TARGET_SYS}/current" ]; then
+        cd ${STAGING_DIR_TARGET}/usr/lib/${TARGET_SYS}
+        ln -s -r ${GCC_VERSION} current
+    fi
 
-    cd ${STAGING_DIR_TARGET}/usr/include/c++
-    ln -s -r ${GCC_VERSION} current
+    if [ ! -L "${STAGING_DIR_TARGET}/usr/include/c++/current" ]; then
+        cd ${STAGING_DIR_TARGET}/usr/include/c++
+        ln -s -r ${GCC_VERSION} current
+    fi
 
-    cd ${STAGING_DIR_NATIVE}/usr/lib/${TARGET_SYS}/gcc/${TARGET_SYS}
-    ln -s -r ${GCC_VERSION} current
+    if [ ! -L "${STAGING_DIR_NATIVE}/usr/lib/${TARGET_SYS}/gcc/${TARGET_SYS}/current" ]; then
+        cd ${STAGING_DIR_NATIVE}/usr/lib/${TARGET_SYS}/gcc/${TARGET_SYS}
+        ln -s -r ${GCC_VERSION} current
+    fi
 }
 
 addtask do_create_gcc_version_symlinks after do_prepare_recipe_sysroot before do_configure
