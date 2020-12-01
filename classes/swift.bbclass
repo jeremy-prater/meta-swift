@@ -4,6 +4,30 @@ DEPENDS += "swift-native glibc gcc libgcc swift-stdlib libdispatch libfoundation
 # Additional parameters to pass to SPM
 EXTRA_OESWIFT ?= ""
 
+# Workaround complex macros that cannot be automatically imported by Swift.
+# https://developer.apple.com/documentation/swift/imported_c_and_objective-c_apis/using_imported_c_macros_in_swift
+#
+# Seems that SO_RCVTIMEO and SO_SNDTIMEO definitions aren't working because they are expressions
+# and not simple constants.
+#
+# This could be improved to replace just the specific lines that need fixing rather than rewriting
+# the entire file.
+def fix_socket_header(filename):
+  with open(filename, 'r') as f:
+    lines = f.readlines()
+
+  os.remove(filename)
+
+  with open(filename, 'w') as f:
+    for line in lines:
+      if line.startswith('#define SO_RCVTIMEO ') and ("SO_RCVTIMEO_OLD" in line) and ("?" in line):
+        f.write('#define SO_RCVTIMEO    SO_RCVTIMEO_OLD\n')
+      elif line.startswith('#define SO_SNDTIMEO ') and ("SO_SNDTIMEO_OLD" in line) and ("?" in line):
+        f.write('#define SO_SNDTIMEO    SO_SNDTIMEO_OLD\n')
+      else:
+        f.write(line)
+
+
 python swift_do_configure() {
     import os
     import os.path
@@ -12,6 +36,16 @@ python swift_do_configure() {
     workdir = d.getVar("WORKDIR", True)
     recipe_sysroot = d.getVar("STAGING_DIR_TARGET", True)
 
+    # Workaround complex macros that cannot be automatically imported by Swift.
+    # https://developer.apple.com/documentation/swift/imported_c_and_objective-c_apis/using_imported_c_macros_in_swift
+    #
+    # Seems that SO_RCVTIMEO and SO_SNDTIMEO definitions aren't working because they are expressions
+    # and not simple constants.
+    socket_header = recipe_sysroot + "/usr/include/asm-generic/socket.h"
+    fix_socket_header(socket_header)
+
+    # Detect the version of the C++ runtime
+    # This is used to determine necessary include paths
     cxx_include_base = recipe_sysroot + "/usr/include/c++"
     cxx_include_list = os.listdir(cxx_include_base)
     if len(cxx_include_list) != 1:
