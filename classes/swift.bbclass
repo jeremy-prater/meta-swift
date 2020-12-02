@@ -98,6 +98,7 @@ python swift_do_configure() {
             "-Xlinker",
             "-L${STAGING_DIR_TARGET}/usr/lib/${TARGET_SYS}/${SWIFT_CXX_VERSION}",
 
+            "-I${STAGING_INCDIR}",
             "-I${STAGING_DIR_TARGET}/usr/include/c++/${SWIFT_CXX_VERSION}",
             "-I${STAGING_DIR_TARGET}/usr/include/c++/${SWIFT_CXX_VERSION}/${TARGET_SYS}",
             "-I${STAGING_DIR_NATIVE}/usr/lib/clang/10.0.0/include",
@@ -114,8 +115,6 @@ python swift_do_configure() {
             "-lstdc++",
         ]
     }"""
-
-    bb.warn(d.getVar("TARGET_SYS", True))
 
     swift_destination =  d.expand(swift_destination_template)
 
