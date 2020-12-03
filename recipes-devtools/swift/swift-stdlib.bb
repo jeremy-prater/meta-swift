@@ -61,6 +61,8 @@ EXTRA_INCLUDE_FLAGS = "\
     -I${STAGING_DIR_TARGET}/usr/include/c++/current \
     -I${STAGING_DIR_TARGET}"
 
+TARGET_LDFLAGS += "-latomic"
+
 do_install_append() {
     ${WORKDIR}/fix_modulemap.sh ${D}${libdir}/swift/linux/armv7/glibc.modulemap
 
