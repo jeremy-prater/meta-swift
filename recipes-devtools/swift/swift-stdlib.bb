@@ -11,6 +11,7 @@ SRC_URI = "https://github.com/apple/swift/archive/swift-${PV}-RELEASE.tar.gz \
            file://fix_modulemap.sh \
            file://0001-Require-python3-rather-than-python2.patch \
            file://0001-Add-Wno-gnu-include-next-to-swift-reflection-test.patch \
+           file://0001-Fix-refcount.patch \
            "
 SRC_URI[sha256sum] = "f9e5bd81441c4ec13dd9ea290e2d7b8fe9b30ef66ad68947481022ea5179f83a"
 
