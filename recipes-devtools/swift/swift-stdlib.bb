@@ -2,7 +2,7 @@ SUMMARY = "Swift standard library"
 HOMEPAGE = "https://swift.org/"
 
 LICENSE = "Apache-2.0"
-LIC_FILES_CHKSUM = "file://${SOURCE_ROOT}/LICENSE.txt;md5=f6c482a0548ea60d6c2e015776534035"
+LIC_FILES_CHKSUM = "file://${S}/LICENSE.txt;md5=f6c482a0548ea60d6c2e015776534035"
 
 require swift-version.inc
 PV = "${SWIFT_VERSION}"
@@ -15,8 +15,7 @@ SRC_URI = "https://github.com/apple/swift/archive/swift-${PV}-RELEASE.tar.gz \
            "
 SRC_URI[sha256sum] = "f9e5bd81441c4ec13dd9ea290e2d7b8fe9b30ef66ad68947481022ea5179f83a"
 
-SOURCE_ROOT = "${WORKDIR}/swift-swift-${PV}-RELEASE"
-S = "${SOURCE_ROOT}"
+S = "${WORKDIR}/swift-swift-${PV}-RELEASE"
 DEPENDS = "gcc-runtime python3-native icu ncurses"
 
 inherit swift-cmake-base
