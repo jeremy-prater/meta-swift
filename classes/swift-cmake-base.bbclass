@@ -15,6 +15,9 @@ HOST_CC_ARCH_prepend = "-target armv7-unknown-linux-gnueabihf"
 # Use lld (see note above)
 TARGET_LDFLAGS += "-fuse-ld=lld"
 
+# Add build-id to generated binaries
+TARGET_LDFLAGS += "-Xlinker --build-id=sha1"
+
 # Use Apple's provided clang (it understands Apple's custom compiler flags)
 # Made available via swift-native package.
 OECMAKE_C_COMPILER = "clang"
