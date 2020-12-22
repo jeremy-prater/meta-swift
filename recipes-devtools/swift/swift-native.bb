@@ -23,6 +23,7 @@ SRC_URI[sha256sum] = "47f9ff1fe255b0c40dadb8c66e356a6be75f55c34f3907e9840c8ff9da
 #SRC_URI[sha256sum] = "5ac1fb9b8963e1c44f541f55cbf6cc10faefb1f21598d813f14f8aaeb22b1d80"
 
 DEPENDS = "curl"
+RDEPENDS = "ncurses-native"
 
 S = "${WORKDIR}/${SRC_DIR}"
 
