@@ -22,8 +22,12 @@ function fix_glibc_modulemap() {
         exit 42
     fi
 
+    echo "step 1: $glc_mm"
+
     tmp=$(mktemp "$glc_mm"_orig_XXXXXX)
+    echo "step 2: $tmp"
     inc_dir="$(dirname "$glc_mm")/private_includes"
+    echo "step 3: $inc_dir"
     cat "$glc_mm" >>"$tmp"
     echo -n >"$glc_mm"
     rm -rf "$inc_dir"

@@ -1,0 +1,22 @@
+From d4603ad1d51fc006c9f85df8770534a58850b2cc Mon Sep 17 00:00:00 2001
+From: Kevin Peizner <kevin.peizner@racepointenergy.com>
+Date: Wed, 14 Oct 2020 14:36:34 -0700
+Subject: [PATCH] Add -Wno-gnu-include-next to swift-reflection-test
+
+---
+ stdlib/tools/swift-reflection-test/CMakeLists.txt | 5 ++++-
+ 1 file changed, 4 insertions(+), 1 deletion(-)
+
+diff --git a/stdlib/tools/swift-reflection-test/CMakeLists.txt b/stdlib/tools/swift-reflection-test/CMakeLists.txt
+index de9d4b2f..c2c1a31c 100644
+--- a/stdlib/tools/swift-reflection-test/CMakeLists.txt
++++ b/stdlib/tools/swift-reflection-test/CMakeLists.txt
+@@ -10,4 +10,7 @@ add_swift_target_executable(swift-reflection-test BUILD_WITH_STDLIB
+ # which we need.
+ set_source_files_properties(swift-reflection-test.c
+                             PROPERTIES
+-                              COMPILE_FLAGS -D_WINDLL)
++                            COMPILE_FLAGS -D_WINDLL)
++set_source_files_properties(swift-reflection-test.c
++                            PROPERTIES
++                            COMPILE_FLAGS -Wno-gnu-include-next)
