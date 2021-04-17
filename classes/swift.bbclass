@@ -64,15 +64,15 @@ python swift_do_configure() {
     swift_destination_template = """{
         "version":1,
         "sdk":"${STAGING_DIR_TARGET}/",
-        "toolchain-bin-dir":"${STAGING_DIR_NATIVE}/usr/bin",
+        "toolchain-bin-dir":"${STAGING_DIR_NATIVE}/opt/usr/bin",
         "target":"armv7-unknown-linux-gnueabihf",
         "dynamic-library-extension":"so",
         "extra-cc-flags":[
             "-fPIC",
             "-I${STAGING_DIR_TARGET}/usr/include/c++/${SWIFT_CXX_VERSION}",
             "-I${STAGING_DIR_TARGET}/usr/include/c++/${SWIFT_CXX_VERSION}/${TARGET_SYS}",
-            "-I${STAGING_DIR_NATIVE}/usr/lib/clang/10.0.0/include",
-            "-I${STAGING_DIR_NATIVE}/usr/lib/clang/10.0.0/include-fixed"
+            "-I${STAGING_DIR_NATIVE}/opt/usr/lib/clang/10.0.0/include",
+            "-I${STAGING_DIR_NATIVE}/opt/usr/lib/clang/10.0.0/include-fixed"
         ],
         "extra-swiftc-flags":[
             "-target",
@@ -104,8 +104,8 @@ python swift_do_configure() {
             "-I${STAGING_INCDIR}",
             "-I${STAGING_DIR_TARGET}/usr/include/c++/${SWIFT_CXX_VERSION}",
             "-I${STAGING_DIR_TARGET}/usr/include/c++/${SWIFT_CXX_VERSION}/${TARGET_SYS}",
-            "-I${STAGING_DIR_NATIVE}/usr/lib/clang/10.0.0/include",
-            "-I${STAGING_DIR_NATIVE}/usr/lib/clang/10.0.0/include-fixed",
+            "-I${STAGING_DIR_NATIVE}/opt/usr/lib/clang/10.0.0/include",
+            "-I${STAGING_DIR_NATIVE}/opt/usr/lib/clang/10.0.0/include-fixed",
 
             "-resource-dir", "${STAGING_DIR_TARGET}/usr/lib/swift",
             "-module-cache-path", "${B}/release/ModuleCache",
@@ -129,6 +129,7 @@ python swift_do_configure() {
 }
 
 swift_do_compile()  {
+    export PATH=${PATH}:${STAGING_DIR_NATIVE}/opt/usr/bin
     cd ${S}
 
     swift build --build-path ${B} -v -c release --destination ${WORKDIR}/destination.json ${EXTRA_OESWIFT}

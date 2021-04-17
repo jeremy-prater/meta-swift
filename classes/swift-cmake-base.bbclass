@@ -53,6 +53,10 @@ ${EXTRA_SWIFTC_FLAGS} \
 
 EXTRA_OECMAKE += '-DCMAKE_Swift_FLAGS="${SWIFT_FLAGS}"'
 
+do_configure_prepend() {
+    export PATH=${PATH}:${STAGING_DIR_NATIVE}/opt/usr/bin
+}
+
 ################################################################################
 # Create symlinks to the directories containing the gcc version specific       #
 # headers, objects and libraries we need.                                      #
