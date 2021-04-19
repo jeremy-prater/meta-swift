@@ -129,7 +129,6 @@ python swift_do_configure() {
 }
 
 swift_do_compile()  {
-    export PATH=${PATH}:${STAGING_DIR_NATIVE}/opt/usr/bin
     cd ${S}
 
     swift build --build-path ${B} -v -c release --destination ${WORKDIR}/destination.json ${EXTRA_OESWIFT}
@@ -137,3 +136,4 @@ swift_do_compile()  {
 
 EXPORT_FUNCTIONS do_configure do_compile
 
+EXTRANATIVEPATH += "swift-tools"

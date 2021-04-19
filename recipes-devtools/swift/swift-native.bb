@@ -47,6 +47,9 @@ do_install_append () {
     install -d ${D}${base_prefix}/opt/usr/bin/
     cp -r ${S}/usr/bin/* ${D}${base_prefix}/opt/usr/bin/
 
+    install -d ${D}${bindir}/
+    ln -s ../../opt/usr/bin ${D}${bindir}/swift-tools
+
     install -d ${D}${base_prefix}/opt/usr/lib/
     cp -r ${S}/usr/lib/* ${D}${base_prefix}/opt/usr/lib/
 
