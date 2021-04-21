@@ -129,9 +129,7 @@ python swift_do_configure() {
 }
 
 swift_do_compile()  {
-    cd ${S}
-
-    swift build --build-path ${B} -v -c release --destination ${WORKDIR}/destination.json ${EXTRA_OESWIFT}
+    swift build --package-path ${S} --build-path ${B} -v -c release --destination ${WORKDIR}/destination.json ${EXTRA_OESWIFT}
 }
 
 EXPORT_FUNCTIONS do_configure do_compile
