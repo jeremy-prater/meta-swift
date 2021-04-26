@@ -31,12 +31,14 @@ EXTRA_INCLUDE_FLAGS ?= ""
 OECMAKE_C_FLAGS += "${RUNTIME_FLAGS} ${EXTRA_INCLUDE_FLAGS}"
 OECMAKE_CXX_FLAGS += "${RUNTIME_FLAGS} ${EXTRA_INCLUDE_FLAGS}"
 
+BUILD_MODE = "${@['release', 'debug'][d.getVar('DEBUG_BUILD') == '1']}"
+
 # Additional parameters to pass to swiftc
 EXTRA_SWIFTC_FLAGS ??= ""
 
 SWIFT_FLAGS = "-target armv7-unknown-linux-gnueabihf -use-ld=lld \
 -resource-dir ${STAGING_DIR_TARGET}/usr/lib/swift \
--module-cache-path ${B}/release/ModuleCache \
+-module-cache-path ${B}/${BUILD_MODE}/ModuleCache \
 -Xclang-linker -B${STAGING_DIR_TARGET}/usr/lib/${TARGET_SYS}/current \
 -Xclang-linker -B${STAGING_DIR_TARGET}/usr/lib \
 -Xcc -I${STAGING_DIR_NATIVE}/usr/lib/${TARGET_SYS}/gcc/${TARGET_SYS}/current/include \
