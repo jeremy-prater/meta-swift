@@ -7,6 +7,7 @@ DEPENDS += "swift-native glibc gcc libgcc swift-stdlib libdispatch libfoundation
 # We can allow for this to be changed by changing ${B} but one must be careful to also set
 # "--build-path ${B}" for _ALL_ invocations of SPM within a recipe.
 B ?= "${S}/.build"
+EXTERNALSRC_BUILD ?= "${EXTERNALSRC}/.build"
 
 # Additional parameters to pass to SPM
 EXTRA_OESWIFT ?= ""
