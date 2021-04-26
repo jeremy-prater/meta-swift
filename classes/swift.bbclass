@@ -7,6 +7,7 @@ DEPENDS += "swift-native glibc gcc libgcc swift-stdlib libdispatch libfoundation
 # We can allow for this to be changed by changing ${B} but one must be careful to also set
 # "--build-path ${B}" for _ALL_ invocations of SPM within a recipe.
 B ?= "${S}/.build"
+EXTERNALSRC_BUILD ?= "${EXTERNALSRC}/.build"
 
 # Additional parameters to pass to SPM
 EXTRA_OESWIFT ?= ""
@@ -129,11 +130,9 @@ python swift_do_configure() {
 }
 
 swift_do_compile()  {
-    export PATH=${PATH}:${STAGING_DIR_NATIVE}/opt/usr/bin
-    cd ${S}
-
-    swift build --build-path ${B} -v -c release --destination ${WORKDIR}/destination.json ${EXTRA_OESWIFT}
+    swift build --package-path ${S} --build-path ${B} --skip-update -v -c release --destination ${WORKDIR}/destination.json ${EXTRA_OESWIFT}
 }
 
 EXPORT_FUNCTIONS do_configure do_compile
 
+EXTRANATIVEPATH += "swift-tools"
