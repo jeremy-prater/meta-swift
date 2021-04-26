@@ -9,6 +9,8 @@ DEPENDS += "swift-native glibc gcc libgcc swift-stdlib libdispatch libfoundation
 B ?= "${S}/.build"
 EXTERNALSRC_BUILD ?= "${EXTERNALSRC}/.build"
 
+BUILD_MODE = "${@['release', 'debug'][d.getVar('DEBUG_BUILD') == '1']}"
+
 # Additional parameters to pass to SPM
 EXTRA_OESWIFT ?= ""
 
@@ -109,7 +111,7 @@ python swift_do_configure() {
             "-I${STAGING_DIR_NATIVE}/opt/usr/lib/clang/10.0.0/include-fixed",
 
             "-resource-dir", "${STAGING_DIR_TARGET}/usr/lib/swift",
-            "-module-cache-path", "${B}/release/ModuleCache",
+            "-module-cache-path", "${B}/${BUILD_MODE}/ModuleCache",
             "-Xclang-linker", "-B${STAGING_DIR_TARGET}/usr/lib/${TARGET_SYS}/${SWIFT_CXX_VERSION}",
             "-Xclang-linker", "-B${STAGING_DIR_TARGET}/usr/lib",
 
@@ -130,7 +132,7 @@ python swift_do_configure() {
 }
 
 swift_do_compile()  {
-    swift build --package-path ${S} --build-path ${B} --skip-update -v -c release --destination ${WORKDIR}/destination.json ${EXTRA_OESWIFT}
+    swift build --package-path ${S} --build-path ${B} --skip-update -v -c ${BUILD_MODE} --destination ${WORKDIR}/destination.json ${EXTRA_OESWIFT}
 }
 
 EXPORT_FUNCTIONS do_configure do_compile
