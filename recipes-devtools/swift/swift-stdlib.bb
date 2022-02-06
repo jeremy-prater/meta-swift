@@ -8,10 +8,6 @@ require swift-version.inc
 PV = "${SWIFT_VERSION}"
 
 SRC_URI = "https://github.com/apple/swift/archive/swift-${PV}-RELEASE.tar.gz \
-           file://fix_modulemap.sh \
-           file://0001-Require-python3-rather-than-python2.patch \
-           file://0001-Add-Wno-gnu-include-next-to-swift-reflection-test.patch \
-           file://0001-Fix-refcount.patch \
            "
 SRC_URI[sha256sum] = "f9e5bd81441c4ec13dd9ea290e2d7b8fe9b30ef66ad68947481022ea5179f83a"
 
@@ -25,7 +21,7 @@ inherit swift-cmake-base
 # HOST_LLVM_PATH as the path to the LLVM installation on the host.             #
 # For example:                                                                 #
 #                                                                              #
-# HOST_LLVM_PATH = "/usr/lib/llvm-10"                                          #
+# HOST_LLVM_PATH = "/usr/lib/llvm-12"                                          #
 #                                                                              #
 ################################################################################
 EXTRA_OECMAKE += " -DLLVM_DIR=${HOST_LLVM_PATH}/cmake"
@@ -33,8 +29,8 @@ EXTRA_OECMAKE += " -DLLVM_BUILD_LIBRARY_DIR=${HOST_LLVM_PATH}/lib"
 EXTRA_OECMAKE += " -DLLVM_MAIN_INCLUDE_DIR=${HOST_LLVM_PATH}/include"
 
 EXTRA_OECMAKE += " -DSWIFT_BUILD_RUNTIME_WITH_HOST_COMPILER=ON"
-EXTRA_OECMAKE += " -DSWIFT_NATIVE_CLANG_TOOLS_PATH=${STAGING_DIR_NATIVE}/opt/usr/bin"
-EXTRA_OECMAKE += " -DSWIFT_NATIVE_SWIFT_TOOLS_PATH=${STAGING_DIR_NATIVE}/opt/usr/bin"
+EXTRA_OECMAKE += " -DSWIFT_NATIVE_CLANG_TOOLS_PATH=/usr/bin"
+EXTRA_OECMAKE += " -DSWIFT_NATIVE_SWIFT_TOOLS_PATH=/usr/bin"
 
 EXTRA_OECMAKE += " -DSWIFT_BUILD_AST_ANALYZER=OFF"
 EXTRA_OECMAKE += " -DSWIFT_BUILD_DYNAMIC_SDK_OVERLAY=ON"
