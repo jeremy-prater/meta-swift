@@ -9,7 +9,7 @@ PV = "${SWIFT_VERSION}"
 
 SRC_URI = "https://github.com/apple/swift/archive/swift-${PV}-RELEASE.tar.gz \
            "
-SRC_URI[sha256sum] = "f9e5bd81441c4ec13dd9ea290e2d7b8fe9b30ef66ad68947481022ea5179f83a"
+SRC_URI[sha256sum] = "0046ecab640475441251b1cceb3dd167a4c7729852104d7675bdbd75fced6b82"
 
 S = "${WORKDIR}/swift-swift-${PV}-RELEASE"
 DEPENDS = "gcc-runtime python3-native icu ncurses"

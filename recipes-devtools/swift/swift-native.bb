@@ -7,7 +7,7 @@ require swift-version.inc
 PV = "${SWIFT_VERSION}"
 
 #######################################################################
-# We use our own Swift 5.3 x86_64 Linux toolchain in order to link    #
+# We use our own Swift 5.5 x86_64 Linux toolchain in order to link    #
 # against the libgcc runtime in our ARM code.                         #
 #######################################################################
 #SRC_DIR = "."
@@ -20,7 +20,7 @@ PV = "${SWIFT_VERSION}"
 #######################################################################
 SRC_DIR = "swift-${PV}-RELEASE-ubuntu20.04"
 SRC_URI = "https://swift.org/builds/swift-${PV}-release/ubuntu2004/swift-${PV}-RELEASE/${SRC_DIR}.tar.gz"
-#SRC_URI[sha256sum] = "5ac1fb9b8963e1c44f541f55cbf6cc10faefb1f21598d813f14f8aaeb22b1d80"
+SRC_URI[sha256sum] = "383935e857202ff41a411ac11c477d2e86fb8960e186789245991474abf99c9e"
 
 DEPENDS = "curl"
 RDEPENDS = "ncurses-native"
