@@ -1,34 +1,21 @@
-SUMMARY = "Swift toolchain for x86_64 linux"
+SUMMARY = "Swift toolchain for Linux"
 HOMEPAGE = "https://swift.org/download/#releases"
 LICENSE = "Apache-2.0"
-LIC_FILES_CHKSUM = "file://${S}/usr/share/swift/LICENSE.txt;md5=f6c482a0548ea60d6c2e015776534035"
+#LIC_FILES_CHKSUM = "file://${S}/usr/share/swift/LICENSE.txt;md5=f6c482a0548ea60d6c2e015776534035"
 
 require swift-version.inc
 PV = "${SWIFT_VERSION}"
 
-#######################################################################
-# We use our own Swift 5.5 x86_64 Linux toolchain in order to link    #
-# against the libgcc runtime in our ARM code.                         #
-#######################################################################
-#SRC_DIR = "."
-#SRC_URI = "https://rpe-downloads-dev.s3-us-west-2.amazonaws.com/swift/swift-${PV}-ubuntu20.04-patched.tar.gz"
-#SRC_URI[sha256sum] = "47f9ff1fe255b0c40dadb8c66e356a6be75f55c34f3907e9840c8ff9da6ea5fe"
-
-
-#######################################################################
-# Once our own toolchain is no longer needed switch back to this src. #
-#######################################################################
 SRC_DIR = "swift-${PV}-RELEASE-ubuntu20.04"
-SRC_URI = "https://swift.org/builds/swift-${PV}-release/ubuntu2004/swift-${PV}-RELEASE/${SRC_DIR}.tar.gz"
+SRC_URI = "https://download.swift.org/swift-${PV}-release/ubuntu2004/swift-${PV}-RELEASE/swift-${PV}-RELEASE-ubuntu20.04.tar.gz"
 SRC_URI[sha256sum] = "383935e857202ff41a411ac11c477d2e86fb8960e186789245991474abf99c9e"
 
 DEPENDS = "curl"
 RDEPENDS = "ncurses-native"
-
+ 
 S = "${WORKDIR}/${SRC_DIR}"
 
 inherit native
-
 
 ########################################################################
 # This informs bitbake that we want to install a non-default directory #
