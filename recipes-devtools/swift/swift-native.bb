@@ -1,7 +1,8 @@
 SUMMARY = "Swift toolchain for Linux"
 HOMEPAGE = "https://swift.org/download/#releases"
+
 LICENSE = "Apache-2.0"
-#LIC_FILES_CHKSUM = "file://${S}/usr/share/swift/LICENSE.txt;md5=f6c482a0548ea60d6c2e015776534035"
+LIC_FILES_CHKSUM = "file://${S}/usr/share/swift/LICENSE.txt;md5=f6c482a0548ea60d6c2e015776534035"
 
 require swift-version.inc
 PV = "${SWIFT_VERSION}"
