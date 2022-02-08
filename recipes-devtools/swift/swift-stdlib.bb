@@ -9,7 +9,6 @@ PV = "${SWIFT_VERSION}"
 
 SRC_URI = "https://github.com/apple/swift/archive/swift-${PV}-RELEASE.tar.gz;destsuffix=swift"
 SRC_URI += "git://github.com/apple/swift-corelibs-libdispatch.git;protocol=https;tag=swift-${PV}-RELEASE;nobranch=1;destsuffix=libdispatch" 
-#"https://github.com/apple/swift-corelibs-libdispatch/archive/swift-${PV}-RELEASE.tar.gz"
 SRC_URI[sha256sum] = "0046ecab640475441251b1cceb3dd167a4c7729852104d7675bdbd75fced6b82"
 
 S = "${WORKDIR}/swift-swift-${PV}-RELEASE"
@@ -25,6 +24,7 @@ inherit swift-cmake-base
 # HOST_LLVM_PATH = "/usr/lib/llvm-12"                                          #
 #                                                                              #
 ################################################################################
+
 HOST_LLVM_PATH = "/usr/lib/llvm-12"
 EXTRA_OECMAKE += " -DSWIFT_PATH_TO_LIBDISPATCH_SOURCE=${WORKDIR}/libdispatch"
 
@@ -62,10 +62,6 @@ EXTRA_INCLUDE_FLAGS = "\
 TARGET_LDFLAGS += "-latomic"
 
 do_install_append() {
-    ${WORKDIR}/fix_modulemap.sh ${D}${libdir}/swift/linux/armv7/glibc.modulemap
-
-    rm ${D}${libdir}/swift/linux/armv7/glibc.modulemap_orig_*
-
     # remove some dirs from /usr/lib (we don't include them in any packages) 
     rm -r ${D}${libdir}/swift/clang
     rm -r ${D}${libdir}/swift/FrameworkABIBaseline
@@ -75,27 +71,12 @@ do_install_append() {
 
     # remove /usr/bin (we don't include it in any packages)
     rm -r ${D}${bindir}
+
+    rm -rf ${D}${libdir}/swift_static
 }
 
-FILES_${PN} = "${libdir}/swift/linux/libswiftCore.so \
-               ${libdir}/swift/linux/libswiftGlibc.so \
-               ${libdir}/swift/linux/libswiftRemoteMirror.so \
-               ${libdir}/swift/linux/libswiftSwiftOnoneSupport.so \
+FILES_${PN} = "${libdir}/swift/linux/*.so \
 "
 
-FILES_${PN}-dev = "${libdir}/swift/shims/* \
-                   ${libdir}/swift/linux/armv7/glibc.modulemap \
-                   ${libdir}/swift/linux/armv7/private_includes/* \
-                   ${libdir}/swift/linux/armv7/Glibc.swiftmodule \
-                   ${libdir}/swift/linux/armv7/Glibc.swiftinterface \
-                   ${libdir}/swift/linux/armv7/Swift.swiftmodule \
-                   ${libdir}/swift/linux/armv7/Swift.swiftinterface \
-                   ${libdir}/swift/linux/armv7/SwiftOnoneSupport.swiftmodule \
-                   ${libdir}/swift/linux/armv7/SwiftOnoneSupport.swiftinterface \
-                   ${libdir}/swift/linux/armv7/swiftrt.o \
-"
-
-FILES_${PN}-doc = "${libdir}/swift/linux/armv7/Swift.swiftdoc \
-                   ${libdir}/swift/linux/armv7/Glibc.swiftdoc \
-                   ${libdir}/swift/linux/armv7/SwiftOnoneSupport.swiftdoc \
+FILES_${PN}-dev = "${libdir}/swift/* \
 "

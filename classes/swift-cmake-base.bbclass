@@ -24,8 +24,8 @@ OECMAKE_C_COMPILER = "clang"
 OECMAKE_CXX_COMPILER = "clang++"
 
 # Point clang to where the C++ runtime is for our target arch
-RUNTIME_FLAGS = "-w -B${STAGING_DIR_TARGET}/usr/lib/${TARGET_SYS}/current"
-TARGET_LDFLAGS += "-w -L${STAGING_DIR_TARGET}/usr/lib/${TARGET_SYS}/current"
+RUNTIME_FLAGS = "-w -fuse-ld=lld -B${STAGING_DIR_TARGET}/usr/lib/${TARGET_SYS}/current"
+TARGET_LDFLAGS += "-w -fuse-ld=lld -L${STAGING_DIR_TARGET}/usr/lib/${TARGET_SYS}/current"
 
 EXTRA_INCLUDE_FLAGS ?= ""
 OECMAKE_C_FLAGS += "${RUNTIME_FLAGS} ${EXTRA_INCLUDE_FLAGS}"
@@ -54,6 +54,8 @@ ${EXTRA_SWIFTC_FLAGS} \
 "
 
 EXTRA_OECMAKE += '-DCMAKE_Swift_FLAGS="${SWIFT_FLAGS}"'
+EXTRA_OECMAKE += " -DSWIFT_USE_LINKER=lld"
+EXTRA_OECMAKE += " -DLLVM_USE_LINKER=lld"
 
 EXTRANATIVEPATH += "swift-tools"
 
