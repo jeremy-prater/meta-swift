@@ -24,8 +24,8 @@ OECMAKE_C_COMPILER = "clang"
 OECMAKE_CXX_COMPILER = "clang++"
 
 # Point clang to where the C++ runtime is for our target arch
-RUNTIME_FLAGS = "-B${STAGING_DIR_TARGET}/usr/lib/${TARGET_SYS}/current"
-TARGET_LDFLAGS += "-L${STAGING_DIR_TARGET}/usr/lib/${TARGET_SYS}/current"
+RUNTIME_FLAGS = "-w -B${STAGING_DIR_TARGET}/usr/lib/${TARGET_SYS}/current"
+TARGET_LDFLAGS += "-w -L${STAGING_DIR_TARGET}/usr/lib/${TARGET_SYS}/current"
 
 EXTRA_INCLUDE_FLAGS ?= ""
 OECMAKE_C_FLAGS += "${RUNTIME_FLAGS} ${EXTRA_INCLUDE_FLAGS}"
@@ -73,6 +73,7 @@ EXTRANATIVEPATH += "swift-tools"
 # may not be necessary if the --gcc-toolchain clang flag was used. But that    #
 # is an unproven theory.                                                       #
 ################################################################################
+
 do_create_gcc_version_symlinks() {
     GCC_VERSION=`basename ${STAGING_DIR_TARGET}/usr/include/c++/*`
 
