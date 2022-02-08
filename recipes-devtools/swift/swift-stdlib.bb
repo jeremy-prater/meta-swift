@@ -75,8 +75,9 @@ do_install_append() {
     rm -rf ${D}${libdir}/swift_static
 }
 
-FILES_${PN} = "${libdir}/swift/linux/*.so \
+#FILES_${PN} = "${libdir}/swift/linux/*.so"
+FILES_${PN} = "${libdir}/swift/* \
+            "" \
 "
 
-FILES_${PN}-dev = "${libdir}/swift/* \
-"
+INSANE_SKIP_${PN} = "file-rdeps"
