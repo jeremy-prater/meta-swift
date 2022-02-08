@@ -25,11 +25,7 @@ inherit swift-cmake-base
 #                                                                              #
 ################################################################################
 
-HOST_LLVM_PATH = "/usr/lib/llvm-12"
 EXTRA_OECMAKE += " -DSWIFT_PATH_TO_LIBDISPATCH_SOURCE=${WORKDIR}/libdispatch"
-
-EXTRA_OECMAKE += " -DLLVM_DIR=${HOST_LLVM_PATH}/cmake"
-EXTRA_OECMAKE += " -DLLVM_BUILD_LIBRARY_DIR=${HOST_LLVM_PATH}/lib"
 EXTRA_OECMAKE += " -DLLVM_MAIN_INCLUDE_DIR=${HOST_LLVM_PATH}/include"
 
 EXTRA_OECMAKE += " -DSWIFT_BUILD_RUNTIME_WITH_HOST_COMPILER=ON"
@@ -76,8 +72,5 @@ do_install_append() {
 }
 
 #FILES_${PN} = "${libdir}/swift/linux/*.so"
-FILES_${PN} = "${libdir}/swift/* \
-            "" \
-"
-
+FILES_${PN} = "${libdir}/swift/*"
 INSANE_SKIP_${PN} = "file-rdeps"
