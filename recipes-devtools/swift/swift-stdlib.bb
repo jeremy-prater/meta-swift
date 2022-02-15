@@ -9,6 +9,7 @@ PV = "${SWIFT_VERSION}"
 
 SRC_URI = "https://github.com/apple/swift/archive/swift-${PV}-RELEASE.tar.gz;destsuffix=swift \
         file://Float16.patch \
+        file://0001-Fix-refcount.patch \
         "
 SRC_URI += "git://github.com/apple/swift-corelibs-libdispatch.git;protocol=https;tag=swift-${PV}-RELEASE;nobranch=1;destsuffix=libdispatch" 
 SRC_URI[sha256sum] = "41c926ae261a2756fe5ff761927aafe297105dc62f676a27c3da477f13251888"
