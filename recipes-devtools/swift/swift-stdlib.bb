@@ -21,10 +21,11 @@ DEPENDS = "gcc-runtime python3-native icu ncurses"
 DEPENDS_append += " swift-native libgcc gcc glibc "
 
 HOST_LLVM_PATH = "/usr/lib/llvm-12"
+SWIFT_GGC_VERSION = "9.3.0"
 
 EXTRA_INCLUDE_FLAGS = "\
-    -I${STAGING_DIR_TARGET}/usr/include/c++/current/arm-poky-linux-gnueabi \
-    -I${STAGING_DIR_TARGET}/usr/include/c++/current \
+    -I${STAGING_DIR_TARGET}/usr/include/c++/${SWIFT_GGC_VERSION}/arm-poky-linux-gnueabi \
+    -I${STAGING_DIR_TARGET}/usr/include/c++/${SWIFT_GGC_VERSION} \
     -I${STAGING_DIR_TARGET}"
 
 TARGET_LDFLAGS += "-w -fuse-ld=lld -L${STAGING_DIR_TARGET}/usr/lib/${TARGET_SYS}/current"
@@ -36,10 +37,10 @@ SWIFT_TARGET_ARCH = "armv7"
 SWIFT_TARGET_NAME = "armv7-unknown-linux-gnueabihf"
 HOST_SWIFT_SUPPORT_DIR = "/tmp/swift-stdlib-yocto"
 SWIFT_CMAKE_TOOLCHAIN_FILE = "${HOST_SWIFT_SUPPORT_DIR}/linux-${SWIFT_TARGET_ARCH}-toolchain.cmake"
-SWIFT_C_FLAGS = "-w -fuse-ld=lld -target ${SWIFT_TARGET_NAME} --sysroot ${STAGING_DIR_TARGET} -B${STAGING_DIR_TARGET}/usr/lib/${TARGET_SYS}/current -L${STAGING_DIR_TARGET}/usr/lib/${TARGET_SYS}/current -I${STAGING_DIR_TARGET}/usr/include ${EXTRA_INCLUDE_FLAGS} ${EXTRA_INCLUDE_FLAGS}"
-SWIFT_C_LINK_FLAGS = "-target ${SWIFT_TARGET_NAME} --sysroot ${STAGING_DIR_TARGET}"
-SWIFT_CXX_FLAGS = "-w -fuse-ld=lld -target ${SWIFT_TARGET_NAME} --sysroot ${STAGING_DIR_TARGET} -B${STAGING_DIR_TARGET}/usr/lib/${TARGET_SYS}/current -L${STAGING_DIR_TARGET}/usr/lib/${TARGET_SYS}/current -I${STAGING_DIR_TARGET}/usr/include -B${STAGING_DIR_TARGET}/usr/lib ${EXTRA_INCLUDE_FLAGS}"
-SWIFT_CXX_LINK_FLAGS = "-target ${SWIFT_TARGET_NAME} --sysroot ${STAGING_DIR_TARGET}"
+SWIFT_C_FLAGS = "-w -fuse-ld=lld -target ${SWIFT_TARGET_NAME} --sysroot ${STAGING_DIR_TARGET} -B${STAGING_DIR_TARGET}/usr/lib/${TARGET_SYS}/${SWIFT_GGC_VERSION} -L${STAGING_DIR_TARGET}/usr/lib/${TARGET_SYS}/${SWIFT_GGC_VERSION} -I${STAGING_DIR_TARGET}/usr/include ${EXTRA_INCLUDE_FLAGS}"
+SWIFT_C_LINK_FLAGS = "-target ${SWIFT_TARGET_NAME} --sysroot ${STAGING_DIR_TARGET} ${EXTRA_INCLUDE_FLAGS}"
+SWIFT_CXX_FLAGS = "-w -fuse-ld=lld -target ${SWIFT_TARGET_NAME} --sysroot ${STAGING_DIR_TARGET} -B${STAGING_DIR_TARGET}/usr/lib/${TARGET_SYS}/${SWIFT_GGC_VERSION} -L${STAGING_DIR_TARGET}/usr/lib/${TARGET_SYS}/${SWIFT_GGC_VERSION} -I${STAGING_DIR_TARGET}/usr/include -B${STAGING_DIR_TARGET}/usr/lib ${EXTRA_INCLUDE_FLAGS}"
+SWIFT_CXX_LINK_FLAGS = "-target ${SWIFT_TARGET_NAME} --sysroot ${STAGING_DIR_TARGET} ${EXTRA_INCLUDE_FLAGS}"
 
 SWIFT_CMAKE_TOOLCHAIN = "set(CMAKE_SYSTEM_NAME Linux) \
 \nset(CMAKE_C_COMPILER ${STAGING_DIR_NATIVE}/opt/usr/bin/clang) \
