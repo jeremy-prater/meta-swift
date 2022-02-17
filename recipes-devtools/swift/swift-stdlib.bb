@@ -20,6 +20,8 @@ S = "${WORKDIR}/swift-swift-${PV}-RELEASE"
 DEPENDS = "gcc-runtime python3-native icu ncurses"
 DEPENDS_append += " swift-native libgcc gcc glibc "
 
+inherit swift-cmake-base
+
 HOST_LLVM_PATH = "/usr/lib/llvm-12"
 SWIFT_GGC_VERSION = "9.3.0"
 
@@ -106,7 +108,6 @@ do_configure() {
     export CCLD="${SWIFT_C_LINK_FLAGS}"
     export CXX=${SWIFT_NATIVE_PATH}/clang
     export CXXFLAGS="${SWIFT_CXX_FLAGS}"
-    export PATH="${PATH}:/usr/bin"
     
     mkdir -p ${HOST_SWIFT_SUPPORT_DIR}
     rm -rf $SWIFT_BUILDDIR
@@ -115,7 +116,6 @@ do_configure() {
 }
 
 do_compile() {
-    export PATH="${PATH}:/usr/bin"
     cd ${SWIFT_BUILDDIR} && ninja
 }
 
