@@ -96,6 +96,8 @@ do_configure() {
     export SWIFT_C_LINK_FLAGS="${SWIFT_C_LINK_FLAGS}"
     export SWIFT_CXX_FLAGS="${SWIFT_CXX_FLAGS}"
     export SWIFT_CXX_LINK_FLAGS="${SWIFT_CXX_LINK_FLAGS}"
+    export CFLAGS="${SWIFT_C_FLAGS}"
+    export CXXFLAGS="${SWIFT_CXX_FLAGS}"
     export PATH="${PATH}:/usr/bin"
     mkdir -p ${HOST_SWIFT_SUPPORT_DIR}
     ${SWIFT_CONFIGURE_CMAKE_SCRIPT}
