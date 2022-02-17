@@ -27,6 +27,8 @@ EXTRA_INCLUDE_FLAGS = "\
     -I${STAGING_DIR_TARGET}/usr/include/c++/current \
     -I${STAGING_DIR_TARGET}"
 
+TARGET_LDFLAGS += "-w -fuse-ld=lld -L${STAGING_DIR_TARGET}/usr/lib/${TARGET_SYS}/current"
+
 SWIFT_CONFIGURE_CMAKE_SCRIPT="${WORKDIR}/cmake-configure-swift-stdlib.sh"
 
 SWIFT_BUILDDIR = "${S}/build"
@@ -34,7 +36,7 @@ SWIFT_TARGET_ARCH = "armv7"
 SWIFT_TARGET_NAME = "armv7-unknown-linux-gnueabihf"
 HOST_SWIFT_SUPPORT_DIR = "/tmp/swift-stdlib-yocto"
 SWIFT_CMAKE_TOOLCHAIN_FILE = "${HOST_SWIFT_SUPPORT_DIR}/linux-${SWIFT_TARGET_ARCH}-toolchain.cmake"
-SWIFT_C_FLAGS = "-w -fuse-ld=lld -target ${SWIFT_TARGET_NAME} --sysroot ${STAGING_DIR_TARGET} -B${STAGING_DIR_TARGET}/usr/lib/${TARGET_SYS}/current -L${STAGING_DIR_TARGET}/usr/lib/${TARGET_SYS}/current -I${STAGING_DIR_TARGET}/usr/include ${EXTRA_INCLUDE_FLAGS}"
+SWIFT_C_FLAGS = "-w -fuse-ld=lld -target ${SWIFT_TARGET_NAME} --sysroot ${STAGING_DIR_TARGET} -B${STAGING_DIR_TARGET}/usr/lib/${TARGET_SYS}/current -L${STAGING_DIR_TARGET}/usr/lib/${TARGET_SYS}/current -I${STAGING_DIR_TARGET}/usr/include ${EXTRA_INCLUDE_FLAGS} ${EXTRA_INCLUDE_FLAGS}"
 SWIFT_C_LINK_FLAGS = "-target ${SWIFT_TARGET_NAME} --sysroot ${STAGING_DIR_TARGET}"
 SWIFT_CXX_FLAGS = "-w -fuse-ld=lld -target ${SWIFT_TARGET_NAME} --sysroot ${STAGING_DIR_TARGET} -B${STAGING_DIR_TARGET}/usr/lib/${TARGET_SYS}/current -L${STAGING_DIR_TARGET}/usr/lib/${TARGET_SYS}/current -I${STAGING_DIR_TARGET}/usr/include -B${STAGING_DIR_TARGET}/usr/lib ${EXTRA_INCLUDE_FLAGS}"
 SWIFT_CXX_LINK_FLAGS = "-target ${SWIFT_TARGET_NAME} --sysroot ${STAGING_DIR_TARGET}"
@@ -92,14 +94,22 @@ do_configure() {
     export LIBDISPATCH_SRCDIR=${WORKDIR}/libdispatch
     export SWIFT_BUILDDIR=${SWIFT_BUILDDIR}
     export SWIFT_CMAKE_TOOLCHAIN_FILE=${SWIFT_CMAKE_TOOLCHAIN_FILE}
+    export SWIFT_NATIVE_PATH=${STAGING_DIR_NATIVE}/opt/usr/bin
     export SWIFT_C_FLAGS="${SWIFT_C_FLAGS}"
     export SWIFT_C_LINK_FLAGS="${SWIFT_C_LINK_FLAGS}"
     export SWIFT_CXX_FLAGS="${SWIFT_CXX_FLAGS}"
     export SWIFT_CXX_LINK_FLAGS="${SWIFT_CXX_LINK_FLAGS}"
+    export SWIFT_LLVM_DIR=${HOST_LLVM_PATH}
+    export CC=${SWIFT_NATIVE_PATH}/clang
     export CFLAGS="${SWIFT_C_FLAGS}"
+    export CCLD="${SWIFT_C_LINK_FLAGS}"
+    export CXX=${SWIFT_NATIVE_PATH}/clang
     export CXXFLAGS="${SWIFT_CXX_FLAGS}"
     export PATH="${PATH}:/usr/bin"
+    
     mkdir -p ${HOST_SWIFT_SUPPORT_DIR}
+    rm -rf $SWIFT_BUILDDIR
+    mkdir -p $SWIFT_BUILDDIR
     ${SWIFT_CONFIGURE_CMAKE_SCRIPT}
 }
 
