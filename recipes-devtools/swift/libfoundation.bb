@@ -12,6 +12,7 @@ SRC_URI = "git://github.com/apple/swift-corelibs-foundation.git;protocol=https;t
 S = "${WORKDIR}/git"
 
 DEPENDS = "swift-stdlib libdispatch ncurses libxml2 icu curl"
+RDEPENDS_${PN} += "swift-stdlib libdispatch"
 
 inherit swift-cmake-base
 
@@ -24,7 +25,7 @@ EXTRA_OECMAKE += '-DCMAKE_VERBOSE_MAKEFILE=ON'
 EXTRA_OECMAKE += '-DCF_DEPLOYMENT_SWIFT=ON'
 lcl_maybe_fortify="-D_FORTIFY_SOURCE=0"
 
-EXTRA_OECMAKE+= '-Ddispatch_DIR="${WORKDIR}/../../libdispatch/${PV}-r0/build/cmake/modules"'
+EXTRA_OECMAKE+= "-Ddispatch_DIR=${STAGING_DIR_TARGET}/usr/lib/swift/dispatch/cmake"
 
 # Ensure the right CPU is targeted
 TARGET_CPU_NAME = "armv7-a"
@@ -35,9 +36,8 @@ cmake_do_generate_toolchain_file_append() {
 do_configure_append() {
     # Workaround Dispatch defined with cmake and module
     mkdir -p /tmp/dispatch
-	cp -rf ${STAGING_DIR_TARGET}/usr/lib/swift/dispatch /tmp/dispatch
-    rm -rf ${STAGING_DIR_TARGET}/usr/lib/swift/dispatch
-
+	cp -rf ${STAGING_DIR_TARGET}/usr/lib/swift/dispatch/module.modulemap /tmp/dispatch/module.modulemap
+    rm -rf ${STAGING_DIR_TARGET}/usr/lib/swift/dispatch/module.modulemap
 }
 
 do_install_append() {
@@ -48,7 +48,7 @@ do_install_append() {
     rmdir ${D}${bindir}
 
     # Restore Dispatch
-    cp -rf /tmp/dispatch ${STAGING_DIR_TARGET}/usr/lib/swift/
+    cp -rf /tmp/dispatch/module.modulemap $${STAGING_DIR_TARGET}/usr/lib/swift/dispatch/module.modulemap
 }
 
 FILES_${PN} = "${libdir}/swift/*"
