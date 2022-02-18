@@ -119,7 +119,8 @@ do_compile() {
 }
 
 do_install() {
-    cp -rf ${SWIFT_BUILDDIR}/lib/swift ${STAGING_DIR_TARGET}/usr/lib/
+    install -d ${D}${libdir}
+    cp -rf ${SWIFT_BUILDDIR}/lib/swift ${D}${libdir}/
 }
 
 do_install_append() {
@@ -139,3 +140,5 @@ do_install_append() {
 #FILES_${PN} = "${libdir}/swift/linux/*.so"
 FILES_${PN} = "${libdir}/swift/*"
 INSANE_SKIP_${PN} = "file-rdeps"
+do_package_qa[noexec] = "1"
+EXCLUDE_FROM_SHLIBS = "1"
