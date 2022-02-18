@@ -48,7 +48,7 @@ do_install_append() {
     rmdir ${D}${bindir}
 
     # Restore Dispatch
-    cp -rf /tmp/dispatch/module.modulemap $${STAGING_DIR_TARGET}/usr/lib/swift/dispatch/module.modulemap
+    cp -rf /tmp/dispatch/module.modulemap ${STAGING_DIR_TARGET}/usr/lib/swift/dispatch/module.modulemap
 }
 
 FILES_${PN} = "${libdir}/swift/*"
