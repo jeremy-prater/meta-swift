@@ -33,10 +33,10 @@ cmake_do_generate_toolchain_file_append() {
 }
 
 do_configure_append() {
-    	# Workaround Dispatch defined with cmake and module
-      mkdir /tmp/dispatch
-	    cp -rf ${STAGING_DIR_TARGET}/usr/lib/swift/dispatch /tmp/dispatch
-      rm -rf ${STAGING_DIR_TARGET}/usr/lib/swift/dispatch
+    # Workaround Dispatch defined with cmake and module
+    mkdir -p /tmp/dispatch
+	cp -rf ${STAGING_DIR_TARGET}/usr/lib/swift/dispatch /tmp/dispatch
+    rm -rf ${STAGING_DIR_TARGET}/usr/lib/swift/dispatch
 
 }
 
