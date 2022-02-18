@@ -58,7 +58,9 @@ touch ${SWIFT_CMAKE_TOOLCHAIN_FILE}
     printf "set(SWIFT_LINUX_${SWIFT_TARGET_ARCH}_ICU_I18N ${STAGING_DIR}/usr/lib/libicui18n.so)\n" >> ${SWIFT_CMAKE_TOOLCHAIN_FILE}
     printf "set(SWIFT_LINUX_${SWIFT_TARGET_ARCH}_ICU_UC ${STAGING_DIR}/usr/lib/libicuuc.so)\n" >> ${SWIFT_CMAKE_TOOLCHAIN_FILE}
     printf "set(ICU_I18N_LIBRARIES ${STAGING_DIR}/usr/lib/libicui18n.so)\n" >> ${SWIFT_CMAKE_TOOLCHAIN_FILE}
+    printf "set(ICU_I18N_INCLUDE_DIRS ${STAGING_DIR}/usr/include)\n" >> ${SWIFT_CMAKE_TOOLCHAIN_FILE}
     printf "set(ICU_UC_LIBRARIES ${STAGING_DIR}/usr/lib/libicuuc.so)\n" >> ${SWIFT_CMAKE_TOOLCHAIN_FILE}
+    printf "set(ICU_UC_INCLUDE_DIRS ${STAGING_DIR}/usr/include)\n" >> ${SWIFT_CMAKE_TOOLCHAIN_FILE}
 	printf "set(LibRT_LIBRARIES ${STAGING_DIR}/usr/lib/librt.a)\n" >> ${SWIFT_CMAKE_TOOLCHAIN_FILE}
 	printf "set(ZLIB_LIBRARY ${STAGING_DIR}/usr/lib/libz.so)\n" >> ${SWIFT_CMAKE_TOOLCHAIN_FILE}
 	printf "set(SWIFT_PATH_TO_LIBDISPATCH_SOURCE ${LIBDISPATCH_SRCDIR})\n" >> ${SWIFT_CMAKE_TOOLCHAIN_FILE}
@@ -114,5 +116,7 @@ LIBS="-latomic" cmake -S $SWIFT_SRCDIR -B $SWIFT_BUILDDIR -G Ninja \
         -DSWIFT_LINUX_${SWIFT_TARGET_ARCH}_ICU_I18N=${STAGING_DIR}/usr/lib/libicui18n.so \
         -DSWIFT_LINUX_${SWIFT_TARGET_ARCH}_ICU_UC=${STAGING_DIR}/usr/lib/libicuuc.so \
         -DICU_I18N_LIBRARIES=${STAGING_DIR}/usr/lib/libicui18n.so \
+        -DICU_I18N_INCLUDE_DIRS=${STAGING_DIR}/usr/include \
         -DICU_UC_LIBRARIES=${STAGING_DIR}/usr/lib/libicuuc.so \
+        -DICU_UC_INCLUDE_DIRS=${STAGING_DIR}/usr/include \
 
