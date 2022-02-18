@@ -116,6 +116,7 @@ do_configure() {
 
 do_compile() {
     cd ${SWIFT_BUILDDIR} && ninja
+    rm -rf ${SWIFT_BUILDDIR}/lib/swift/linux/armv7/*.so
 }
 
 do_install() {
@@ -141,4 +142,3 @@ do_install_append() {
 FILES_${PN} = "${libdir}/swift/*"
 INSANE_SKIP_${PN} = "file-rdeps"
 do_package_qa[noexec] = "1"
-EXCLUDE_FROM_SHLIBS = "1"
