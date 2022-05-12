@@ -120,6 +120,9 @@ do_configure() {
 do_compile() {
     cd ${SWIFT_BUILDDIR} && ninja
     rm -rf ${SWIFT_BUILDDIR}/lib/swift/linux/armv7/*.so
+    # remove Dispatch (it will be built by another package)
+    rm -rf ${SWIFT_BUILDDIR}/lib/swift/linux/libBlocksRuntime.so
+    rm -rf ${SWIFT_BUILDDIR}/lib/swift/linux/libdispatch.so 
 }
 
 do_install() {
@@ -138,6 +141,7 @@ do_install_append() {
     # remove /usr/bin (we don't include it in any packages)
     rm -rf ${D}${bindir}
 
+    # remove Swift static libs
     rm -rf ${D}${libdir}/swift_static
 }
 
