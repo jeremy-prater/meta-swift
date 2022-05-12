@@ -12,7 +12,7 @@ SRC_URI = "https://github.com/apple/swift/archive/swift-${PV}-RELEASE.tar.gz;des
         file://0001-Fix-refcount.patch \
         "
 SRC_URI += "git://github.com/apple/swift-corelibs-libdispatch.git;protocol=https;tag=swift-${PV}-RELEASE;nobranch=1;destsuffix=libdispatch" 
-SRC_URI[sha256sum] = "41c926ae261a2756fe5ff761927aafe297105dc62f676a27c3da477f13251888"
+SRC_URI[sha256sum] = "39e4e2b7343756e26627b945a384e1b828e38778b34cc5b0f3ecc23f18d22fd6"
 
 S = "${WORKDIR}/swift-swift-${PV}-RELEASE"
 DEPENDS = "gcc-runtime python3-native icu ncurses"
