@@ -7,15 +7,14 @@ LIC_FILES_CHKSUM = "file://${S}/LICENSE.txt;md5=f6c482a0548ea60d6c2e015776534035
 require swift-version.inc
 PV = "${SWIFT_VERSION}"
 
-SRC_URI = "https://github.com/apple/swift/archive/swift-${PV}-RELEASE.tar.gz;destsuffix=swift \
+SRC_URI = "git://github.com/apple/swift.git;protocol=https;tag=swift-${PV}-RELEASE;nobranch=1 \
         file://Float16.patch \
         file://0001-Fix-refcount.patch \
         file://fix_modulemap.sh \
         "
 SRC_URI += "git://github.com/apple/swift-corelibs-libdispatch.git;protocol=https;tag=swift-${PV}-RELEASE;nobranch=1;destsuffix=libdispatch" 
-SRC_URI[sha256sum] = "39e4e2b7343756e26627b945a384e1b828e38778b34cc5b0f3ecc23f18d22fd6"
 
-S = "${WORKDIR}/swift-swift-${PV}-RELEASE"
+S = "${WORKDIR}/git"
 SWIFT_BUILDDIR = "${S}/build"
 DEPENDS = "gcc-runtime python3-native icu ncurses"
 DEPENDS_append += " swift-native libgcc gcc glibc "
