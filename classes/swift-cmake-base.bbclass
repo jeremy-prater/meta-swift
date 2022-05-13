@@ -54,8 +54,6 @@ SWIFT_FLAGS = "-target armv7-unknown-linux-gnueabihf -use-ld=lld \
 ${EXTRA_SWIFTC_FLAGS} \
 "
 
-EXTRA_OECMAKE += '-DCMAKE_Swift_FLAGS="${SWIFT_FLAGS}"'
-
 HOST_LLVM_PATH = "/usr/lib/llvm-12"
 EXTRA_OECMAKE += " -DSWIFT_USE_LINKER=lld"
 EXTRA_OECMAKE += " -DLLVM_USE_LINKER=lld"

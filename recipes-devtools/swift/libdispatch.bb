@@ -21,6 +21,7 @@ TARGET_LDFLAGS += "-L${STAGING_DIR_TARGET}/usr/lib/swift/linux"
 
 # Enable Swift parts
 EXTRA_OECMAKE += "-DENABLE_SWIFT=YES"
+EXTRA_OECMAKE += '-DCMAKE_Swift_FLAGS="${SWIFT_FLAGS}"'
 
 # Ensure the right CPU is targeted
 TARGET_CPU_NAME = "armv7-a"
