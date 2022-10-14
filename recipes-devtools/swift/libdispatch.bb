@@ -8,10 +8,8 @@ LIC_FILES_CHKSUM = "file://${S}/LICENSE;md5=1cd73afe3fb82e8d5c899b9d926451d0"
 require swift-version.inc
 PV = "${SWIFT_VERSION}"
 
-SRC_URI = "git://github.com/apple/swift-corelibs-libdispatch.git;protocol=https;tag=swift-${PV}-RELEASE;nobranch=1 \
-        file://0001-arm-yield.patch \
-        "
-SRC_URI[sha256sum] = "2611b4dc9530207e19dae07599355622f76c32694aca3ef909149a7ecf48dfc7"
+SRC_URI = "git://github.com/apple/swift-corelibs-libdispatch.git;protocol=https;tag=swift-${PV}-RELEASE;nobranch=1"
+#SRC_URI[sha256sum] = "2611b4dc9530207e19dae07599355622f76c32694aca3ef909149a7ecf48dfc7"
 
 DEPENDS = "swift-stdlib ncurses"
 
