@@ -88,6 +88,11 @@ EXTRA_OECMAKE += " -DSWIFT_SDK_LINUX_ARCH_${SWIFT_TARGET_ARCH}_PATH=${STAGING_DI
 EXTRA_OECMAKE += " -DSWIFT_SDK_LINUX_ARCH_${SWIFT_TARGET_ARCH}_LIBC_INCLUDE_DIRECTORY=${STAGING_DIR_TARGET}/usr/include"
 EXTRA_OECMAKE += " -DSWIFT_SDK_LINUX_ARCH_${SWIFT_TARGET_ARCH}_LIBC_ARCHITECTURE_INCLUDE_DIRECTORY=${STAGING_DIR_TARGET}/usr/include"
 
+do_configure() {
+    unset LDFLAGS
+    cmake_do_configure
+}
+
 do_install_append() {
     # remove some dirs from /usr/lib (we don't include them in any packages) 
     rm -r ${D}${libdir}/swift/clang
