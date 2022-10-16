@@ -16,18 +16,9 @@ SRC_URI += "git://github.com/apple/swift-corelibs-libdispatch.git;protocol=https
 S = "${WORKDIR}/git"
 SWIFT_BUILDDIR = "${S}/build"
 DEPENDS = "gcc-runtime python3-native icu ncurses"
-DEPENDS_append += " swift-native libgcc gcc glibc "
+DEPENDS += " swift-native swift-llvm-native libgcc gcc glibc "
 
 inherit swift-cmake-base
-
-################################################################################
-# NOTE: The host running bitbake must have llvm available and must define      #
-# HOST_LLVM_PATH as the path to the LLVM installation on the host.             #
-# For example:                                                                 #
-#                                                                              #
-# HOST_LLVM_PATH = "/usr/lib/llvm-12"                                          #
-#                                                                              #
-################################################################################
 
 SWIFT_GGC_VERSION = "9.3.0"
 
