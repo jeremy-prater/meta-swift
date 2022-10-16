@@ -16,7 +16,7 @@ SRC_URI += "git://github.com/apple/swift-corelibs-libdispatch.git;protocol=https
 S = "${WORKDIR}/git"
 SWIFT_BUILDDIR = "${S}/build"
 DEPENDS = "gcc-runtime python3-native icu ncurses"
-DEPENDS += " swift-native swift-llvm-native libgcc gcc glibc "
+DEPENDS += " swift-native swift-llvm-native libgcc gcc glibc libxml2"
 
 inherit swift-cmake-base
 
