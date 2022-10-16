@@ -10,6 +10,7 @@ PV = "${SWIFT_VERSION}"
 SRC_URI = "git://github.com/apple/swift.git;protocol=https;tag=swift-${PV}-RELEASE;nobranch=1 \
         file://0001-Float16.patch \
         file://fix_modulemap.sh \
+        file://configure-swift-stdlib.sh \
         "
 SRC_URI += "git://github.com/apple/swift-corelibs-libdispatch.git;protocol=https;tag=swift-${PV}-RELEASE;nobranch=1;destsuffix=libdispatch" 
 
