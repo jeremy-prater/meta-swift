@@ -82,7 +82,7 @@ python swift_do_configure() {
             "armv7-unknown-linux-gnueabihf",
             "-use-ld=lld",
             "-tools-directory",
-            "/usr/bin",
+            "${STAGING_DIR_NATIVE}/opt/usr/bin",
 
             "-Xlinker", "-rpath", "-Xlinker", "/usr/lib/swift/linux",
 
