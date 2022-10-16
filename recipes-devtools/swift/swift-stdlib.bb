@@ -27,8 +27,8 @@ EXTRA_INCLUDE_FLAGS = "\
     -I${STAGING_DIR_TARGET}/usr/include/c++/${SWIFT_GGC_VERSION} \
     -I${STAGING_DIR_TARGET}"
 
-TARGET_LDFLAGS += "-w -fuse-ld=lld -L${STAGING_DIR_TARGET}/usr/lib/${TARGET_SYS}/current"
-TARGET_LDFLAGS += "-latomic"
+SWIFT_LDFLAGS += "-w -fuse-ld=lld -L${STAGING_DIR_TARGET}/usr/lib/${TARGET_SYS}/current"
+SWIFT_LDFLAGS += "-latomic"
 
 SWIFT_C_FLAGS = "-w -fuse-ld=lld -target ${SWIFT_TARGET_NAME} --sysroot ${STAGING_DIR_TARGET} -B${STAGING_DIR_TARGET}/usr/lib/${TARGET_SYS}/${SWIFT_GGC_VERSION} -L${STAGING_DIR_TARGET}/usr/lib/${TARGET_SYS}/${SWIFT_GGC_VERSION} -I${STAGING_DIR_TARGET}/usr/include ${EXTRA_INCLUDE_FLAGS}"
 SWIFT_C_LINK_FLAGS = "-target ${SWIFT_TARGET_NAME} --sysroot ${STAGING_DIR_TARGET} ${EXTRA_INCLUDE_FLAGS}"
@@ -44,6 +44,9 @@ CXX = "${STAGING_DIR_NATIVE}/opt/usr/bin/clang++"
 CXXFLAGS = "${SWIFT_CXX_FLAGS}"
 CPP = "${STAGING_DIR_NATIVE}/opt/usr/bin/clang++"
 CPPFLAGS = "${SWIFT_CXX_FLAGS}"
+
+LDFLAGS = "${SWIFT_LDFLAGS}"
+FC = "${SWIFT_LDFLAGS}"
 
 OECMAKE_C_FLAGS = "${CFLAGS}"
 OECMAKE_CXX_FLAGS = "${CXXFLAGS}"
@@ -96,10 +99,6 @@ EXTRA_OECMAKE += " -DSWIFT_SDK_LINUX_ARCH_${SWIFT_TARGET_ARCH}_PATH=${STAGING_DI
 EXTRA_OECMAKE += " -DSWIFT_SDK_LINUX_ARCH_${SWIFT_TARGET_ARCH}_LIBC_INCLUDE_DIRECTORY=${STAGING_DIR_TARGET}/usr/include"
 EXTRA_OECMAKE += " -DSWIFT_SDK_LINUX_ARCH_${SWIFT_TARGET_ARCH}_LIBC_ARCHITECTURE_INCLUDE_DIRECTORY=${STAGING_DIR_TARGET}/usr/include"
 
-do_configure() {
-    unset LDFLAGS
-    cmake_do_configure
-}
 
 do_install_append() {
     # remove some dirs from /usr/lib (we don't include them in any packages) 

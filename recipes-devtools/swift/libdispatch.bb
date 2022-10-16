@@ -17,6 +17,7 @@ S = "${WORKDIR}/git"
 inherit swift-cmake-base
 
 TARGET_LDFLAGS += "-L${STAGING_DIR_TARGET}/usr/lib/swift/linux"
+SWIFT_LDFLAGS += "-L${STAGING_DIR_TARGET}/usr/lib/swift/linux"
 
 # Enable Swift parts
 EXTRA_OECMAKE += "-DENABLE_SWIFT=YES"
