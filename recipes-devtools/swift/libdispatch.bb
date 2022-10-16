@@ -9,7 +9,6 @@ require swift-version.inc
 PV = "${SWIFT_VERSION}"
 
 SRC_URI = "git://github.com/apple/swift-corelibs-libdispatch.git;protocol=https;tag=swift-${PV}-RELEASE;nobranch=1"
-#SRC_URI[sha256sum] = "2611b4dc9530207e19dae07599355622f76c32694aca3ef909149a7ecf48dfc7"
 
 DEPENDS = "swift-stdlib ncurses"
 
