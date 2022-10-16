@@ -100,6 +100,45 @@ EXTRA_OECMAKE += " -DSWIFT_SDK_LINUX_ARCH_${SWIFT_TARGET_ARCH}_PATH=${STAGING_DI
 EXTRA_OECMAKE += " -DSWIFT_SDK_LINUX_ARCH_${SWIFT_TARGET_ARCH}_LIBC_INCLUDE_DIRECTORY=${STAGING_DIR_TARGET}/usr/include"
 EXTRA_OECMAKE += " -DSWIFT_SDK_LINUX_ARCH_${SWIFT_TARGET_ARCH}_LIBC_ARCHITECTURE_INCLUDE_DIRECTORY=${STAGING_DIR_TARGET}/usr/include"
 
+# do_configure() {
+
+#     CMAKE_EXE_LINKER_FLAGS="${SWIFT_LDFLAGS}"
+#     CMAKE_SHARED_LINKER_FLAGS="${SWIFT_LDFLAGS}"
+
+#     export SWIFT_SRCDIR=${S}
+#     export SWIFT_BUILDDIR=${SWIFT_BUILDDIR}
+#     export SWIFT_INSTALL_PREFIX=${STAGING_DIR_TARGET}/usr
+#     export SWIFT_NATIVE_PATH=${STAGING_DIR_NATIVE}/opt/usr/bin
+#     export LLVM_INSTALL_PREFIX=${HOST_LLVM_PATH}
+#     export LIBDISPATCH_SRCDIR=${WORKDIR}/libdispatch
+#     export SWIFT_BUILD_CONFIGURATION=Release
+#     export SWIFT_NATIVE_PATH=${STAGING_DIR_NATIVE}/opt/usr/bin
+#     export SWIFT_C_FLAGS="${SWIFT_C_FLAGS}"
+#     export SWIFT_CXX_FLAGS="${SWIFT_CXX_FLAGS}"
+#     export SWIFT_C_LINK_FLAGS="${SWIFT_C_LINK_FLAGS}"
+#     export SWIFT_CXX_LINK_FLAGS="${SWIFT_CXX_LINK_FLAGS}"
+#     export SWIFT_TARGET_ARCH=${SWIFT_TARGET_ARCH}
+#     export STAGING_DIR_TARGET=${STAGING_DIR_TARGET}
+    
+#     unset CMAKE_TOOLCHAIN_FILE
+    
+#     rm -rf $SWIFT_BUILDDIR
+#     mkdir -p $SWIFT_BUILDDIR
+#     ${WORKDIR}/configure-swift-stdlib.sh
+# }
+
+# do_compile() {
+#     cd ${SWIFT_BUILDDIR} && ninja
+#     rm -rf ${SWIFT_BUILDDIR}/lib/swift/linux/armv7/*.so
+#     # remove Dispatch (it will be built by another package)
+#     rm -rf ${SWIFT_BUILDDIR}/lib/swift/linux/libBlocksRuntime.so
+#     rm -rf ${SWIFT_BUILDDIR}/lib/swift/linux/libdispatch.so 
+# }
+
+# do_install() {
+#     install -d ${D}${libdir}
+#     cp -rf ${SWIFT_BUILDDIR}/lib/swift ${D}${libdir}/
+# }
 
 do_install_append() {
     # remove some dirs from /usr/lib (we don't include them in any packages) 
