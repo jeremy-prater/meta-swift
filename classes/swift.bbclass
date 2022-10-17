@@ -76,8 +76,8 @@ python swift_do_configure() {
             "-fPIC",
             "-I${STAGING_DIR_TARGET}/usr/include/c++/${SWIFT_CXX_VERSION}",
             "-I${STAGING_DIR_TARGET}/usr/include/c++/${SWIFT_CXX_VERSION}/${TARGET_SYS}",
-            "-I${STAGING_DIR_NATIVE}/opt/usr/lib/clang/10.0.0/include",
-            "-I${STAGING_DIR_NATIVE}/opt/usr/lib/clang/10.0.0/include-fixed"
+            "-I${STAGING_DIR_NATIVE}/opt/usr/lib/clang/13.0.0/include",
+            "-I${STAGING_DIR_NATIVE}/opt/usr/lib/clang/13.0.0/include-fixed"
         ],
         "extra-swiftc-flags":[
             "-target",
@@ -109,8 +109,8 @@ python swift_do_configure() {
             "-I${STAGING_INCDIR}",
             "-I${STAGING_DIR_TARGET}/usr/include/c++/${SWIFT_CXX_VERSION}",
             "-I${STAGING_DIR_TARGET}/usr/include/c++/${SWIFT_CXX_VERSION}/${TARGET_SYS}",
-            "-I${STAGING_DIR_NATIVE}/opt/usr/lib/clang/10.0.0/include",
-            "-I${STAGING_DIR_NATIVE}/opt/usr/lib/clang/10.0.0/include-fixed",
+            "-I${STAGING_DIR_NATIVE}/opt/usr/lib/clang/13.0.0/include",
+            "-I${STAGING_DIR_NATIVE}/opt/usr/lib/clang/13.0.0/include-fixed",
 
             "-resource-dir", "${STAGING_DIR_TARGET}/usr/lib/swift",
             "-module-cache-path", "${B}/${BUILD_MODE}/ModuleCache",
