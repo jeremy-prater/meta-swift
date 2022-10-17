@@ -1,0 +1,153 @@
+From dd935a79df0f931ec476b9df94598e923e3799f3 Mon Sep 17 00:00:00 2001
+From: Kevin Peizner <kevin.peizner@racepointenergy.com>
+Date: Wed, 28 Oct 2020 14:24:16 -0700
+Subject: [PATCH] Make FoundationConfig.cmake not depend on build dir
+
+The default FoundationConfig.cmake generated file depends on the
+generated FoundationExports.cmake file via a build dir specific path.
+
+Furthermore, the original FoundationExports.cmake contains build dir
+specific paths.
+
+This breaks inclusion in other projects unless said project has access
+to the build & src tree of libfoundation.
+
+This commit changes the FoundationConfig.cmake & FoundationExports.cmake
+files so that the paths within them are based relative to the
+installation of libfoundation.
+---
+ Sources/Foundation/CMakeLists.txt           |  8 ++++---
+ Sources/FoundationNetworking/CMakeLists.txt |  8 ++++---
+ Sources/FoundationXML/CMakeLists.txt        |  8 ++++---
+ cmake/modules/CMakeLists.txt                | 25 ++++++++++++++++-----
+ cmake/modules/FoundationConfig.cmake.in     | 10 ++++++++-
+ 5 files changed, 44 insertions(+), 15 deletions(-)
+
+diff --git a/Sources/Foundation/CMakeLists.txt b/Sources/Foundation/CMakeLists.txt
+index 5628fdae..103ab258 100644
+--- a/Sources/Foundation/CMakeLists.txt
++++ b/Sources/Foundation/CMakeLists.txt
+@@ -149,8 +149,10 @@ target_link_libraries(Foundation
+ set_target_properties(Foundation PROPERTIES
+   INSTALL_RPATH "$ORIGIN"
+   BUILD_RPATH "$<TARGET_FILE_DIR:swiftDispatch>"
+-  Swift_MODULE_DIRECTORY ${CMAKE_BINARY_DIR}/swift
+-  INTERFACE_INCLUDE_DIRECTORIES ${CMAKE_BINARY_DIR}/swift)
++  Swift_MODULE_DIRECTORY ${CMAKE_BINARY_DIR}/swift)
++target_include_directories(Foundation INTERFACE
++    $<BUILD_INTERFACE:${CMAKE_BINARY_DIR}/swift>
++    $<INSTALL_INTERFACE:lib/swift>)
+ 
+ if(CMAKE_SYSTEM_NAME STREQUAL Windows)
+   # NOTE: workaround for CMake which doesn't link in OBJECT libraries properly
+@@ -163,7 +165,7 @@ endif()
+ 
+ 
+ set_property(GLOBAL APPEND PROPERTY Foundation_EXPORTS Foundation)
+-install(TARGETS Foundation
++install(TARGETS Foundation EXPORT FoundationExports
+   ARCHIVE DESTINATION lib/swift$<$<NOT:$<BOOL:${BUILD_SHARED_LIBS}>>:_static>/$<LOWER_CASE:${CMAKE_SYSTEM_NAME}>
+   LIBRARY DESTINATION lib/swift$<$<NOT:$<BOOL:${BUILD_SHARED_LIBS}>>:_static>/$<LOWER_CASE:${CMAKE_SYSTEM_NAME}>
+   RUNTIME DESTINATION bin)
+diff --git a/Sources/FoundationNetworking/CMakeLists.txt b/Sources/FoundationNetworking/CMakeLists.txt
+index 2ea3924c..8c31a0ce 100644
+--- a/Sources/FoundationNetworking/CMakeLists.txt
++++ b/Sources/FoundationNetworking/CMakeLists.txt
+@@ -63,8 +63,10 @@ target_link_libraries(FoundationNetworking
+     Foundation)
+ set_target_properties(FoundationNetworking PROPERTIES
+   INSTALL_RPATH "$ORIGIN"
+-  Swift_MODULE_DIRECTORY ${CMAKE_BINARY_DIR}/swift
+-  INTERFACE_INCLUDE_DIRECTORIES ${CMAKE_BINARY_DIR}/swift)
++  Swift_MODULE_DIRECTORY ${CMAKE_BINARY_DIR}/swift)
++target_include_directories(FoundationNetworking INTERFACE
++    $<BUILD_INTERFACE:${CMAKE_BINARY_DIR}/swift>
++    $<INSTALL_INTERFACE:lib/swift>)
+ 
+ if(NOT CMAKE_SYSTEM_NAME MATCHES "Darwin|Windows")
+   target_link_options(FoundationNetworking PRIVATE "SHELL:-no-toolchain-stdlib-rpath")
+@@ -72,7 +74,7 @@ endif()
+ 
+ 
+ set_property(GLOBAL APPEND PROPERTY Foundation_EXPORTS FoundationNetworking)
+-install(TARGETS FoundationNetworking
++install(TARGETS FoundationNetworking EXPORT FoundationNetworkingExports
+   ARCHIVE DESTINATION lib/swift$<$<NOT:$<BOOL:${BUILD_SHARED_LIBS}>>:_static>/$<LOWER_CASE:${CMAKE_SYSTEM_NAME}>
+   LIBRARY DESTINATION lib/swift$<$<NOT:$<BOOL:${BUILD_SHARED_LIBS}>>:_static>/$<LOWER_CASE:${CMAKE_SYSTEM_NAME}>
+   RUNTIME DESTINATION bin)
+diff --git a/Sources/FoundationXML/CMakeLists.txt b/Sources/FoundationXML/CMakeLists.txt
+index a11e0272..b573cc8e 100644
+--- a/Sources/FoundationXML/CMakeLists.txt
++++ b/Sources/FoundationXML/CMakeLists.txt
+@@ -17,8 +17,10 @@ target_link_libraries(FoundationXML
+     Foundation)
+ set_target_properties(FoundationXML PROPERTIES
+   INSTALL_RPATH "$ORIGIN"
+-  Swift_MODULE_DIRECTORY ${CMAKE_BINARY_DIR}/swift
+-  INTERFACE_INCLUDE_DIRECTORIES ${CMAKE_BINARY_DIR}/swift)
++  Swift_MODULE_DIRECTORY ${CMAKE_BINARY_DIR}/swift)
++target_include_directories(FoundationXML INTERFACE
++    $<BUILD_INTERFACE:${CMAKE_BINARY_DIR}/swift>
++    $<INSTALL_INTERFACE:lib/swift>)
+ 
+ if(NOT CMAKE_SYSTEM_NAME MATCHES "Darwin|Windows")
+   target_link_options(FoundationXML PRIVATE "SHELL:-no-toolchain-stdlib-rpath")
+@@ -26,7 +28,7 @@ endif()
+ 
+ 
+ set_property(GLOBAL APPEND PROPERTY Foundation_EXPORTS FoundationXML)
+-install(TARGETS FoundationXML
++install(TARGETS FoundationXML EXPORT FoundationXMLExports
+   ARCHIVE DESTINATION lib/swift$<$<NOT:$<BOOL:${BUILD_SHARED_LIBS}>>:_static>/$<LOWER_CASE:${CMAKE_SYSTEM_NAME}>
+   LIBRARY DESTINATION lib/swift$<$<NOT:$<BOOL:${BUILD_SHARED_LIBS}>>:_static>/$<LOWER_CASE:${CMAKE_SYSTEM_NAME}>
+   RUNTIME DESTINATION bin)
+diff --git a/cmake/modules/CMakeLists.txt b/cmake/modules/CMakeLists.txt
+index 3dbaaace..02e971da 100644
+--- a/cmake/modules/CMakeLists.txt
++++ b/cmake/modules/CMakeLists.txt
+@@ -1,7 +1,22 @@
+ 
+-set(Foundation_EXPORTS_FILE ${CMAKE_CURRENT_BINARY_DIR}/FoundationExports.cmake)
+-configure_file(FoundationConfig.cmake.in
+-  ${CMAKE_CURRENT_BINARY_DIR}/FoundationConfig.cmake)
++set(INCLUDE_INSTALL_DIR lib/swift)
++set(LIB_INSTALL_DIR lib/swift)
++
++include(CMakePackageConfigHelpers)
++configure_package_config_file(FoundationConfig.cmake.in
++    ${CMAKE_CURRENT_BINARY_DIR}/FoundationConfig.cmake
++    INSTALL_DESTINATION ${LIB_INSTALL_DIR}/Foundation/cmake
++    PATH_VARS INCLUDE_INSTALL_DIR LIB_INSTALL_DIR)
++
++#write_basic_package_version_file(
++#  ${CMAKE_CURRENT_BINARY_DIR}/FoundationConfigVersion.cmake
++#  VERSION 1.2.3
++#  COMPATIBILITY SameMajorVersion )
++
++install(EXPORT FoundationExports DESTINATION ${LIB_INSTALL_DIR}/Foundation/cmake)
++install(EXPORT FoundationNetworkingExports DESTINATION ${LIB_INSTALL_DIR}/Foundation/cmake)
++install(EXPORT FoundationXMLExports DESTINATION ${LIB_INSTALL_DIR}/Foundation/cmake)
++install(FILES
++    ${CMAKE_CURRENT_BINARY_DIR}/FoundationConfig.cmake
++    DESTINATION ${LIB_INSTALL_DIR}/Foundation/cmake )
+ 
+-get_property(Foundation_EXPORTS GLOBAL PROPERTY Foundation_EXPORTS)
+-export(TARGETS ${Foundation_EXPORTS} FILE ${Foundation_EXPORTS_FILE})
+diff --git a/cmake/modules/FoundationConfig.cmake.in b/cmake/modules/FoundationConfig.cmake.in
+index 77f0b76f..30a58e28 100644
+--- a/cmake/modules/FoundationConfig.cmake.in
++++ b/cmake/modules/FoundationConfig.cmake.in
+@@ -1,4 +1,12 @@
+ 
++@PACKAGE_INIT@
++set_and_check(FOUNDATION_INCLUDE_DIR "@PACKAGE_INCLUDE_INSTALL_DIR@")
++set_and_check(FOUNDATION_LIB_DIR "@PACKAGE_LIB_INSTALL_DIR@")
++
++check_required_components(Foundation)
++
+ if(NOT TARGET Foundation)
+-  include(@Foundation_EXPORTS_FILE@)
++  include(${FOUNDATION_LIB_DIR}/Foundation/cmake/FoundationExports.cmake)
++  include(${FOUNDATION_LIB_DIR}/Foundation/cmake/FoundationNetworkingExports.cmake)
++  include(${FOUNDATION_LIB_DIR}/Foundation/cmake/FoundationXMLExports.cmake)
+ endif()

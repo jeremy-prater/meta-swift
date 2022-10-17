@@ -1,4 +1,4 @@
-DESCRIPTION = "swift 5.6.1 test application"
+DESCRIPTION = "swift 5.1.2 test application"
 LICENSE = "CLOSED"
 
 SRC_URI = "file://Sources/hello-world/main.swift \
@@ -6,3 +6,4 @@ SRC_URI = "file://Sources/hello-world/main.swift \
 "
 
 inherit swift
+
