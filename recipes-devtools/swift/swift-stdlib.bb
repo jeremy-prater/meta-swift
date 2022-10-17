@@ -113,7 +113,19 @@ do_configure() {
 
 do_compile() {
     cd ${SWIFT_BUILDDIR} && ninja
+    # remove Swift static libs
+    rm -rf ${SWIFT_BUILDDIR}/lib/swift_static
+    # remove Dispatch (it will be built by another package)
+    rm -rf ${SWIFT_BUILDDIR}/lib/swift/linux/libBlocksRuntime.so
+    rm -rf ${SWIFT_BUILDDIR}/lib/swift/linux/libdispatch.so 
     rm -rf ${SWIFT_BUILDDIR}/lib/swift/linux/${SWIFT_TARGET_ARCH}/*.so
+    # remove some dirs from /usr/lib (we don't include them in any packages) 
+    rm -rf ${SWIFT_BUILDDIR}/lib//swift/clang
+    rm -rf ${SWIFT_BUILDDIR}/lib//swift/FrameworkABIBaseline
+    # remove /usr/share (we don't include it in any packages) 
+    rm -rf ${SWIFT_BUILDDIR}/share
+    # remove /usr/bin (we don't include it in any packages)
+    rm -rf ${SWIFT_BUILDDIR}/bin
 }
 
 do_install() {
@@ -121,21 +133,6 @@ do_install() {
     cp -rf ${SWIFT_BUILDDIR}/lib/swift ${D}${libdir}/
 }
 
-do_install_append() {
-    # remove some dirs from /usr/lib (we don't include them in any packages) 
-    rm -rf ${D}${libdir}/swift/clang
-    rm -rf ${D}${libdir}/swift/FrameworkABIBaseline
-
-    # remove /usr/share (we don't include it in any packages) 
-    rm -rf ${D}${datadir}
-
-    # remove /usr/bin (we don't include it in any packages)
-    rm -rf ${D}${bindir}
-
-    rm -rf ${D}${libdir}/swift_static
-}
-
-#FILES_${PN} = "${libdir}/swift/linux/*.so"
 FILES_${PN} = "${libdir}/swift/*"
 INSANE_SKIP_${PN} = "file-rdeps"
 do_package_qa[noexec] = "1"
