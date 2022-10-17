@@ -58,9 +58,8 @@ SWIFT_FLAGS = "-target ${SWIFT_TARGET_NAME} -use-ld=lld \
 ${EXTRA_SWIFTC_FLAGS} \
 "
 
+HOST_LLVM_PATH = "${STAGING_DIR_NATIVE}/opt/usr/lib/llvm-swift"
 EXTRA_OECMAKE += '-DCMAKE_Swift_FLAGS="${SWIFT_FLAGS}"'
-
-HOST_LLVM_PATH = "/usr/lib/llvm-12"
 EXTRA_OECMAKE += " -DSWIFT_USE_LINKER=lld"
 EXTRA_OECMAKE += " -DLLVM_USE_LINKER=lld"
 EXTRA_OECMAKE += " -DLLVM_DIR=${HOST_LLVM_PATH}/lib/cmake/llvm"

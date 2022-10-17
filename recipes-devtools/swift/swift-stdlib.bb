@@ -7,23 +7,20 @@ LIC_FILES_CHKSUM = "file://${S}/LICENSE.txt;md5=f6c482a0548ea60d6c2e015776534035
 require swift-version.inc
 PV = "${SWIFT_VERSION}"
 
-SRC_URI = "https://github.com/apple/swift/archive/swift-${PV}-RELEASE.tar.gz;destsuffix=swift \
-        file://Float16.patch \
-        file://0001-Fix-refcount.patch \
+SRC_URI = "git://github.com/apple/swift.git;protocol=https;tag=swift-${PV}-RELEASE;nobranch=1 \
+        file://0001-Float16.patch \
         file://fix_modulemap.sh \
         file://cmake-configure-swift-stdlib.sh \
         "
 SRC_URI += "git://github.com/apple/swift-corelibs-libdispatch.git;protocol=https;tag=swift-${PV}-RELEASE;nobranch=1;destsuffix=libdispatch" 
-SRC_URI[sha256sum] = "41c926ae261a2756fe5ff761927aafe297105dc62f676a27c3da477f13251888"
 
-S = "${WORKDIR}/swift-swift-${PV}-RELEASE"
+S = "${WORKDIR}/git"
 SWIFT_BUILDDIR = "${S}/build"
 DEPENDS = "gcc-runtime python3-native icu ncurses"
-DEPENDS_append += " swift-native libgcc gcc glibc "
+DEPENDS += " swift-native swift-llvm-native libgcc gcc glibc libxml2"
 
 inherit swift-cmake-base
 
-HOST_LLVM_PATH = "/usr/lib/llvm-12"
 SWIFT_GGC_VERSION = "9.3.0"
 
 EXTRA_INCLUDE_FLAGS = "\
@@ -116,7 +113,19 @@ do_configure() {
 
 do_compile() {
     cd ${SWIFT_BUILDDIR} && ninja
-    rm -rf ${SWIFT_BUILDDIR}/lib/swift/linux/armv7/*.so
+    # remove Swift static libs
+    rm -rf ${SWIFT_BUILDDIR}/lib/swift_static
+    # remove Dispatch (it will be built by another package)
+    rm -rf ${SWIFT_BUILDDIR}/lib/swift/linux/libBlocksRuntime.so
+    rm -rf ${SWIFT_BUILDDIR}/lib/swift/linux/libdispatch.so 
+    rm -rf ${SWIFT_BUILDDIR}/lib/swift/linux/${SWIFT_TARGET_ARCH}/*.so
+    # remove some dirs from /usr/lib (we don't include them in any packages) 
+    rm -rf ${SWIFT_BUILDDIR}/lib//swift/clang
+    rm -rf ${SWIFT_BUILDDIR}/lib//swift/FrameworkABIBaseline
+    # remove /usr/share (we don't include it in any packages) 
+    rm -rf ${SWIFT_BUILDDIR}/share
+    # remove /usr/bin (we don't include it in any packages)
+    rm -rf ${SWIFT_BUILDDIR}/bin
 }
 
 do_install() {
@@ -124,21 +133,6 @@ do_install() {
     cp -rf ${SWIFT_BUILDDIR}/lib/swift ${D}${libdir}/
 }
 
-do_install_append() {
-    # remove some dirs from /usr/lib (we don't include them in any packages) 
-    rm -rf ${D}${libdir}/swift/clang
-    rm -rf ${D}${libdir}/swift/FrameworkABIBaseline
-
-    # remove /usr/share (we don't include it in any packages) 
-    rm -rf ${D}${datadir}
-
-    # remove /usr/bin (we don't include it in any packages)
-    rm -rf ${D}${bindir}
-
-    rm -rf ${D}${libdir}/swift_static
-}
-
-#FILES_${PN} = "${libdir}/swift/linux/*.so"
 FILES_${PN} = "${libdir}/swift/*"
 INSANE_SKIP_${PN} = "file-rdeps"
 do_package_qa[noexec] = "1"

@@ -1,5 +1,3 @@
-SWIFT_VERSION=5.5.3
-
 echo "Generate cmake toolchain"
 rm -f ${SWIFT_CMAKE_TOOLCHAIN_FILE}
 touch ${SWIFT_CMAKE_TOOLCHAIN_FILE}
@@ -104,4 +102,3 @@ LIBS="-latomic" cmake -S $SWIFT_SRCDIR -B $SWIFT_BUILDDIR -G Ninja \
         -DICU_I18N_INCLUDE_DIRS=${STAGING_DIR}/usr/include \
         -DICU_UC_LIBRARIES=${STAGING_DIR}/usr/lib/libicuuc.so \
         -DICU_UC_INCLUDE_DIRS=${STAGING_DIR}/usr/include \
-
