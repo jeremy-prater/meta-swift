@@ -17,7 +17,6 @@ RDEPENDS_${PN} += "swift-stdlib libdispatch"
 inherit swift-cmake-base
 
 TARGET_LDFLAGS += "-L${STAGING_DIR_TARGET}/usr/lib/swift/linux"
-SWIFT_LDFLAGS += "-L${STAGING_DIR_TARGET}/usr/lib/swift/linux"
 
 # Enable Swift parts
 EXTRA_OECMAKE += "-DENABLE_SWIFT=YES"
@@ -26,7 +25,7 @@ EXTRA_OECMAKE += '-DCMAKE_VERBOSE_MAKEFILE=ON'
 EXTRA_OECMAKE += '-DCF_DEPLOYMENT_SWIFT=ON'
 lcl_maybe_fortify="-D_FORTIFY_SOURCE=0"
 
-EXTRA_OECMAKE += '-Ddispatch_DIR=${STAGING_DIR_TARGET}/usr/lib/swift/dispatch/cmake'
+EXTRA_OECMAKE+= "-Ddispatch_DIR=${STAGING_DIR_TARGET}/usr/lib/swift/dispatch/cmake"
 
 # Ensure the right CPU is targeted
 cmake_do_generate_toolchain_file_append() {

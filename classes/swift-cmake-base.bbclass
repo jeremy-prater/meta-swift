@@ -18,11 +18,9 @@ HOST_CC_ARCH_prepend = "-target ${SWIFT_TARGET_NAME}"
 
 # Use lld (see note above)
 TARGET_LDFLAGS += "-fuse-ld=lld"
-SWIFT_LDFLAGS += "-fuse-ld=lld"
 
 # Add build-id to generated binaries
 TARGET_LDFLAGS += "-Xlinker --build-id=sha1"
-SWIFT_LDFLAGS += "-Xlinker --build-id=sha1"
 
 # Use Apple's provided clang (it understands Apple's custom compiler flags)
 # Made available via swift-native package.
@@ -32,7 +30,6 @@ OECMAKE_CXX_COMPILER = "clang++"
 # Point clang to where the C++ runtime is for our target arch
 RUNTIME_FLAGS = "-w -fuse-ld=lld -B${STAGING_DIR_TARGET}/usr/lib/${TARGET_SYS}/current"
 TARGET_LDFLAGS += "-w -fuse-ld=lld -L${STAGING_DIR_TARGET}/usr/lib/${TARGET_SYS}/current"
-SWIFT_LDFLAGS += "-w -fuse-ld=lld -L${STAGING_DIR_TARGET}/usr/lib/${TARGET_SYS}/current"
 
 EXTRA_INCLUDE_FLAGS ?= ""
 OECMAKE_C_FLAGS += "${RUNTIME_FLAGS} ${EXTRA_INCLUDE_FLAGS}"
@@ -62,6 +59,7 @@ ${EXTRA_SWIFTC_FLAGS} \
 "
 
 HOST_LLVM_PATH = "${STAGING_DIR_NATIVE}/opt/usr/lib/llvm-swift"
+EXTRA_OECMAKE += '-DCMAKE_Swift_FLAGS="${SWIFT_FLAGS}"'
 EXTRA_OECMAKE += " -DSWIFT_USE_LINKER=lld"
 EXTRA_OECMAKE += " -DLLVM_USE_LINKER=lld"
 EXTRA_OECMAKE += " -DLLVM_DIR=${HOST_LLVM_PATH}/lib/cmake/llvm"

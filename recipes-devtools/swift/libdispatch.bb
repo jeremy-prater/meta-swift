@@ -17,11 +17,9 @@ S = "${WORKDIR}/git"
 inherit swift-cmake-base
 
 TARGET_LDFLAGS += "-L${STAGING_DIR_TARGET}/usr/lib/swift/linux"
-SWIFT_LDFLAGS += "-L${STAGING_DIR_TARGET}/usr/lib/swift/linux"
 
 # Enable Swift parts
 EXTRA_OECMAKE += "-DENABLE_SWIFT=YES"
-EXTRA_OECMAKE += '-DCMAKE_Swift_FLAGS="${SWIFT_FLAGS}"'
 
 # Ensure the right CPU is targeted
 cmake_do_generate_toolchain_file_append() {
@@ -36,4 +34,3 @@ do_install_append() {
 
 FILES_${PN} = "${libdir}/swift/*"
 INSANE_SKIP_${PN} = "file-rdeps"
-do_package_qa[noexec] = "1"
