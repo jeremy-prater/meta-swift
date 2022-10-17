@@ -2,7 +2,11 @@ inherit cmake
 
 DEPENDS_append += " swift-native libgcc gcc glibc "
 
-HOST_CC_ARCH_prepend = "-target armv7-unknown-linux-gnueabihf"
+SWIFT_TARGET_ARCH = "${@oe.utils.conditional('TARGET_ARCH', 'arm', 'armv7', 'aarch64', d)}"
+SWIFT_TARGET_NAME = "${@oe.utils.conditional('TARGET_ARCH', 'arm', 'armv7-unknown-linux-gnueabihf', 'aarch64-unknown-linux-gnueabi', d)}"
+TARGET_CPU_NAME = "${@oe.utils.conditional('TARGET_ARCH', 'arm', 'armv7-a', 'aarch64', d)}"
+
+HOST_CC_ARCH_prepend = "-target ${SWIFT_TARGET_NAME}"
 
 ################################################################################
 # NOTE: The host running bitbake must have lld available and the following     #
@@ -24,19 +28,20 @@ OECMAKE_C_COMPILER = "clang"
 OECMAKE_CXX_COMPILER = "clang++"
 
 # Point clang to where the C++ runtime is for our target arch
-RUNTIME_FLAGS = "-B${STAGING_DIR_TARGET}/usr/lib/${TARGET_SYS}/current"
-TARGET_LDFLAGS += "-L${STAGING_DIR_TARGET}/usr/lib/${TARGET_SYS}/current"
+RUNTIME_FLAGS = "-w -fuse-ld=lld -B${STAGING_DIR_TARGET}/usr/lib/${TARGET_SYS}/current"
+TARGET_LDFLAGS += "-w -fuse-ld=lld -L${STAGING_DIR_TARGET}/usr/lib/${TARGET_SYS}/current"
 
 EXTRA_INCLUDE_FLAGS ?= ""
 OECMAKE_C_FLAGS += "${RUNTIME_FLAGS} ${EXTRA_INCLUDE_FLAGS}"
 OECMAKE_CXX_FLAGS += "${RUNTIME_FLAGS} ${EXTRA_INCLUDE_FLAGS}"
+OECMAKE_ASM_FLAGS += "${RUNTIME_FLAGS} ${EXTRA_INCLUDE_FLAGS}"
 
 BUILD_MODE = "${@['release', 'debug'][d.getVar('DEBUG_BUILD') == '1']}"
 
 # Additional parameters to pass to swiftc
 EXTRA_SWIFTC_FLAGS ??= ""
 
-SWIFT_FLAGS = "-target armv7-unknown-linux-gnueabihf -use-ld=lld \
+SWIFT_FLAGS = "-target ${SWIFT_TARGET_NAME} -use-ld=lld \
 -resource-dir ${STAGING_DIR_TARGET}/usr/lib/swift \
 -module-cache-path ${B}/${BUILD_MODE}/ModuleCache \
 -Xclang-linker -B${STAGING_DIR_TARGET}/usr/lib/${TARGET_SYS}/current \
@@ -54,6 +59,12 @@ ${EXTRA_SWIFTC_FLAGS} \
 "
 
 EXTRA_OECMAKE += '-DCMAKE_Swift_FLAGS="${SWIFT_FLAGS}"'
+
+HOST_LLVM_PATH = "/usr/lib/llvm-12"
+EXTRA_OECMAKE += " -DSWIFT_USE_LINKER=lld"
+EXTRA_OECMAKE += " -DLLVM_USE_LINKER=lld"
+EXTRA_OECMAKE += " -DLLVM_DIR=${HOST_LLVM_PATH}/lib/cmake/llvm"
+EXTRA_OECMAKE += " -DLLVM_BUILD_LIBRARY_DIR=${HOST_LLVM_PATH}"
 
 EXTRANATIVEPATH += "swift-tools"
 
@@ -73,6 +84,7 @@ EXTRANATIVEPATH += "swift-tools"
 # may not be necessary if the --gcc-toolchain clang flag was used. But that    #
 # is an unproven theory.                                                       #
 ################################################################################
+
 do_create_gcc_version_symlinks() {
     GCC_VERSION=`basename ${STAGING_DIR_TARGET}/usr/include/c++/*`
 

@@ -7,97 +7,138 @@ LIC_FILES_CHKSUM = "file://${S}/LICENSE.txt;md5=f6c482a0548ea60d6c2e015776534035
 require swift-version.inc
 PV = "${SWIFT_VERSION}"
 
-SRC_URI = "https://github.com/apple/swift/archive/swift-${PV}-RELEASE.tar.gz \
-           file://fix_modulemap.sh \
-           file://0001-Require-python3-rather-than-python2.patch \
-           file://0001-Add-Wno-gnu-include-next-to-swift-reflection-test.patch \
-           file://0001-Fix-refcount.patch \
-           "
-SRC_URI[sha256sum] = "f9e5bd81441c4ec13dd9ea290e2d7b8fe9b30ef66ad68947481022ea5179f83a"
+SRC_URI = "https://github.com/apple/swift/archive/swift-${PV}-RELEASE.tar.gz;destsuffix=swift \
+        file://Float16.patch \
+        file://0001-Fix-refcount.patch \
+        file://fix_modulemap.sh \
+        file://cmake-configure-swift-stdlib.sh \
+        "
+SRC_URI += "git://github.com/apple/swift-corelibs-libdispatch.git;protocol=https;tag=swift-${PV}-RELEASE;nobranch=1;destsuffix=libdispatch" 
+SRC_URI[sha256sum] = "41c926ae261a2756fe5ff761927aafe297105dc62f676a27c3da477f13251888"
 
 S = "${WORKDIR}/swift-swift-${PV}-RELEASE"
+SWIFT_BUILDDIR = "${S}/build"
 DEPENDS = "gcc-runtime python3-native icu ncurses"
+DEPENDS_append += " swift-native libgcc gcc glibc "
 
 inherit swift-cmake-base
 
-################################################################################
-# NOTE: The host running bitbake must have llvm available and must define      #
-# HOST_LLVM_PATH as the path to the LLVM installation on the host.             #
-# For example:                                                                 #
-#                                                                              #
-# HOST_LLVM_PATH = "/usr/lib/llvm-10"                                          #
-#                                                                              #
-################################################################################
-EXTRA_OECMAKE += " -DLLVM_DIR=${HOST_LLVM_PATH}/cmake"
-EXTRA_OECMAKE += " -DLLVM_BUILD_LIBRARY_DIR=${HOST_LLVM_PATH}/lib"
-EXTRA_OECMAKE += " -DLLVM_MAIN_INCLUDE_DIR=${HOST_LLVM_PATH}/include"
-
-EXTRA_OECMAKE += " -DSWIFT_BUILD_RUNTIME_WITH_HOST_COMPILER=ON"
-EXTRA_OECMAKE += " -DSWIFT_NATIVE_CLANG_TOOLS_PATH=${STAGING_DIR_NATIVE}/opt/usr/bin"
-EXTRA_OECMAKE += " -DSWIFT_NATIVE_SWIFT_TOOLS_PATH=${STAGING_DIR_NATIVE}/opt/usr/bin"
-
-EXTRA_OECMAKE += " -DSWIFT_BUILD_AST_ANALYZER=OFF"
-EXTRA_OECMAKE += " -DSWIFT_BUILD_DYNAMIC_SDK_OVERLAY=ON"
-EXTRA_OECMAKE += " -DSWIFT_BUILD_DYNAMIC_STDLIB=ON"
-EXTRA_OECMAKE += " -DSWIFT_BUILD_REMOTE_MIRROR=OFF"
-EXTRA_OECMAKE += " -DSWIFT_BUILD_SOURCEKIT=OFF"
-EXTRA_OECMAKE += " -DSWIFT_BUILD_STDLIB_EXTRA_TOOLCHAIN_CONTENT=OFF"
-EXTRA_OECMAKE += " -DSWIFT_BUILD_SYNTAXPARSERLIB=OFF"
-
-EXTRA_OECMAKE += " -DSWIFT_ENABLE_SOURCEKIT_TESTS=OFF"
-
-EXTRA_OECMAKE += " -DSWIFT_INCLUDE_DOCS=OFF"
-EXTRA_OECMAKE += " -DSWIFT_INCLUDE_TOOLS=OFF"
-EXTRA_OECMAKE += " -DSWIFT_INCLUDE_TESTS=OFF"
-
-EXTRA_OECMAKE += " -DSWIFT_HOST_VARIANT_ARCH=armv7"
-
-EXTRA_OECMAKE += " -DSWIFT_SDK_LINUX_ARCH_armv7_PATH=${STAGING_DIR_TARGET}"
-EXTRA_OECMAKE += "-DSWIFT_SDK_LINUX_ARCH_armv7_LIBC_INCLUDE_DIRECTORY=${STAGING_DIR_TARGET}/usr/include"
-EXTRA_OECMAKE += "-DSWIFT_SDK_LINUX_ARCH_armv7_LIBC_ARCHITECTURE_INCLUDE_DIRECTORY=${STAGING_DIR_TARGET}/usr/include"
+HOST_LLVM_PATH = "/usr/lib/llvm-12"
+SWIFT_GGC_VERSION = "9.3.0"
 
 EXTRA_INCLUDE_FLAGS = "\
-    -I${STAGING_DIR_TARGET}/usr/include/c++/current/arm-poky-linux-gnueabi \
-    -I${STAGING_DIR_TARGET}/usr/include/c++/current \
+    -I${STAGING_DIR_TARGET}/usr/include/c++/${SWIFT_GGC_VERSION}/arm-poky-linux-gnueabi \
+    -I${STAGING_DIR_TARGET}/usr/include/c++/${SWIFT_GGC_VERSION} \
     -I${STAGING_DIR_TARGET}"
 
-TARGET_LDFLAGS += "-latomic"
+TARGET_LDFLAGS += "-w -fuse-ld=lld -L${STAGING_DIR_TARGET}/usr/lib/${TARGET_SYS}/current"
 
-do_install_append() {
-    ${WORKDIR}/fix_modulemap.sh ${D}${libdir}/swift/linux/armv7/glibc.modulemap
+HOST_SWIFT_SUPPORT_DIR = "/tmp/swift-stdlib-yocto"
+SWIFT_CMAKE_TOOLCHAIN_FILE = "${HOST_SWIFT_SUPPORT_DIR}/linux-${SWIFT_TARGET_ARCH}-toolchain.cmake"
+SWIFT_CONFIGURE_CMAKE_SCRIPT="${WORKDIR}/cmake-configure-swift-stdlib.sh"
+SWIFT_C_FLAGS = "-w -fuse-ld=lld -target ${SWIFT_TARGET_NAME} --sysroot ${STAGING_DIR_TARGET} -B${STAGING_DIR_TARGET}/usr/lib/${TARGET_SYS}/${SWIFT_GGC_VERSION} -L${STAGING_DIR_TARGET}/usr/lib/${TARGET_SYS}/${SWIFT_GGC_VERSION} -I${STAGING_DIR_TARGET}/usr/include ${EXTRA_INCLUDE_FLAGS}"
+SWIFT_C_LINK_FLAGS = "-target ${SWIFT_TARGET_NAME} --sysroot ${STAGING_DIR_TARGET} ${EXTRA_INCLUDE_FLAGS}"
+SWIFT_CXX_FLAGS = "-w -fuse-ld=lld -target ${SWIFT_TARGET_NAME} --sysroot ${STAGING_DIR_TARGET} -B${STAGING_DIR_TARGET}/usr/lib/${TARGET_SYS}/${SWIFT_GGC_VERSION} -L${STAGING_DIR_TARGET}/usr/lib/${TARGET_SYS}/${SWIFT_GGC_VERSION} -I${STAGING_DIR_TARGET}/usr/include -B${STAGING_DIR_TARGET}/usr/lib ${EXTRA_INCLUDE_FLAGS}"
+SWIFT_CXX_LINK_FLAGS = "-target ${SWIFT_TARGET_NAME} --sysroot ${STAGING_DIR_TARGET} ${EXTRA_INCLUDE_FLAGS}"
 
-    rm ${D}${libdir}/swift/linux/armv7/glibc.modulemap_orig_*
+SWIFT_CMAKE_TOOLCHAIN = "set(CMAKE_SYSTEM_NAME Linux) \
+\nset(CMAKE_C_COMPILER ${STAGING_DIR_NATIVE}/opt/usr/bin/clang) \
+\nset(CMAKE_CXX_COMPILER ${STAGING_DIR_NATIVE}/opt/usr/bin/clang++) \
+\nset(CMAKE_C_FLAGS \"${SWIFT_C_FLAGS}\") \
+\nset(CMAKE_C_LINK_FLAGS \"${SWIFT_C_LINK_FLAGS}\") \
+\nset(CMAKE_CXX_FLAGS \"${SWIFT_CXX_FLAGS}\") \
+\nset(CMAKE_CXX_LINK_FLAGS \"${SWIFT_CXX_LINK_FLAGS}\") \
+\nset(SWIFT_USE_LINKER lld) \
+\nset(LLVM_USE_LINKER lld) \
+\nset(LLVM_DIR ${HOST_LLVM_PATH}/lib/cmake/llvm) \
+\nset(LLVM_BUILD_LIBRARY_DIR ${HOST_LLVM_PATH}) \
+\nset(LLVM_TEMPORARILY_ALLOW_OLD_TOOLCHAIN ON) \
+\nset(SWIFT_INCLUDE_TOOLS OFF) \
+\nset(SWIFT_BUILD_RUNTIME_WITH_HOST_COMPILER ON) \
+\nset(SWIFT_PREBUILT_CLANG ON) \
+\nset(SWIFT_NATIVE_CLANG_TOOLS_PATH ${STAGING_DIR_NATIVE}/opt/usr/bin) \
+\nset(SWIFT_NATIVE_LLVM_TOOLS_PATH ${STAGING_DIR_NATIVE}/opt/usr/bin) \
+\nset(SWIFT_NATIVE_SWIFT_TOOLS_PATH ${STAGING_DIR_NATIVE}/opt/usr/bin) \
+\nset(SWIFT_BUILD_AST_ANALYZER OFF) \
+\nset(SWIFT_BUILD_DYNAMIC_SDK_OVERLAY ON) \
+\nset(SWIFT_BUILD_DYNAMIC_STDLIB ON) \
+\nset(SWIFT_BUILD_REMOTE_MIRROR OFF) \
+\nset(SWIFT_BUILD_SOURCEKIT OFF) \
+\nset(SWIFT_BUILD_STDLIB_EXTRA_TOOLCHAIN_CONTENT OFF) \
+\nset(SWIFT_BUILD_SYNTAXPARSERLIB OFF) \
+\nset(SWIFT_BUILD_REMOTE_MIRROR OFF) \
+\nset(SWIFT_ENABLE_SOURCEKIT_TESTS OFF) \
+\nset(SWIFT_INCLUDE_DOCS OFF) \
+\nset(SWIFT_INCLUDE_TOOLS OFF) \
+\nset(SWIFT_INCLUDE_TESTS OFF) \
+\nset(SWIFT_LIBRARY_EVOLUTION 0) \
+\nset(SWIFT_RUNTIME_OS_VERSIONING OFF) \
+\nset(SWIFT_HOST_VARIANT_ARCH ${SWIFT_TARGET_ARCH}) \
+\nset(SWIFT_SDKS LINUX) \
+\nset(SWIFT_SDK_LINUX_ARCH_${SWIFT_TARGET_ARCH}_PATH ${STAGING_DIR_TARGET} ) \
+\nset(SWIFT_SDK_LINUX_ARCH_${SWIFT_TARGET_ARCH}_LIBC_INCLUDE_DIRECTORY ${STAGING_DIR_TARGET}/usr/include ) \
+\nset(SWIFT_SDK_LINUX_ARCH_${SWIFT_TARGET_ARCH}_LIBC_ARCHITECTURE_INCLUDE_DIRECTORY ${STAGING_DIR_TARGET}/usr/include) \
+\nset(SWIFT_LINUX_${SWIFT_TARGET_ARCH}_ICU_I18N ${STAGING_DIR_TARGET}/usr/lib/libicui18n.so) \
+\nset(SWIFT_LINUX_${SWIFT_TARGET_ARCH}_ICU_UC ${STAGING_DIR_TARGET}/usr/lib/libicuuc.so) \
+\nset(ZLIB_LIBRARY ${STAGING_DIR_TARGET}/usr/lib/libz.so) \
+\nset(ICU_I18N_LIBRARIES ${STAGING_DIR_TARGET}/usr/lib/libicui18n.so) \
+\nset(ICU_UC_LIBRARIES ${STAGING_DIR_TARGET}/usr/lib/libicuuc.so) \
+\nset(SWIFT_PATH_TO_LIBDISPATCH_SOURCE ${WORKDIR}/libdispatch) \
+\nset(SWIFT_ENABLE_EXPERIMENTAL_CONCURRENCY ON) \
+"
 
-    # remove some dirs from /usr/lib (we don't include them in any packages) 
-    rm -r ${D}${libdir}/swift/clang
-    rm -r ${D}${libdir}/swift/FrameworkABIBaseline
-
-    # remove /usr/share (we don't include it in any packages) 
-    rm -r ${D}${datadir}
-
-    # remove /usr/bin (we don't include it in any packages)
-    rm -r ${D}${bindir}
+do_configure() {
+    export LDFLAGS=""
+    export STAGING_DIR=${STAGING_DIR_TARGET}
+    export SWIFT_SRCDIR=${S}
+    export LIBDISPATCH_SRCDIR=${WORKDIR}/libdispatch
+    export SWIFT_BUILDDIR="${SWIFT_BUILDDIR}"
+    export SWIFT_CMAKE_TOOLCHAIN_FILE=${SWIFT_CMAKE_TOOLCHAIN_FILE}
+    export SWIFT_NATIVE_PATH=${STAGING_DIR_NATIVE}/opt/usr/bin
+    export SWIFT_C_FLAGS="${SWIFT_C_FLAGS}"
+    export SWIFT_C_LINK_FLAGS="${SWIFT_C_LINK_FLAGS}"
+    export SWIFT_CXX_FLAGS="${SWIFT_CXX_FLAGS}"
+    export SWIFT_CXX_LINK_FLAGS="${SWIFT_CXX_LINK_FLAGS}"
+    export SWIFT_LLVM_DIR=${HOST_LLVM_PATH}
+    export CC=${STAGING_DIR_NATIVE}/opt/usr/bin/clang
+    export CFLAGS="${SWIFT_C_FLAGS}"
+    export CCLD="${SWIFT_C_LINK_FLAGS}"
+    export CXX=${STAGING_DIR_NATIVE}/opt/usr/bin/clang++
+    export CXXFLAGS="${SWIFT_CXX_FLAGS}"
+    export SWIFT_TARGET_ARCH=${SWIFT_TARGET_ARCH}
+    export SWIFT_TARGET_NAME=${SWIFT_TARGET_NAME}
+    
+    mkdir -p ${HOST_SWIFT_SUPPORT_DIR}
+    rm -rf $SWIFT_BUILDDIR
+    mkdir -p $SWIFT_BUILDDIR
+    ${SWIFT_CONFIGURE_CMAKE_SCRIPT}
 }
 
-FILES_${PN} = "${libdir}/swift/linux/libswiftCore.so \
-               ${libdir}/swift/linux/libswiftGlibc.so \
-               ${libdir}/swift/linux/libswiftRemoteMirror.so \
-               ${libdir}/swift/linux/libswiftSwiftOnoneSupport.so \
-"
+do_compile() {
+    cd ${SWIFT_BUILDDIR} && ninja
+    rm -rf ${SWIFT_BUILDDIR}/lib/swift/linux/armv7/*.so
+}
 
-FILES_${PN}-dev = "${libdir}/swift/shims/* \
-                   ${libdir}/swift/linux/armv7/glibc.modulemap \
-                   ${libdir}/swift/linux/armv7/private_includes/* \
-                   ${libdir}/swift/linux/armv7/Glibc.swiftmodule \
-                   ${libdir}/swift/linux/armv7/Glibc.swiftinterface \
-                   ${libdir}/swift/linux/armv7/Swift.swiftmodule \
-                   ${libdir}/swift/linux/armv7/Swift.swiftinterface \
-                   ${libdir}/swift/linux/armv7/SwiftOnoneSupport.swiftmodule \
-                   ${libdir}/swift/linux/armv7/SwiftOnoneSupport.swiftinterface \
-                   ${libdir}/swift/linux/armv7/swiftrt.o \
-"
+do_install() {
+    install -d ${D}${libdir}
+    cp -rf ${SWIFT_BUILDDIR}/lib/swift ${D}${libdir}/
+}
 
-FILES_${PN}-doc = "${libdir}/swift/linux/armv7/Swift.swiftdoc \
-                   ${libdir}/swift/linux/armv7/Glibc.swiftdoc \
-                   ${libdir}/swift/linux/armv7/SwiftOnoneSupport.swiftdoc \
-"
+do_install_append() {
+    # remove some dirs from /usr/lib (we don't include them in any packages) 
+    rm -rf ${D}${libdir}/swift/clang
+    rm -rf ${D}${libdir}/swift/FrameworkABIBaseline
+
+    # remove /usr/share (we don't include it in any packages) 
+    rm -rf ${D}${datadir}
+
+    # remove /usr/bin (we don't include it in any packages)
+    rm -rf ${D}${bindir}
+
+    rm -rf ${D}${libdir}/swift_static
+}
+
+#FILES_${PN} = "${libdir}/swift/linux/*.so"
+FILES_${PN} = "${libdir}/swift/*"
+INSANE_SKIP_${PN} = "file-rdeps"
+do_package_qa[noexec] = "1"
