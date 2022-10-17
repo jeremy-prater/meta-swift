@@ -1,20 +1,5 @@
 SWIFT_VERSION=5.5.3
 
-# Arch defines
-SWIFT_TARGET_ARCH=armv7
-SWIFT_TARGET_NAME=armv7-unknown-linux-gnueabihf
-
-# Build paths
-#SWIFT_SRCDIR=$SRC_ROOT/build/swift-swift-${SWIFT_VERSION}-RELEASE
-#LIBDISPATCH_SRCDIR=$SRC_ROOT/build/swift-corelibs-libdispatch-swift-${SWIFT_VERSION}-RELEASE
-#SWIFT_BUILDDIR=$SRC_ROOT/build/swift-armv7
-#SWIFTPM_DESTINATION_FILE=$SRC_ROOT/build/$SWIFT_TARGET_NAME-toolchain.json
-#SWIFT_CMAKE_TOOLCHAIN_FILE=$SRC_ROOT/build/linux-$SWIFT_TARGET_ARCH-toolchain.cmake
-
-echo "Create Swift build folder"
-rm -rf $SWIFT_BUILDDIR
-mkdir -p $SWIFT_BUILDDIR
-
 echo "Generate cmake toolchain"
 rm -f ${SWIFT_CMAKE_TOOLCHAIN_FILE}
 touch ${SWIFT_CMAKE_TOOLCHAIN_FILE}

@@ -2,7 +2,11 @@ inherit cmake
 
 DEPENDS_append += " swift-native libgcc gcc glibc "
 
-HOST_CC_ARCH_prepend = "-target armv7-unknown-linux-gnueabihf"
+SWIFT_TARGET_ARCH = "${@oe.utils.conditional('TARGET_ARCH', 'arm', 'armv7', 'aarch64', d)}"
+SWIFT_TARGET_NAME = "${@oe.utils.conditional('TARGET_ARCH', 'arm', 'armv7-unknown-linux-gnueabihf', 'aarch64-unknown-linux-gnueabi', d)}"
+TARGET_CPU_NAME = "${@oe.utils.conditional('TARGET_ARCH', 'arm', 'armv7-a', 'aarch64', d)}"
+
+HOST_CC_ARCH_prepend = "-target ${SWIFT_TARGET_NAME}"
 
 ################################################################################
 # NOTE: The host running bitbake must have lld available and the following     #
@@ -37,7 +41,7 @@ BUILD_MODE = "${@['release', 'debug'][d.getVar('DEBUG_BUILD') == '1']}"
 # Additional parameters to pass to swiftc
 EXTRA_SWIFTC_FLAGS ??= ""
 
-SWIFT_FLAGS = "-target armv7-unknown-linux-gnueabihf -use-ld=lld \
+SWIFT_FLAGS = "-target ${SWIFT_TARGET_NAME} -use-ld=lld \
 -resource-dir ${STAGING_DIR_TARGET}/usr/lib/swift \
 -module-cache-path ${B}/${BUILD_MODE}/ModuleCache \
 -Xclang-linker -B${STAGING_DIR_TARGET}/usr/lib/${TARGET_SYS}/current \

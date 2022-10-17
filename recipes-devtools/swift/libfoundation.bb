@@ -28,7 +28,6 @@ lcl_maybe_fortify="-D_FORTIFY_SOURCE=0"
 EXTRA_OECMAKE+= "-Ddispatch_DIR=${STAGING_DIR_TARGET}/usr/lib/swift/dispatch/cmake"
 
 # Ensure the right CPU is targeted
-TARGET_CPU_NAME = "armv7-a"
 cmake_do_generate_toolchain_file_append() {
     sed -i 's/set([ ]*CMAKE_SYSTEM_PROCESSOR .*[ ]*)/set(CMAKE_SYSTEM_PROCESSOR ${TARGET_CPU_NAME})/' ${WORKDIR}/toolchain.cmake
 }

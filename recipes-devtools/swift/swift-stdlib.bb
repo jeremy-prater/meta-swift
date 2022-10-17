@@ -33,8 +33,6 @@ EXTRA_INCLUDE_FLAGS = "\
 
 TARGET_LDFLAGS += "-w -fuse-ld=lld -L${STAGING_DIR_TARGET}/usr/lib/${TARGET_SYS}/current"
 
-SWIFT_TARGET_ARCH = "armv7"
-SWIFT_TARGET_NAME = "armv7-unknown-linux-gnueabihf"
 HOST_SWIFT_SUPPORT_DIR = "/tmp/swift-stdlib-yocto"
 SWIFT_CMAKE_TOOLCHAIN_FILE = "${HOST_SWIFT_SUPPORT_DIR}/linux-${SWIFT_TARGET_ARCH}-toolchain.cmake"
 SWIFT_CONFIGURE_CMAKE_SCRIPT="${WORKDIR}/cmake-configure-swift-stdlib.sh"
@@ -107,6 +105,8 @@ do_configure() {
     export CCLD="${SWIFT_C_LINK_FLAGS}"
     export CXX=${STAGING_DIR_NATIVE}/opt/usr/bin/clang++
     export CXXFLAGS="${SWIFT_CXX_FLAGS}"
+    export SWIFT_TARGET_ARCH=${SWIFT_TARGET_ARCH}
+    export SWIFT_TARGET_NAME=${SWIFT_TARGET_NAME}
     
     mkdir -p ${HOST_SWIFT_SUPPORT_DIR}
     rm -rf $SWIFT_BUILDDIR

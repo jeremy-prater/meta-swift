@@ -68,7 +68,7 @@ python swift_do_configure() {
         "version":1,
         "sdk":"${STAGING_DIR_TARGET}/",
         "toolchain-bin-dir":"${STAGING_DIR_NATIVE}/opt/usr/bin",
-        "target":"armv7-unknown-linux-gnueabihf",
+        "target":"${SWIFT_TARGET_NAME}",
         "dynamic-library-extension":"so",
         "extra-cc-flags":[
             "-fPIC",
@@ -79,7 +79,7 @@ python swift_do_configure() {
         ],
         "extra-swiftc-flags":[
             "-target",
-            "armv7-unknown-linux-gnueabihf",
+            "${SWIFT_TARGET_NAME}",
             "-use-ld=lld",
             "-tools-directory",
             "${STAGING_DIR_NATIVE}/opt/usr/bin",
