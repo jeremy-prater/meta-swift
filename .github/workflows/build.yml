@@ -7,14 +7,13 @@ jobs:
     build:
         name: Build
         runs-on: ubuntu-20.04
+        container: colemancda/meta-swift
         strategy:
           matrix:
             machine: [beaglebone-yocto]
         steps:
         - name: Checkout
           uses: actions/checkout@v3
-        - name: Install Dependencies
-          run: sudo apt update && sudo apt install -y gawk wget git diffstat unzip texinfo gcc build-essential chrpath socat cpio python3 python3-pip python3-pexpect xz-utils debianutils iputils-ping python3-git python3-jinja2 libegl1-mesa libsdl1.2-dev xterm python3-subunit mesa-common-dev zstd liblz4-tool
         - name: Build
           run: |
             export SRC_ROOT=$GITHUB_WORKSPACE
