@@ -24,7 +24,7 @@ inherit swift-cmake-base
 SWIFT_GGC_VERSION = "9.3.0"
 
 EXTRA_INCLUDE_FLAGS = "\
-    -I${STAGING_DIR_TARGET}/usr/include/c++/${SWIFT_GGC_VERSION}/arm-poky-linux-gnueabi \
+    -I${STAGING_DIR_TARGET}/usr/include/c++/${SWIFT_GGC_VERSION}/${TARGET_SYS} \
     -I${STAGING_DIR_TARGET}/usr/include/c++/${SWIFT_GGC_VERSION} \
     -I${STAGING_DIR_TARGET}"
 
