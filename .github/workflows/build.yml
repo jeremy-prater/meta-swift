@@ -9,7 +9,7 @@ jobs:
         runs-on: ubuntu-20.04
         strategy:
           matrix:
-            machine: [beaglebone-yocto, qemuarm64]
+            machine: [beaglebone-yocto]
         steps:
         - name: Checkout
           uses: actions/checkout@v3
@@ -21,6 +21,6 @@ jobs:
             export POKY_DIR=/tmp/poky
             export MACHINE=${{ matrix.machine }}
             cd /tmp/
-            git clone --branch dunfell git://git.yoctoproject.org/poky 
+            git clone --branch dunfell-23.0.20-cmake-3.22.3 https://github.com/MillerTechnologyPeru/poky.git
             cd $SRC_ROOT
             ./build.sh
