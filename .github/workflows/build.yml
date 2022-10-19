@@ -1,0 +1,25 @@
+name: Build
+
+on: [push]
+
+jobs:
+
+    build:
+        name: Build
+        runs-on: ubuntu-latest
+        container: colemancda/meta-swift
+        strategy:
+          matrix:
+            machine: [beaglebone-yocto, qemuarm64]
+        steps:
+        - name: Checkout
+          uses: actions/checkout@v3
+        - name: Build
+          run: |
+            export SRC_ROOT=$GITHUB_WORKSPACE
+            export POKY_DIR=/tmp/poky
+            export MACHINE=${{ matrix.machine }}
+            cd /tmp/
+            git clone --branch dunfell-23.0.20-cmake-3.22.3 https://github.com/MillerTechnologyPeru/poky.git
+            cd $SRC_ROOT
+            ./build.sh
