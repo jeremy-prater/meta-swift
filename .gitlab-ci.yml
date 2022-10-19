@@ -14,3 +14,17 @@ build-armv7:
     - ./build.sh
   tags:
     - docker
+
+build-arm64:
+  image: colemancda/meta-swift
+  stage: build
+  script:
+    - export SRC_ROOT=$(pwd)
+    - export MACHINE=qemuarm64
+    - export POKY_DIR=/tmp/poky
+    - cd /tmp/
+    - git clone --branch dunfell-23.0.20-cmake-3.22.3 https://github.com/MillerTechnologyPeru/poky.git
+    - cd $SRC_ROOT
+    - ./build.sh
+  tags:
+    - docker

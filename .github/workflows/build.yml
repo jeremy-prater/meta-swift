@@ -10,7 +10,7 @@ jobs:
         container: colemancda/meta-swift
         strategy:
           matrix:
-            machine: [beaglebone-yocto]
+            machine: [beaglebone-yocto, qemuarm64]
         steps:
         - name: Checkout
           uses: actions/checkout@v3
