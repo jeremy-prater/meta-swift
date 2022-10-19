@@ -6,7 +6,7 @@ jobs:
 
     build:
         name: Build
-        runs-on: ubuntu-20.04
+        runs-on: ubuntu-latest
         container: colemancda/meta-swift
         strategy:
           matrix:

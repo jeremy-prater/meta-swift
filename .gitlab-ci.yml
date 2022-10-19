@@ -13,7 +13,7 @@ build-armv7:
     - cd $SRC_ROOT
     - ./build.sh
   tags:
-    - docker
+    - bastion-c5d.9xl
 
 build-arm64:
   image: colemancda/meta-swift
@@ -27,4 +27,4 @@ build-arm64:
     - cd $SRC_ROOT
     - ./build.sh
   tags:
-    - docker
+    - bastion-c5d.9xl
