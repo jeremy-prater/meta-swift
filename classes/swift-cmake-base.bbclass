@@ -3,7 +3,7 @@ inherit cmake
 DEPENDS_append += " swift-native libgcc gcc glibc "
 
 SWIFT_TARGET_ARCH = "${@oe.utils.conditional('TARGET_ARCH', 'arm', 'armv7', 'aarch64', d)}"
-SWIFT_TARGET_NAME = "${@oe.utils.conditional('TARGET_ARCH', 'arm', 'armv7-unknown-linux-gnueabihf', 'aarch64-unknown-linux-gnueabi', d)}"
+SWIFT_TARGET_NAME = "${@oe.utils.conditional('TARGET_ARCH', 'arm', 'armv7-unknown-linux-gnueabihf', 'aarch64-unknown-linux-gnu', d)}"
 TARGET_CPU_NAME = "${@oe.utils.conditional('TARGET_ARCH', 'arm', 'armv7-a', 'aarch64', d)}"
 
 HOST_CC_ARCH_prepend = "-target ${SWIFT_TARGET_NAME}"
