@@ -9,7 +9,7 @@ PV = "${SWIFT_VERSION}"
 
 SRC_DIR = "swift-${PV}-RELEASE-ubuntu20.04"
 SRC_URI = "https://download.swift.org/swift-${PV}-release/ubuntu2004/swift-${PV}-RELEASE/swift-${PV}-RELEASE-ubuntu20.04.tar.gz"
-SRC_URI[sha256sum] = "b0fef7353367ddf7df3b25942ce5a00a3c4d11c8fc62c61abd712b061c5d1912"
+SRC_URI[sha256sum] = "b014975844beac5ab3a7f71420181f45d0a93243f9ea4853e6588c05cad1e363"
 
 DEPENDS = "curl"
 RDEPENDS = "ncurses-native"
