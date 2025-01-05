@@ -69,22 +69,22 @@ python swift_do_configure() {
     swift_destination_template = """{
         "version":1,
         "sdk":"${STAGING_DIR_TARGET}/",
-        "toolchain-bin-dir":"${STAGING_DIR_NATIVE}/opt/usr/bin",
+        "toolchain-bin-dir":"${STAGING_DIR_NATIVE}/usr/bin",
         "target":"${SWIFT_TARGET_NAME}",
         "dynamic-library-extension":"so",
         "extra-cc-flags":[
             "-fPIC",
             "-I${STAGING_DIR_TARGET}/usr/include/c++/${SWIFT_CXX_VERSION}",
             "-I${STAGING_DIR_TARGET}/usr/include/c++/${SWIFT_CXX_VERSION}/${TARGET_SYS}",
-            "-I${STAGING_DIR_NATIVE}/opt/usr/lib/clang/13.0.0/include",
-            "-I${STAGING_DIR_NATIVE}/opt/usr/lib/clang/13.0.0/include-fixed"
+            "-I${STAGING_DIR_NATIVE}/usr/lib/clang/13.0.0/include",
+            "-I${STAGING_DIR_NATIVE}/usr/lib/clang/13.0.0/include-fixed"
         ],
         "extra-swiftc-flags":[
             "-target",
             "${SWIFT_TARGET_NAME}",
             "-use-ld=lld",
             "-tools-directory",
-            "${STAGING_DIR_NATIVE}/opt/usr/bin",
+            "${STAGING_DIR_NATIVE}/usr/bin",
 
             "-Xlinker", "-rpath", "-Xlinker", "/usr/lib/swift/linux",
 
@@ -109,8 +109,8 @@ python swift_do_configure() {
             "-I${STAGING_INCDIR}",
             "-I${STAGING_DIR_TARGET}/usr/include/c++/${SWIFT_CXX_VERSION}",
             "-I${STAGING_DIR_TARGET}/usr/include/c++/${SWIFT_CXX_VERSION}/${TARGET_SYS}",
-            "-I${STAGING_DIR_NATIVE}/opt/usr/lib/clang/13.0.0/include",
-            "-I${STAGING_DIR_NATIVE}/opt/usr/lib/clang/13.0.0/include-fixed",
+            "-I${STAGING_DIR_NATIVE}/usr/lib/clang/13.0.0/include",
+            "-I${STAGING_DIR_NATIVE}/usr/lib/clang/13.0.0/include-fixed",
 
             "-resource-dir", "${STAGING_DIR_TARGET}/usr/lib/swift",
             "-module-cache-path", "${B}/${BUILD_MODE}/ModuleCache",

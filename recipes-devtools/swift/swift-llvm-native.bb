@@ -13,15 +13,15 @@ SRC_URI[sha256sum] = "84c21ce101c6627f07d90f10df0448d4cb2848e6e2f96e544019207467
 
 inherit native
 
-SYSROOT_DIRS_NATIVE += "${base_prefix}/opt"
+SYSROOT_DIRS_NATIVE += "${base_prefix}"
 S = "${WORKDIR}/${SRC_DIR}"
 
 do_install_append () {
-    mkdir -p ${D}${base_prefix}/opt/usr/lib/llvm-swift
-    cp -rf ${S}/../bin ${D}${base_prefix}/opt/usr/lib/llvm-swift/
-    cp -rf ${S}/../include ${D}${base_prefix}/opt/usr/lib/llvm-swift/
-    cp -rf ${S}/../lib ${D}${base_prefix}/opt/usr/lib/llvm-swift/
-    cp -rf ${S}/../share ${D}${base_prefix}/opt/usr/lib/llvm-swift/
+    mkdir -p ${D}${base_prefix}/usr/lib/llvm-swift
+    cp -rf ${S}/../bin ${D}${base_prefix}/usr/lib/llvm-swift/
+    cp -rf ${S}/../include ${D}${base_prefix}/usr/lib/llvm-swift/
+    cp -rf ${S}/../lib ${D}${base_prefix}/usr/lib/llvm-swift/
+    cp -rf ${S}/../share ${D}${base_prefix}/usr/lib/llvm-swift/
 }
 
-FILES_${PN} += "${base_prefix}/opt/*"
+FILES_${PN} += "${base_prefix}/*"
