@@ -1,5 +1,10 @@
+# avoid conflicts with meta-clang
+TOOLCHAIN = "gcc"
 
-DEPENDS += "swift-native glibc gcc libgcc swift-stdlib libdispatch libfoundation"
+SWIFT_BUILD_TESTS ?= "${DEBUG_BUILD}"
+
+DEPENDS += "swift-native glibc gcc libgcc swift-stdlib libdispatch swift-foundation"
+DEPENDS += "${@oe.utils.conditional('SWIFT_BUILD_TESTS', '1', 'swift-xctest swift-testing', '', d)}"
 
 # Default build directory for SPM is "./.build"
 # (see 'swift [build|package|run|test] --help')
@@ -10,6 +15,7 @@ B ?= "${S}/.build"
 EXTERNALSRC_BUILD ?= "${EXTERNALSRC}/.build"
 
 BUILD_MODE = "${@['release', 'debug'][d.getVar('DEBUG_BUILD') == '1']}"
+BUILD_DIR = "${B}/${BUILD_MODE}"
 
 # Additional parameters to pass to SPM
 EXTRA_OESWIFT ?= ""
@@ -39,6 +45,36 @@ def fix_socket_header(filename):
       else:
         f.write(line)
 
+# Support for SwiftPM fetching packages and their GitHub submodules
+do_swift_package_resolve[depends] += "unzip-native:do_populate_sysroot swift-native:do_populate_sysroot"
+do_swift_package_resolve[network] = "1"
+do_swift_package_resolve[vardepsexclude] = "BB_ORIGENV"
+
+python do_swift_package_resolve() {
+    import subprocess
+    import os
+
+    s = d.getVar('S')
+    b = d.getVar('B')
+
+    ssh_auth_sock = d.getVar('BB_ORIGENV')['SSH_AUTH_SOCK']
+
+    env = os.environ.copy()
+    env['SSH_AUTH_SOCK'] = ssh_auth_sock
+
+    ret = subprocess.call(['swift', 'package', 'resolve', '--package-path', s, '--build-path', b], env=env)
+    if ret != 0:
+        bb.fatal('swift package resolve failed')
+
+    # note: --depth 1 requires git version 2.43.0 or later
+    for package in os.listdir(path=f'{b}/checkouts'):
+        package_dir = f'{b}/checkouts/{package}'
+        ret = subprocess.call(['git', 'submodule', 'update', '--init', '--recursive', '--depth', '1'], cwd=package_dir, env=env)
+        if ret != 0:
+            bb.fatal('git submodule update failed')
+}
+
+addtask swift_package_resolve after do_unpack before do_compile
 
 python swift_do_configure() {
     import os
@@ -60,6 +96,8 @@ python swift_do_configure() {
     # This is used to determine necessary include paths
     cxx_include_base = recipe_sysroot + "/usr/include/c++"
     cxx_include_list = os.listdir(cxx_include_base)
+    if 'current' in cxx_include_list:
+        cxx_include_list.remove('current')
     if len(cxx_include_list) != 1:
         bb.fatal("swift bbclass detected more than one c++ runtime, unable to determine which one to use")
     cxx_version = cxx_include_list[0]
@@ -69,22 +107,25 @@ python swift_do_configure() {
     swift_destination_template = """{
         "version":1,
         "sdk":"${STAGING_DIR_TARGET}/",
-        "toolchain-bin-dir":"${STAGING_DIR_NATIVE}/opt/usr/bin",
+        "toolchain-bin-dir":"${STAGING_DIR_NATIVE}/usr/bin",
         "target":"${SWIFT_TARGET_NAME}",
         "dynamic-library-extension":"so",
         "extra-cc-flags":[
             "-fPIC",
             "-I${STAGING_DIR_TARGET}/usr/include/c++/${SWIFT_CXX_VERSION}",
             "-I${STAGING_DIR_TARGET}/usr/include/c++/${SWIFT_CXX_VERSION}/${TARGET_SYS}",
-            "-I${STAGING_DIR_NATIVE}/opt/usr/lib/clang/13.0.0/include",
-            "-I${STAGING_DIR_NATIVE}/opt/usr/lib/clang/13.0.0/include-fixed"
+            "-I${STAGING_DIR_NATIVE}/usr/lib/clang/17/include",
+            "-I${STAGING_DIR_NATIVE}/usr/lib/clang/17/include-fixed"
         ],
         "extra-swiftc-flags":[
             "-target",
             "${SWIFT_TARGET_NAME}",
             "-use-ld=lld",
             "-tools-directory",
-            "${STAGING_DIR_NATIVE}/opt/usr/bin",
+            "${STAGING_DIR_NATIVE}/usr/bin",
+
+            "-enforce-exclusivity=unchecked",
+            "-enforce-exclusivity=none",
 
             "-Xlinker", "-rpath", "-Xlinker", "/usr/lib/swift/linux",
 
@@ -109,8 +150,8 @@ python swift_do_configure() {
             "-I${STAGING_INCDIR}",
             "-I${STAGING_DIR_TARGET}/usr/include/c++/${SWIFT_CXX_VERSION}",
             "-I${STAGING_DIR_TARGET}/usr/include/c++/${SWIFT_CXX_VERSION}/${TARGET_SYS}",
-            "-I${STAGING_DIR_NATIVE}/opt/usr/lib/clang/13.0.0/include",
-            "-I${STAGING_DIR_NATIVE}/opt/usr/lib/clang/13.0.0/include-fixed",
+            "-I${STAGING_DIR_NATIVE}/usr/lib/clang/17/include",
+            "-I${STAGING_DIR_NATIVE}/usr/lib/clang/17/include-fixed",
 
             "-resource-dir", "${STAGING_DIR_TARGET}/usr/lib/swift",
             "-module-cache-path", "${B}/${BUILD_MODE}/ModuleCache",
@@ -133,8 +174,41 @@ python swift_do_configure() {
     configJSON.close()
 }
 
-swift_do_compile()  {
-    swift build --package-path ${S} --build-path ${B} --skip-update -c ${BUILD_MODE} --destination ${WORKDIR}/destination.json ${EXTRA_OESWIFT}
+# ideally this should be handled by do_swift_package_resolve but doesn't always appear to be the case
+do_compile[network] = "1"
+swift_do_compile[vardepsexclude] = "BB_ORIGENV"
+
+python swift_do_compile() {
+    import subprocess
+    import os
+    import shlex
+
+    s = d.getVar('S')
+    b = d.getVar('B')
+    build_mode = d.getVar('BUILD_MODE')
+    workdir = d.getVar("WORKDIR", True)
+    destination_json = workdir + '/destination.json'
+    extra_oeswift = shlex.split(d.getVar('EXTRA_OESWIFT'))
+    ssh_auth_sock = d.getVar('BB_ORIGENV')['SSH_AUTH_SOCK']
+
+    env = os.environ.copy()
+    env['SSH_AUTH_SOCK'] = ssh_auth_sock
+
+    args = ['swift', 'build', '--package-path', s, '--build-path', b, '-c', build_mode, '--destination', destination_json] + extra_oeswift
+
+    ret = subprocess.call(args, env=env, cwd=s)
+    if ret != 0:
+        bb.fatal('swift build failed')
+
+    if d.getVar('SWIFT_BUILD_TESTS') == '1':
+        if d.getVar('DEBUG_BUILD') != '1':
+            bb.warn('building Swift tests with release build, @testable imports may fail')
+
+        # FIXME: why do we need to specify -lXCTest and -lTesting explicitly
+        test_args = ['--build-tests', '-Xlinker', '-lXCTest', '-Xlinker', '-lTesting']
+        ret = subprocess.call(args + test_args + extra_oeswift, env=env, cwd=s)
+        if ret != 0:
+            bb.fatal('swift build --build-tests failed')
 }
 
 EXPORT_FUNCTIONS do_configure do_compile

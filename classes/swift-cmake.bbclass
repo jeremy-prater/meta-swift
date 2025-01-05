@@ -1,5 +1,5 @@
 inherit swift-cmake-base
 
-DEPENDS_append += " swift-stdlib libdispatch libfoundation "
+DEPENDS:append = "swift-stdlib libdispatch swift-foundation"
 
 TARGET_LDFLAGS += "-L${STAGING_DIR_TARGET}/usr/lib/swift/linux"

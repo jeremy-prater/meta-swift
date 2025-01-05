@@ -4,7 +4,7 @@ import Glibc
 
 func main() async throws {
     print("Hello, world! 👋")
-    try await Task.sleep(1_000_000_000)
+    try await Task.sleep(for: .seconds(1))
     print("User: \(ProcessInfo.processInfo.fullUserName)")
     let dateFormatter = DateFormatter()
     dateFormatter.dateStyle = .full
