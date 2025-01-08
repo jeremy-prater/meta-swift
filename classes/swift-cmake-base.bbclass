@@ -1,12 +1,15 @@
 inherit cmake
 
-DEPENDS_append += " swift-native libgcc gcc glibc "
+# avoid conflicts with meta-clang
+TOOLCHAIN = "gcc"
+
+DEPENDS:append = " swift-native libgcc gcc glibc "
 
 SWIFT_TARGET_ARCH = "${@oe.utils.conditional('TARGET_ARCH', 'arm', 'armv7', 'aarch64', d)}"
 SWIFT_TARGET_NAME = "${@oe.utils.conditional('TARGET_ARCH', 'arm', 'armv7-unknown-linux-gnueabihf', 'aarch64-unknown-linux-gnu', d)}"
 TARGET_CPU_NAME = "${@oe.utils.conditional('TARGET_ARCH', 'arm', 'armv7-a', 'aarch64', d)}"
 
-HOST_CC_ARCH_prepend = "-target ${SWIFT_TARGET_NAME}"
+HOST_CC_ARCH:prepend = "-target ${SWIFT_TARGET_NAME} "
 
 ################################################################################
 # NOTE: The host running bitbake must have lld available and the following     #
@@ -36,33 +39,39 @@ OECMAKE_C_FLAGS += "${RUNTIME_FLAGS} ${EXTRA_INCLUDE_FLAGS}"
 OECMAKE_CXX_FLAGS += "${RUNTIME_FLAGS} ${EXTRA_INCLUDE_FLAGS}"
 OECMAKE_ASM_FLAGS += "${RUNTIME_FLAGS} ${EXTRA_INCLUDE_FLAGS}"
 
+SWIFTC_BIN = "${STAGING_DIR_NATIVE}/usr/bin/swiftc"
+
+EXTRA_OECMAKE += "-DCMAKE_Swift_COMPILER=${SWIFTC_BIN}"
+EXTRA_OECMAKE += "-DCMAKE_SWIFT_COMPILER=${SWIFTC_BIN}"
+
 BUILD_MODE = "${@['release', 'debug'][d.getVar('DEBUG_BUILD') == '1']}"
 
 # Additional parameters to pass to swiftc
 EXTRA_SWIFTC_FLAGS ??= ""
 
 SWIFT_FLAGS = "-target ${SWIFT_TARGET_NAME} -use-ld=lld \
--resource-dir ${STAGING_DIR_TARGET}/usr/lib/swift \
--module-cache-path ${B}/${BUILD_MODE}/ModuleCache \
--Xclang-linker -B${STAGING_DIR_TARGET}/usr/lib/${TARGET_SYS}/current \
--Xclang-linker -B${STAGING_DIR_TARGET}/usr/lib \
--Xcc -I${STAGING_DIR_NATIVE}/usr/lib/${TARGET_SYS}/gcc/${TARGET_SYS}/current/include \
--Xcc -I${STAGING_DIR_NATIVE}/usr/lib/${TARGET_SYS}/gcc/${TARGET_SYS}/current/include-fixed \
--L${STAGING_DIR_TARGET} \
--L${STAGING_DIR_TARGET}/lib \
--L${STAGING_DIR_TARGET}/usr/lib \
--L${STAGING_DIR_TARGET}/usr/lib/swift \
--L${STAGING_DIR_TARGET}/usr/lib/swift/linux \
--L${STAGING_DIR_TARGET}/usr/lib/${TARGET_SYS}/current \
--sdk ${STAGING_DIR_TARGET} \
-${EXTRA_SWIFTC_FLAGS} \
+    -resource-dir ${STAGING_DIR_TARGET}/usr/lib/swift \
+    -module-cache-path ${B}/${BUILD_MODE}/ModuleCache \
+    -Xclang-linker -B${STAGING_DIR_TARGET}/usr/lib/${TARGET_SYS}/current \
+    -Xclang-linker -B${STAGING_DIR_TARGET}/usr/lib \
+    -Xcc -I${STAGING_DIR_NATIVE}/usr/lib/${TARGET_SYS}/gcc/${TARGET_SYS}/current/include \
+    -Xcc -I${STAGING_DIR_NATIVE}/usr/lib/${TARGET_SYS}/gcc/${TARGET_SYS}/current/include-fixed \
+    -L${STAGING_DIR_TARGET} \
+    -L${STAGING_DIR_TARGET}/lib \
+    -L${STAGING_DIR_TARGET}/usr/lib \
+    -L${STAGING_DIR_TARGET}/usr/lib/swift \
+    -L${STAGING_DIR_TARGET}/usr/lib/swift/linux \
+    -L${STAGING_DIR_TARGET}/usr/lib/${TARGET_SYS}/current \
+    -sdk ${STAGING_DIR_TARGET} \
+    ${EXTRA_SWIFTC_FLAGS} \
 "
 
-HOST_LLVM_PATH = "${STAGING_DIR_NATIVE}/opt/usr/lib/llvm-swift"
+HOST_LLVM_PATH = "${STAGING_DIR_NATIVE}/usr/lib"
+
 EXTRA_OECMAKE += '-DCMAKE_Swift_FLAGS="${SWIFT_FLAGS}"'
 EXTRA_OECMAKE += " -DSWIFT_USE_LINKER=lld"
 EXTRA_OECMAKE += " -DLLVM_USE_LINKER=lld"
-EXTRA_OECMAKE += " -DLLVM_DIR=${HOST_LLVM_PATH}/lib/cmake/llvm"
+EXTRA_OECMAKE += " -DLLVM_DIR=${HOST_LLVM_PATH}/cmake/llvm"
 EXTRA_OECMAKE += " -DLLVM_BUILD_LIBRARY_DIR=${HOST_LLVM_PATH}"
 
 EXTRANATIVEPATH += "swift-tools"
