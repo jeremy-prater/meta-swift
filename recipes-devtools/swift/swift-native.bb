@@ -37,4 +37,4 @@ do_install:append () {
     cp -rd ${S}/usr/share/* ${D}${datadir}
 }
 
-FILES_${PN} += "${base_prefix}/*"
+FILES:${PN} += "${base_prefix}/*"

@@ -72,5 +72,5 @@ do_install:append() {
     cp -rf ${TEMP_DISPATCH_DIR}/module.modulemap ${STAGING_DIR_TARGET}/usr/lib/swift/dispatch/module.modulemap
 }
 
-FILES_${PN} = "${libdir}/swift/*"
-INSANE_SKIP_${PN} = "file-rdeps"
+FILES:${PN} = "${libdir}/swift/*"
+INSANE_SKIP:${PN} = "file-rdeps"
