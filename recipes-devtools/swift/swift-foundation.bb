@@ -2,7 +2,7 @@ SUMMARY = "Foundation"
 DESCRIPTION = "The Foundation framework defines a base layer of functionality that is required for almost all applications."
 HOMEPAGE = "https://github.com/swiftlang/swift-corelibs-foundation"
 
-LICENSE = "Apache-2.0" 
+LICENSE = "Apache-2.0"
 LIC_FILES_CHKSUM = "file://LICENSE;md5=1cd73afe3fb82e8d5c899b9d926451d0"
 
 require swift-version.inc
