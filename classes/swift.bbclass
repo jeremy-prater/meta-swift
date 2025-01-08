@@ -1,7 +1,7 @@
 # avoid conflicts with meta-clang
 TOOLCHAIN = "gcc"
 
-DEPENDS += "swift-native glibc gcc libgcc swift-stdlib libdispatch libfoundation"
+DEPENDS += "swift-native glibc gcc libgcc swift-stdlib libdispatch swift-foundation"
 
 # Default build directory for SPM is "./.build"
 # (see 'swift [build|package|run|test] --help')
