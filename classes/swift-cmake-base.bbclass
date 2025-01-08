@@ -9,6 +9,9 @@ SWIFT_TARGET_ARCH = "${@oe.utils.conditional('TARGET_ARCH', 'arm', 'armv7', 'aar
 SWIFT_TARGET_NAME = "${@oe.utils.conditional('TARGET_ARCH', 'arm', 'armv7-unknown-linux-gnueabihf', 'aarch64-unknown-linux-gnu', d)}"
 TARGET_CPU_NAME = "${@oe.utils.conditional('TARGET_ARCH', 'arm', 'armv7-a', 'aarch64', d)}"
 
+# not supported by clang
+DEBUG_PREFIX_MAP:remove = "-fcanon-prefix-map"
+
 HOST_CC_ARCH:prepend = "-target ${SWIFT_TARGET_NAME} "
 
 ################################################################################
