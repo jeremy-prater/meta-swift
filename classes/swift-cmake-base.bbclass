@@ -9,6 +9,13 @@ SWIFT_TARGET_ARCH = "${@oe.utils.conditional('TARGET_ARCH', 'arm', 'armv7', 'aar
 SWIFT_TARGET_NAME = "${@oe.utils.conditional('TARGET_ARCH', 'arm', 'armv7-unknown-linux-gnueabihf', 'aarch64-unknown-linux-gnu', d)}"
 TARGET_CPU_NAME = "${@oe.utils.conditional('TARGET_ARCH', 'arm', 'armv7-a', 'aarch64', d)}"
 
+SWIFT_GCC_VERSION = "13.3.0"
+
+EXTRA_INCLUDE_FLAGS = "\
+    -I${STAGING_DIR_TARGET}/usr/include/c++/${SWIFT_GCC_VERSION}/${TARGET_SYS} \
+    -I${STAGING_DIR_TARGET}/usr/include/c++/${SWIFT_GCC_VERSION} \
+    -I${STAGING_DIR_TARGET}"
+
 # not supported by clang
 DEBUG_PREFIX_MAP:remove = "-fcanon-prefix-map"
 

@@ -1,3 +1,6 @@
+SUMMARY = "Swift"
+DESCRIPTION = "The Swift programming language standard library"
+HOMEPAGE = "https://github.com/swiftlang/swift"
 
 LICENSE = "Apache-2.0"
 LIC_FILES_CHKSUM = "file://${S}/LICENSE.txt;md5=f6c482a0548ea60d6c2e015776534035"
@@ -8,13 +11,15 @@ PV = "${SWIFT_VERSION}"
 SRCREV_FORMAT = "swift_stdlib"
 
 SRC_URI = "\
-    git://github.com/swiftlang/swift.git;protocol=https;tag=swift-${PV}-RELEASE;nobranch=1 \
+    git://github.com/swiftlang/swift.git;protocol=https;tag=swift-${PV}-RELEASE;nobranch=1;destsuffix=swift \
     git://github.com/swiftlang/swift-corelibs-libdispatch.git;protocol=https;tag=swift-${PV}-RELEASE;nobranch=1;destsuffix=libdispatch \ 
+    git://github.com/swiftlang/swift-experimental-string-processing.git;protocol=https;tag=swift/release/${PV};nobranch=1;destsuffix=swift-experimental-string-processing \
+    git://github.com/swiftlang/swift-syntax.git;protocol=https;tag=release/${PV};nobranch=1;destsuffix=swift-syntax \
     file://cmake-configure-swift-stdlib.sh \
     file://llvm-cmake-modules \
     "
 
-S = "${WORKDIR}/git"
+S = "${WORKDIR}/swift"
 
 SWIFT_BUILDDIR = "${S}/build"
 DEPENDS = "gcc-runtime python3-native icu ncurses"
@@ -22,17 +27,9 @@ DEPENDS += " swift-native libgcc gcc glibc libxml2"
 
 inherit swift-cmake-base
 
-SWIFT_GCC_VERSION = "13.3.0"
-
-EXTRA_INCLUDE_FLAGS = "\
-    -I${STAGING_DIR_TARGET}/usr/include/c++/${SWIFT_GCC_VERSION}/${TARGET_SYS} \
-    -I${STAGING_DIR_TARGET}/usr/include/c++/${SWIFT_GCC_VERSION} \
-    -I${STAGING_DIR_TARGET}"
-
 TARGET_LDFLAGS += "-w -fuse-ld=lld -L${STAGING_DIR_TARGET}/usr/lib/${TARGET_SYS}/current"
 
-HOST_SWIFT_SUPPORT_DIR = "${WORKDIR}/swift-stdlib-yocto"
-SWIFT_CMAKE_TOOLCHAIN_FILE = "${HOST_SWIFT_SUPPORT_DIR}/linux-${SWIFT_TARGET_ARCH}-toolchain.cmake"
+SWIFT_CMAKE_TOOLCHAIN_FILE = "${WORKDIR}/linux-${SWIFT_TARGET_ARCH}-toolchain.cmake"
 SWIFT_CONFIGURE_CMAKE_SCRIPT="${WORKDIR}/cmake-configure-swift-stdlib.sh"
 SWIFT_C_FLAGS = "-w -fuse-ld=lld -target ${SWIFT_TARGET_NAME} --sysroot ${STAGING_DIR_TARGET} -B${STAGING_DIR_TARGET}/usr/lib/${TARGET_SYS}/${SWIFT_GCC_VERSION} -L${STAGING_DIR_TARGET}/usr/lib/${TARGET_SYS}/${SWIFT_GCC_VERSION} -I${STAGING_DIR_TARGET}/usr/include ${EXTRA_INCLUDE_FLAGS}"
 SWIFT_C_LINK_FLAGS = "-target ${SWIFT_TARGET_NAME} --sysroot ${STAGING_DIR_TARGET} ${EXTRA_INCLUDE_FLAGS}"
@@ -41,7 +38,8 @@ SWIFT_CXX_LINK_FLAGS = "-target ${SWIFT_TARGET_NAME} --sysroot ${STAGING_DIR_TAR
 
 do_configure() {
     export LDFLAGS=""
-    export STAGING_DIR=${STAGING_DIR_TARGET}
+    export STAGING_DIR_TARGET=${STAGING_DIR_TARGET}
+    export SDKROOT=${STAGING_DIR_TARGET}
     export SWIFT_SRCDIR=${S}
     export LIBDISPATCH_SRCDIR=${WORKDIR}/libdispatch
     export SWIFT_BUILDDIR="${SWIFT_BUILDDIR}"
@@ -59,13 +57,14 @@ do_configure() {
     export CXXFLAGS="${SWIFT_CXX_FLAGS}"
     export SWIFT_TARGET_ARCH=${SWIFT_TARGET_ARCH}
     export SWIFT_TARGET_NAME=${SWIFT_TARGET_NAME}
+    export SWIFT_PATH_TO_STRING_PROCESSING_SOURCE="${WORKDIR}/swift-experimental-string-processing"
+    export SWIFT_SYNTAX_SOURCE_DIR="${WORKDIR}/swift-syntax"
 
     mkdir -p ${HOST_LLVM_PATH}/cmake/llvm
     cp ${WORKDIR}/llvm-cmake-modules/* ${HOST_LLVM_PATH}/cmake/llvm
 
-    mkdir -p ${HOST_SWIFT_SUPPORT_DIR}
-    rm -rf $SWIFT_BUILDDIR
-    mkdir -p $SWIFT_BUILDDIR
+    rm -rf ${SWIFT_BUILDDIR}
+    mkdir -p ${SWIFT_BUILDDIR}
     ${SWIFT_CONFIGURE_CMAKE_SCRIPT}
 }
 
@@ -74,7 +73,7 @@ do_compile() {
 }
 
 do_install:prepend() {
-    # remove Swift static libs
+    # remove Swift static libs (if any)
     rm -rf ${SWIFT_BUILDDIR}/lib/swift_static
 
     # remove Dispatch (it will be built by another package)
