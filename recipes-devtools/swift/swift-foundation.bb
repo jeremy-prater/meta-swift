@@ -8,40 +8,35 @@ LIC_FILES_CHKSUM = "file://LICENSE;md5=1cd73afe3fb82e8d5c899b9d926451d0"
 require swift-version.inc
 PV = "${SWIFT_VERSION}"
 
-SRCREV_FORMAT = "swift_foundation"
+SRCREV_FORMAT = "swift_corelibs_foundation"
 
-SRC_URI = "git://github.com/swiftlang/swift-foundation.git;protocol=https;tag=swift-${PV}-RELEASE;nobranch=1"
-SRC_URI += "git://github.com/swiftlang/swift-foundation-icu.git;protocol=https;tag=swift-${PV}-RELEASE;nobranch=1"
-SRC_URI += "git://github.com/apple/swift-collections.git;protocol=https;tag=1.1.4;nobranch=1"
-SRC_URI += "git://github.com/swiftlang/swift-corelibs-foundation.git;protocol=https;tag=swift-${PV}-RELEASE;nobranch=1"
-
-# TODO: add this patch
-## sed -i '/__CFAllocatorRespectsHintZeroWhenAllocating/d' ${STAGING_LIBDIR}/swift/CoreFoundation/*Only.h
+SRC_URI = "git://github.com/swiftlang/swift-corelibs-foundation.git;protocol=https;tag=swift-${PV}-RELEASE;nobranch=1;"
+SRC_URI += "file://0001-Move-__CFAllocatorRespectsHintZeroWhenAllocating-to-.patch;striplevel=1;"
+SRC_URI += "git://github.com/swiftlang/swift-foundation.git;protocol=https;tag=swift-${PV}-RELEASE;nobranch=1;destsuffix=swift-foundation;"
+SRC_URI += "git://github.com/swiftlang/swift-foundation-icu.git;protocol=https;tag=swift-${PV}-RELEASE;nobranch=1;destsuffix=swift-foundation-icu;"
 
 S = "${WORKDIR}/git"
 
-DEPENDS = "swift-stdlib libdispatch ncurses libxml2 icu curl"
-RDEPENDS:${PN} += "swift-stdlib libdispatch"
+DEPENDS = "swift-foundation-essentials libdispatch ncurses libxml2 icu curl"
+RDEPENDS:${PN} += "swift-foundation-essentials libdispatch"
 
 inherit swift-cmake-base
 
-TARGET_LDFLAGS += "-L${STAGING_DIR_TARGET}/usr/lib/swift/linux"
+TARGET_LDFLAGS += "-L${STAGING_DIR_TARGET}${libdir}/swift/linux"
 
-# Enable Swift parts
+OECMAKE_C_FLAGS += "-I${STAGING_DIR_TARGET}${libdir}/swift"
+
 EXTRA_OECMAKE += "-DENABLE_SWIFT=YES"
 EXTRA_OECMAKE += "-DCMAKE_VERBOSE_MAKEFILE=ON"
 EXTRA_OECMAKE += "-DCF_DEPLOYMENT_SWIFT=ON"
 
-#EXTRA_OECMAKE += "-DFOUNDATION_PATH_TO_LIBDISPATCH_SOURCE=${S}/libdispatch"
-#EXTRA_OECMAKE += "-DFOUNDATION_PATH_TO_LIBDISPATCH_BUILD=${STAGING_DIR_TARGET}/usr/lib/swift/dispatch"
-
 EXTRA_OECMAKE += "-D_SwiftFoundation_SourceDIR=${S}/swift-foundation"
 EXTRA_OECMAKE += "-D_SwiftFoundationICU_SourceDIR=${S}/swift-foundation-icu"
-EXTRA_OECMAKE += "-D_SwiftCollections_SourceDIR=${S}/swift-collections"
+EXTRA_OECMAKE += "-DSwiftFoundation_MODULE_TRIPLE=${TARGET_ARCH}-unknown-linux-gnu"
 
 EXTRA_OECMAKE += "-DCMAKE_FIND_ROOT_PATH:PATH=${CROSS_COMPILE_DEPS_PATH}"
 
-EXTRA_OECMAKE += "-Ddispatch_DIR=${STAGING_DIR_TARGET}/usr/lib/swift/dispatch/cmake"
+EXTRA_OECMAKE += "-Ddispatch_DIR=${STAGING_DIR_TARGET}${libdir}/swift/dispatch/cmake"
 
 EXTRA_OECMAKE += "-DENABLE_TESTING=0"
 EXTRA_OECMAKE += "-DBUILD_SHARED_LIBS=YES"
@@ -55,6 +50,9 @@ cmake_do_generate_toolchain_file:append() {
 }
 
 do_install:append() {
+    # don't double up on Unicode
+    rm -rf ${D}${libdir}/swift/_foundation_unicode
+
     # No need to install the plutil onto the target, so remove it for now
     rm ${D}${bindir}/plutil
 

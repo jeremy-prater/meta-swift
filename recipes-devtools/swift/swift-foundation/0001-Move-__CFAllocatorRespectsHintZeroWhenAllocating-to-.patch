@@ -1,0 +1,68 @@
+From 5ba9199cea2c9f2c6d61ed3a943e8cd454d8df11 Mon Sep 17 00:00:00 2001
+From: Tony Parker <anthony.parker@apple.com>
+Date: Wed, 30 Oct 2024 15:02:47 -0700
+Subject: [PATCH] Move __CFAllocatorRespectsHintZeroWhenAllocating to a
+ CF-internal header to avoid confusion over its linkage. Resolves #5125
+ (#5126)
+
+---
+ Sources/CoreFoundation/CFBase.c                         | 2 +-
+ Sources/CoreFoundation/include/ForFoundationOnly.h      | 1 -
+ Sources/CoreFoundation/include/ForSwiftFoundationOnly.h | 2 --
+ Sources/CoreFoundation/internalInclude/CFInternal.h     | 2 ++
+ 4 files changed, 3 insertions(+), 4 deletions(-)
+
+diff --git a/Sources/CoreFoundation/CFBase.c b/Sources/CoreFoundation/CFBase.c
+index 848cb657..3d71d766 100644
+--- a/Sources/CoreFoundation/CFBase.c
++++ b/Sources/CoreFoundation/CFBase.c
+@@ -790,7 +790,7 @@ void *__CFSafelyReallocateWithAllocator(CFAllocatorRef allocator, void *destinat
+     return _CLANG_ANALYZER_IGNORE_NONNULL(reallocated);;
+ }
+ 
+-Boolean __CFAllocatorRespectsHintZeroWhenAllocating(CFAllocatorRef allocator) {
++CF_PRIVATE Boolean __CFAllocatorRespectsHintZeroWhenAllocating(CFAllocatorRef allocator) {
+     return allocator == kCFAllocatorSystemDefault || allocator == kCFAllocatorMallocZone;
+ }
+ 
+diff --git a/Sources/CoreFoundation/include/ForFoundationOnly.h b/Sources/CoreFoundation/include/ForFoundationOnly.h
+index 533f22f5..e8463e20 100644
+--- a/Sources/CoreFoundation/include/ForFoundationOnly.h
++++ b/Sources/CoreFoundation/include/ForFoundationOnly.h
+@@ -68,7 +68,6 @@ CF_EXPORT void *_Nonnull __CFSafelyReallocate(void * _Nullable destination, size
+ CF_EXPORT void *_Nonnull __CFSafelyReallocateWithAllocator(CFAllocatorRef _Nullable, void * _Nullable destination, size_t newCapacity, CFOptionFlags options, void (^_Nullable reallocationFailureHandler)(void *_Nonnull original, bool *_Nonnull outRecovered));
+ #endif
+ 
+-Boolean __CFAllocatorRespectsHintZeroWhenAllocating(CFAllocatorRef _Nullable allocator);
+ typedef CF_ENUM(CFOptionFlags, _CFAllocatorHint) {
+     _CFAllocatorHintZeroWhenAllocating = 1
+ };
+diff --git a/Sources/CoreFoundation/include/ForSwiftFoundationOnly.h b/Sources/CoreFoundation/include/ForSwiftFoundationOnly.h
+index f3c7f51b..88fb3d36 100644
+--- a/Sources/CoreFoundation/include/ForSwiftFoundationOnly.h
++++ b/Sources/CoreFoundation/include/ForSwiftFoundationOnly.h
+@@ -105,8 +105,6 @@
+ 
+ _CF_EXPORT_SCOPE_BEGIN
+ 
+-CF_PRIVATE Boolean __CFAllocatorRespectsHintZeroWhenAllocating(CFAllocatorRef _Nullable allocator);
+-
+ struct __CFSwiftObject {
+     uintptr_t isa;
+ };
+diff --git a/Sources/CoreFoundation/internalInclude/CFInternal.h b/Sources/CoreFoundation/internalInclude/CFInternal.h
+index 79dc4e60..cc13eb72 100644
+--- a/Sources/CoreFoundation/internalInclude/CFInternal.h
++++ b/Sources/CoreFoundation/internalInclude/CFInternal.h
+@@ -1057,6 +1057,8 @@ CF_INLINE CFAllocatorRef __CFGetAllocator(CFTypeRef cf) {	// !!! Use with CF typ
+     return *(CFAllocatorRef *)((char *)cf - 16);
+ }
+ 
++CF_PRIVATE Boolean __CFAllocatorRespectsHintZeroWhenAllocating(CFAllocatorRef allocator);
++
+ /* !!! Avoid #importing objc.h; e.g. converting this to a .m file */
+ struct __objcFastEnumerationStateEquivalent {
+     unsigned long state;
+-- 
+2.39.5 (Apple Git-154)
+
