@@ -12,6 +12,7 @@ B ?= "${S}/.build"
 EXTERNALSRC_BUILD ?= "${EXTERNALSRC}/.build"
 
 BUILD_MODE = "${@['release', 'debug'][d.getVar('DEBUG_BUILD') == '1']}"
+BUILD_DIR = "${B}/${BUILD_MODE}"
 
 # Additional parameters to pass to SPM
 EXTRA_OESWIFT ?= ""
