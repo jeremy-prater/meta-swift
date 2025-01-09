@@ -66,7 +66,7 @@ python do_swift_package_resolve() {
         subprocess.call(['git', 'submodule', 'update', '--init', '--recursive'], cwd=package_dir, env=env)
 }
 
-addtask swift_git_submodule_update after do_unpack before do_patch
+addtask swift_package_resolve after do_unpack before do_patch
 
 python swift_do_configure() {
     import os
