@@ -42,6 +42,31 @@ def fix_socket_header(filename):
       else:
         f.write(line)
 
+# Support for SwiftPM fetching packages and their GitHub submodules
+do_swift_git_submodule_update[depends] += "unzip-native:do_populate_sysroot swift-native:do_populate_sysroot"
+do_swift_git_submodule_update[network] = "1"
+do_swift_git_submodule_update[vardepsexclude] = "BB_ORIGENV"
+
+python do_swift_git_submodule_update() {
+    import subprocess
+    import os
+
+    s = d.getVar('S')
+    b = d.getVar('B')
+
+    ssh_auth_sock = d.getVar('BB_ORIGENV')['SSH_AUTH_SOCK']
+
+    env = os.environ.copy()
+    env['SSH_AUTH_SOCK'] = ssh_auth_sock
+
+    subprocess.call(['swift', 'package', 'resolve', '--package-path', s, '--build-path', b], env=env)
+
+    for package in os.listdir(path=f'{b}/checkouts'):
+        package_dir = f'{b}/checkouts/{package}'
+        subprocess.call(['git', 'submodule', 'update', '--init', '--recursive'], cwd=package_dir, env=env)
+}
+
+addtask swift_git_submodule_update after do_unpack before do_patch
 
 python swift_do_configure() {
     import os
