@@ -43,11 +43,11 @@ def fix_socket_header(filename):
         f.write(line)
 
 # Support for SwiftPM fetching packages and their GitHub submodules
-do_swift_git_submodule_update[depends] += "unzip-native:do_populate_sysroot swift-native:do_populate_sysroot"
-do_swift_git_submodule_update[network] = "1"
-do_swift_git_submodule_update[vardepsexclude] = "BB_ORIGENV"
+do_swift_package_resolve[depends] += "unzip-native:do_populate_sysroot swift-native:do_populate_sysroot"
+do_swift_package_resolve[network] = "1"
+do_swift_package_resolve[vardepsexclude] = "BB_ORIGENV"
 
-python do_swift_git_submodule_update() {
+python do_swift_package_resolve() {
     import subprocess
     import os
 
