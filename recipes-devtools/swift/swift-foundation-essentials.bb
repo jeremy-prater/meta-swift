@@ -16,7 +16,7 @@ SRC_URI += "git://github.com/apple/swift-collections.git;protocol=https;tag=1.1.
 
 S = "${WORKDIR}/git"
 
-DEPENDS = "icu swift-stdlib"
+DEPENDS = "icu swift-stdlib swift-native"
 RDEPENDS:${PN} += "icu swift-stdlib"
 
 inherit swift-cmake-base

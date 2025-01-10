@@ -17,8 +17,8 @@ SRC_URI += "git://github.com/swiftlang/swift-foundation-icu.git;protocol=https;t
 
 S = "${WORKDIR}/git"
 
-DEPENDS = "swift-foundation-essentials libdispatch ncurses libxml2 icu curl"
-RDEPENDS:${PN} += "swift-foundation-essentials libdispatch"
+DEPENDS = "swift-foundation-essentials swift-stdlib swift-native libdispatch ncurses libxml2 icu curl"
+RDEPENDS:${PN} += "swift-foundation-essentials swift-stdlib libdispatch"
 
 inherit swift-cmake-base
 

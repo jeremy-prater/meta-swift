@@ -22,8 +22,7 @@ SRC_URI = "\
 S = "${WORKDIR}/swift"
 
 SWIFT_BUILDDIR = "${S}/build"
-DEPENDS = "gcc-runtime python3-native icu ncurses"
-DEPENDS += " swift-native libgcc gcc glibc libxml2"
+DEPENDS = "gcc-runtime python3-native icu ncurses swift-native libgcc gcc glibc libxml2 libxml2-native"
 
 inherit swift-cmake-base
 
