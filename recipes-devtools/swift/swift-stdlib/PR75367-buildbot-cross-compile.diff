@@ -1,0 +1,204 @@
+From 90cf1f6c6da49d60539b6c499f75deada2ce0fe9 Mon Sep 17 00:00:00 2001
+From: "Jesse L. Zamora" <xtremekforever@gmail.com>
+Date: Thu, 18 Jul 2024 21:20:11 -0400
+Subject: [PATCH 1/5] Add patch for cross compiling using swift build scripts
+
+---
+ .../swift_build_support/swift_build_support/products/product.py | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/utils/swift_build_support/swift_build_support/products/product.py b/utils/swift_build_support/swift_build_support/products/product.py
+index ababc351f95ee..f664bc38bb2cc 100644
+--- a/utils/swift_build_support/swift_build_support/products/product.py
++++ b/utils/swift_build_support/swift_build_support/products/product.py
+@@ -373,7 +373,7 @@ def get_linux_target_components(self, arch):
+     def get_linux_sysroot(self, platform, arch):
+         if not self.is_cross_compile_target('{}-{}'.format(platform, arch)):
+             return None
+-        sysroot_arch, abi = self.get_linux_target_components(arch)
++        sysroot_arch, _, abi = self.get_linux_target_components(arch)
+         # $ARCH-$PLATFORM-$ABI
+         # E.x.: aarch64-linux-gnu
+         sysroot_dirname = '{}-{}-{}'.format(sysroot_arch, platform, abi)
+
+From 2e3bde3d3dcf8c7104bfb331b51b64659818a4e7 Mon Sep 17 00:00:00 2001
+From: "Jesse L. Zamora" <xtremekforever@gmail.com>
+Date: Thu, 18 Jul 2024 21:20:32 -0400
+Subject: [PATCH 2/5] Add patch for CXX interop when cross compiling with
+ external sysroot
+
+---
+ cmake/modules/SwiftConfigureSDK.cmake | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/cmake/modules/SwiftConfigureSDK.cmake b/cmake/modules/SwiftConfigureSDK.cmake
+index 2b7dbbdbb801a..81cc831a418ba 100644
+--- a/cmake/modules/SwiftConfigureSDK.cmake
++++ b/cmake/modules/SwiftConfigureSDK.cmake
+@@ -360,7 +360,7 @@ macro(configure_sdk_unix name architectures)
+   # depending on the architecture, so having a single value is the only
+   # possibility right now.
+   set(SWIFT_SDK_${prefix}_CXX_OVERLAY_SWIFT_COMPILE_FLAGS
+-      -Xcc --gcc-toolchain=/usr
++      -Xcc --gcc-toolchain=${CMAKE_SYSROOT}/usr
+     CACHE STRING "Extra flags for compiling the C++ overlay")
+ 
+   set(_default_threading_package "pthreads")
+
+From b9615d81134f718103e926d7d509207999a7ab6d Mon Sep 17 00:00:00 2001
+From: "Jesse L. Zamora" <xtremekforever@gmail.com>
+Date: Thu, 18 Jul 2024 21:21:18 -0400
+Subject: [PATCH 3/5] Add build preset for cross compiling for linux-armv7 with
+ external sysroot
+
+---
+ utils/build-presets.ini | 71 +++++++++++++++++++++++++++++++++++++++++
+ utils/build-script-impl |  4 +++
+ 2 files changed, 75 insertions(+)
+
+diff --git a/utils/build-presets.ini b/utils/build-presets.ini
+index 2e83a50dbbe9a..0e724fc9edb0e 100644
+--- a/utils/build-presets.ini
++++ b/utils/build-presets.ini
+@@ -1092,6 +1092,77 @@ lit-args=-v
+ indexstore-db=0
+ sourcekit-lsp=0
+ 
++[preset: buildbot_linux_crosscompile_armv7,llvm]
++release
++reconfigure
++
++# Disable features
++build-swift-tools=0
++
++# Skip rules
++skip-build-cmark
++skip-early-swift-driver
++skip-early-swiftsyntax
++skip-build-llvm
++skip-build-swift
++
++build-subdir=buildbot_linux_armv7
++
++[preset: buildbot_linux_crosscompile_armv7,stdlib,corelibs]
++mixin-preset=stdlib_base_standalone
++release
++reconfigure
++
++install-swift
++install-swiftsyntax
++foundation
++libdispatch
++xctest
++install-foundation
++install-libdispatch
++install-xctest
++
++# NOTE: Backtracing does not cross compile for armv7 currently
++swift-enable-backtracing=0
++swift-stdlib-supports-backtrace-reporting=0
++
++swift-install-components=autolink-driver;compiler;clang-builtin-headers;libexec;stdlib;swift-remote-mirror;sdk-overlay;dev
++build-swift-static-stdlib
++build-swift-static-sdk-overlay
++
++# Cross compilation
++skip-local-build
++cross-compile-hosts=linux-armv7
++cross-compile-deps-path=%(sysroot)s
++cross-compile-append-host-target-to-destdir=False
++
++build-subdir=buildbot_linux_armv7
++
++# Custom flags for cross compilation
++extra-cmake-options=
++    -DCMAKE_SYSROOT=%(sysroot)s
++    -DCMAKE_C_FLAGS="-w -fuse-ld=lld -target armv7-unknown-linux-gnueabihf --sysroot=%(sysroot)s"
++    -DCMAKE_CXX_FLAGS="-w -fuse-ld=lld -target armv7-unknown-linux-gnueabihf --sysroot=%(sysroot)s"
++    -DCMAKE_ASM_FLAGS="-target armv7-unknown-linux-gnueabihf --sysroot=%(sysroot)s"
++
++# Set Swift flags to cross compile deps for armv7
++common-swift-flags="-use-ld=lld -target armv7-unknown-linux-gnueabihf -resource-dir %(workspace_dir)s/build/buildbot_linux_armv7/swift-linux-armv7/lib/swift -sdk %(sysroot)s"
++
++# Use lld for building Swift, set extra flags and sysroot paths
++swift-cmake-options=
++    -DSWIFT_USE_LINKER=lld
++    -DSWIFT_ENABLE_EXPERIMENTAL_CONCURRENCY=ON
++    -DSWIFT_ENABLE_EXPERIMENTAL_CXX_INTEROP=ON
++    -DSWIFT_SDK_LINUX_ARCH_armv7_PATH=%(sysroot)s
++
++install-prefix=/usr
++
++# Path to the root of the installation filesystem.
++install-destdir=%(install_destdir)s
++
++# Path to the .tar.gz package we would create.
++installable-package=%(installable_package)s
++
+ [preset: buildbot_linux_armv7]
+ release
+ llbuild
+diff --git a/utils/build-script-impl b/utils/build-script-impl
+index 902fc8e7518c1..df8af112c36fa 100755
+--- a/utils/build-script-impl
++++ b/utils/build-script-impl
+@@ -1465,6 +1465,10 @@ function common_swift_flags() {
+         echo "error: a module cache path has not been set"
+         exit 1
+     fi
++
++    # Remove quotes from COMMON_SWIFT_FLAGS before using it
++    COMMON_SWIFT_FLAGS=`echo ${COMMON_SWIFT_FLAGS} | xargs`
++
+     echo -n "${SWIFT_FLAGS[@]} ${COMMON_SWIFT_FLAGS} -module-cache-path \"${module_cache}\" "
+ }
+ 
+
+From 417c40a83230ce98d45b8041e835c378452aa4cf Mon Sep 17 00:00:00 2001
+From: "Jesse L. Zamora" <xtremekforever@gmail.com>
+Date: Fri, 19 Jul 2024 14:14:02 -0400
+Subject: [PATCH 4/5] Add default preset for sysroot param
+
+---
+ utils/build_swift/tests/build_swift/test_presets.py | 1 +
+ 1 file changed, 1 insertion(+)
+
+diff --git a/utils/build_swift/tests/build_swift/test_presets.py b/utils/build_swift/tests/build_swift/test_presets.py
+index 495d8aa99812f..98bf476ec993a 100644
+--- a/utils/build_swift/tests/build_swift/test_presets.py
++++ b/utils/build_swift/tests/build_swift/test_presets.py
+@@ -44,6 +44,7 @@
+     'ndk_path': '/path/to/ndk',
+     'arm_dir': '/path/to/arm',
+     'toolchain_path': '/tmp/toolchain',
++    'sysroot': '/path/to/sysroot'
+ }
+ 
+ SAMPLE_PRESET = """
+
+From eacaa7ed4ad6c2b710a5f76be132391153e87ce9 Mon Sep 17 00:00:00 2001
+From: "Jesse L. Zamora" <xtremekforever@gmail.com>
+Date: Fri, 19 Jul 2024 14:31:00 -0400
+Subject: [PATCH 5/5] Add missing Swift modules to armv7 build through cmake
+ flags
+
+---
+ utils/build-presets.ini | 5 +++++
+ 1 file changed, 5 insertions(+)
+
+diff --git a/utils/build-presets.ini b/utils/build-presets.ini
+index 0e724fc9edb0e..a654c2b6d262a 100644
+--- a/utils/build-presets.ini
++++ b/utils/build-presets.ini
+@@ -1153,6 +1153,11 @@ swift-cmake-options=
+     -DSWIFT_USE_LINKER=lld
+     -DSWIFT_ENABLE_EXPERIMENTAL_CONCURRENCY=ON
+     -DSWIFT_ENABLE_EXPERIMENTAL_CXX_INTEROP=ON
++    -DSWIFT_ENABLE_EXPERIMENTAL_DIFFERENTIABLE_PROGRAMMING=ON
++    -DSWIFT_ENABLE_EXPERIMENTAL_DISTRIBUTED=ON
++    -DSWIFT_ENABLE_EXPERIMENTAL_NONESCAPABLE_TYPES=ON
++    -DSWIFT_ENABLE_EXPERIMENTAL_OBSERVATION=ON
++    -DSWIFT_ENABLE_SYNCHRONIZATION=ON
+     -DSWIFT_SDK_LINUX_ARCH_armv7_PATH=%(sysroot)s
+ 
+ install-prefix=/usr

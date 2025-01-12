@@ -17,6 +17,7 @@ SRC_URI = "\
     git://github.com/swiftlang/swift-syntax.git;protocol=https;tag=release/${PV};nobranch=1;destsuffix=swift-syntax \
     file://cmake-configure-swift-stdlib.sh \
     file://llvm-cmake-modules \
+    file://PR75367-buildbot-cross-compile.diff \
     "
 
 S = "${WORKDIR}/swift"
@@ -35,11 +36,20 @@ SWIFT_C_LINK_FLAGS = "-target ${SWIFT_TARGET_NAME} --sysroot ${STAGING_DIR_TARGE
 SWIFT_CXX_FLAGS = "-w -fuse-ld=lld -target ${SWIFT_TARGET_NAME} --sysroot ${STAGING_DIR_TARGET} -B${STAGING_DIR_TARGET}/usr/lib/${TARGET_SYS}/${SWIFT_GCC_VERSION} -L${STAGING_DIR_TARGET}/usr/lib/${TARGET_SYS}/${SWIFT_GCC_VERSION} -I${STAGING_DIR_TARGET}/usr/include -B${STAGING_DIR_TARGET}/usr/lib ${EXTRA_INCLUDE_FLAGS}"
 SWIFT_CXX_LINK_FLAGS = "-target ${SWIFT_TARGET_NAME} --sysroot ${STAGING_DIR_TARGET} ${EXTRA_INCLUDE_FLAGS}"
 
+do_fix_gcc_install_dir() {
+    # symbolic links do not work, will not be found by Swift clang driver
+    # this is necessary to make the libstdc++ location heuristic work, necessary for C++ interop
+    (cd ${STAGING_DIR_TARGET}/usr/lib; rm -rf gcc; mkdir gcc; cp -rp aarch64-oe-linux gcc)
+}
+
+addtask fix_gcc_install_dir after do_unpack before do_patch
+
 do_configure() {
     export LDFLAGS=""
     export STAGING_DIR_TARGET=${STAGING_DIR_TARGET}
     export SDKROOT=${STAGING_DIR_TARGET}
     export SWIFT_SRCDIR=${S}
+    export SWIFT_TARGET_SYS=${TARGET_SYS}
     export LIBDISPATCH_SRCDIR=${WORKDIR}/libdispatch
     export SWIFT_BUILDDIR="${SWIFT_BUILDDIR}"
     export SWIFT_CMAKE_TOOLCHAIN_FILE=${SWIFT_CMAKE_TOOLCHAIN_FILE}
@@ -58,6 +68,7 @@ do_configure() {
     export SWIFT_TARGET_NAME=${SWIFT_TARGET_NAME}
     export SWIFT_PATH_TO_STRING_PROCESSING_SOURCE="${WORKDIR}/swift-experimental-string-processing"
     export SWIFT_SYNTAX_SOURCE_DIR="${WORKDIR}/swift-syntax"
+    export SWIFT_GCC_VERSION=${SWIFT_GCC_VERSION}
 
     mkdir -p ${HOST_LLVM_PATH}/cmake/llvm
     cp ${WORKDIR}/llvm-cmake-modules/* ${HOST_LLVM_PATH}/cmake/llvm
