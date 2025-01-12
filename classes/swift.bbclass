@@ -59,11 +59,12 @@ python do_swift_package_resolve() {
     env = os.environ.copy()
     env['SSH_AUTH_SOCK'] = ssh_auth_sock
 
+    # note: --depth 1 requires git version 2.43.0 or later
     subprocess.call(['swift', 'package', 'resolve', '--package-path', s, '--build-path', b], env=env)
 
     for package in os.listdir(path=f'{b}/checkouts'):
         package_dir = f'{b}/checkouts/{package}'
-        subprocess.call(['git', 'submodule', 'update', '--init', '--recursive'], cwd=package_dir, env=env)
+        subprocess.call(['git', 'submodule', 'update', '--init', '--recursive', '--depth', '1'], cwd=package_dir, env=env)
 }
 
 addtask swift_package_resolve after do_unpack before do_patch
