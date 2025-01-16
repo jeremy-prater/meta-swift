@@ -42,7 +42,7 @@ do_fix_gcc_install_dir() {
     (cd ${STAGING_DIR_TARGET}/usr/lib; rm -rf gcc; mkdir gcc; cp -rp aarch64-oe-linux gcc)
 }
 
-addtask fix_gcc_install_dir after do_prepare_recipe_sysroot
+addtask fix_gcc_install_dir after do_unpack before do_patch
 
 do_configure() {
     export LDFLAGS=""
