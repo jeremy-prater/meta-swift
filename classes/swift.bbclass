@@ -162,6 +162,9 @@ python swift_do_configure() {
     configJSON.close()
 }
 
+# ideally this should be handled by do_swift_package_resolve but doesn't always appear to be the case
+do_compile[network] = "1"
+
 swift_do_compile()  {
     swift build --package-path ${S} --build-path ${B} --skip-update -c ${BUILD_MODE} --destination ${WORKDIR}/destination.json ${EXTRA_OESWIFT}
 }
