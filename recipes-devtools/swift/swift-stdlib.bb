@@ -88,14 +88,14 @@ do_install:prepend() {
 
     # remove Dispatch (it will be built by another package)
     rm -f ${SWIFT_BUILDDIR}/lib/swift/linux/libBlocksRuntime.so
-    rm -f ${SWIFT_BUILDDIR}/lib/swift/linux/libdispatch.so 
+    rm -f ${SWIFT_BUILDDIR}/lib/swift/linux/libdispatch.so
     rm -f ${SWIFT_BUILDDIR}/lib/swift/linux/${SWIFT_TARGET_ARCH}/*.so
 
-    # remove some dirs from /lib/swift (we don't include them in any packages) 
+    # remove some dirs from /lib/swift (we don't include them in any packages)
     rm -rf ${SWIFT_BUILDDIR}/lib/swift/clang
     rm -rf ${SWIFT_BUILDDIR}/lib/swift/FrameworkABIBaseline
 
-    # remove /usr/share (we don't include it in any packages) 
+    # remove /usr/share (we don't include it in any packages)
     rm -rf ${SWIFT_BUILDDIR}/share
 
     # remove /usr/bin (we don't include it in any packages)
