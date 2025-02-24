@@ -115,6 +115,9 @@ python swift_do_configure() {
             "-tools-directory",
             "${STAGING_DIR_NATIVE}/usr/bin",
 
+            "-enforce-exclusivity=unchecked",
+            "-enforce-exclusivity=none",
+
             "-Xlinker", "-rpath", "-Xlinker", "/usr/lib/swift/linux",
 
             "-Xlinker",
