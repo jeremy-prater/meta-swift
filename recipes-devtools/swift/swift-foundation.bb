@@ -12,6 +12,7 @@ SRCREV_FORMAT = "swift_corelibs_foundation"
 
 SRC_URI = "git://github.com/swiftlang/swift-corelibs-foundation.git;protocol=https;tag=swift-${PV}-RELEASE;nobranch=1;"
 SRC_URI += "file://0001-Move-__CFAllocatorRespectsHintZeroWhenAllocating-to-.patch;striplevel=1;"
+SRC_URI += "file://0001-CFRunLoopTimerGetTolerance-CFRunLoopTimerSetToleranc.patch;striplevel=1;"
 SRC_URI += "git://github.com/swiftlang/swift-foundation.git;protocol=https;tag=swift-${PV}-RELEASE;nobranch=1;destsuffix=swift-foundation;"
 SRC_URI += "git://github.com/swiftlang/swift-foundation-icu.git;protocol=https;tag=swift-${PV}-RELEASE;nobranch=1;destsuffix=swift-foundation-icu;"
 
