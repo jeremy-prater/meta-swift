@@ -59,12 +59,16 @@ python do_swift_package_resolve() {
     env = os.environ.copy()
     env['SSH_AUTH_SOCK'] = ssh_auth_sock
 
-    # note: --depth 1 requires git version 2.43.0 or later
-    subprocess.call(['swift', 'package', 'resolve', '--package-path', s, '--build-path', b], env=env)
+    ret = subprocess.call(['swift', 'package', 'resolve', '--package-path', s, '--build-path', b], env=env)
+    if ret != 0:
+        bb.fatal('swift package resolve failed')
 
+    # note: --depth 1 requires git version 2.43.0 or later
     for package in os.listdir(path=f'{b}/checkouts'):
         package_dir = f'{b}/checkouts/{package}'
-        subprocess.call(['git', 'submodule', 'update', '--init', '--recursive', '--depth', '1'], cwd=package_dir, env=env)
+        ret = subprocess.call(['git', 'submodule', 'update', '--init', '--recursive', '--depth', '1'], cwd=package_dir, env=env)
+        if ret != 0:
+            bb.fatal('git submodule update failed')
 }
 
 addtask swift_package_resolve after do_unpack before do_compile
@@ -166,10 +170,29 @@ python swift_do_configure() {
 }
 
 # ideally this should be handled by do_swift_package_resolve but doesn't always appear to be the case
-do_compile[network] = "1"
+swift_do_compile[network] = "1"
+swift_do_compile[vardepsexclude] = "BB_ORIGENV"
 
-swift_do_compile()  {
-    swift build --package-path ${S} --build-path ${B} --skip-update -c ${BUILD_MODE} --destination ${WORKDIR}/destination.json ${EXTRA_OESWIFT}
+python swift_do_compile() {
+    import subprocess
+    import os
+    import shlex
+
+    s = d.getVar('S')
+    b = d.getVar('B')
+    build_mode = d.getVar('BUILD_MODE')
+    workdir = d.getVar("WORKDIR", True)
+    destination_json = workdir + '/destination.json'
+    extra_oeswift = shlex.split(d.getVar('EXTRA_OESWIFT'))
+
+    ssh_auth_sock = d.getVar('BB_ORIGENV')['SSH_AUTH_SOCK']
+
+    env = os.environ.copy()
+    env['SSH_AUTH_SOCK'] = ssh_auth_sock
+
+    ret = subprocess.call(['swift', 'build', '--package-path', s, '--build-path', b, '-c', build_mode, '--destination', destination_json] + extra_oeswift, env=env, cwd=s)
+    if ret != 0:
+        bb.fatal('swift build failed')
 }
 
 EXPORT_FUNCTIONS do_configure do_compile
