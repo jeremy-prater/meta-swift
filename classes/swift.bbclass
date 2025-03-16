@@ -93,6 +93,8 @@ python swift_do_configure() {
     # This is used to determine necessary include paths
     cxx_include_base = recipe_sysroot + "/usr/include/c++"
     cxx_include_list = os.listdir(cxx_include_base)
+    if 'current' in cxx_include_list:
+        cxx_include_list.remove('current')
     if len(cxx_include_list) != 1:
         bb.fatal("swift bbclass detected more than one c++ runtime, unable to determine which one to use")
     cxx_version = cxx_include_list[0]
