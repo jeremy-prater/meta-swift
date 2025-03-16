@@ -37,5 +37,3 @@ FILES:${PN}-dev = "\
     ${libdir}/swift/linux/XCTest.swiftmodule \
     ${libdir}/swift/linux/XCTest.swiftdoc \
 "
-
-# TODO: not using cmake means we do not generate ${PN}-staticdev

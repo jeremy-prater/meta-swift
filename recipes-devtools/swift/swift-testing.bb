@@ -11,6 +11,7 @@ require swift-version.inc
 PV = "${SWIFT_VERSION}"
 
 SRC_URI = "git://github.com/swiftlang/swift-testing.git;protocol=https;tag=swift-${PV}-RELEASE;nobranch=1"
+SRC_URI += "file://0001-build-as-dynamic-library.patch;striplevel=1;"
 
 S = "${WORKDIR}/git"
 B = "${WORKDIR}/build"
@@ -20,16 +21,20 @@ inherit swift
 do_install() {
     install -d ${D}${libdir}/swift/linux
 
+    install -m 0644 ${BUILD_DIR}/libTesting.so ${D}${libdir}/swift/linux
     install -m 0644 ${BUILD_DIR}/Modules/Testing.swiftmodule ${D}${libdir}/swift/linux
     install -m 0644 ${BUILD_DIR}/Modules/Testing.swiftdoc ${D}${libdir}/swift/linux
+    install -m 0644 ${BUILD_DIR}/Modules/Testing.swiftinterface ${D}${libdir}/swift/linux
 
     rm -f ${BUILD_DIR}/Modules/*.swiftsourceinfo
 }
 
 FILES:${PN} = "\
+    ${libdir}/swift/linux/libTesting.so \
 "
 
 FILES:${PN}-dev = "\
     ${libdir}/swift/linux/Testing.swiftmodule \
     ${libdir}/swift/linux/Testing.swiftdoc \
+    ${libdir}/swift/linux/Testing.swiftinterface \
 "

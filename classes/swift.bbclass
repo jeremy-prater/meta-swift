@@ -188,18 +188,27 @@ python swift_do_compile() {
     build_mode = d.getVar('BUILD_MODE')
     workdir = d.getVar("WORKDIR", True)
     destination_json = workdir + '/destination.json'
+    extra_oeswift = shlex.split(d.getVar('EXTRA_OESWIFT'))
     ssh_auth_sock = d.getVar('BB_ORIGENV')['SSH_AUTH_SOCK']
 
     env = os.environ.copy()
     env['SSH_AUTH_SOCK'] = ssh_auth_sock
 
-    extra_oeswift = shlex.split(d.getVar('EXTRA_OESWIFT'))
-    if d.getVar('SWIFT_BUILD_TESTS') == '1':
-        extra_oeswift.append('--build-tests')
+    args = ['swift', 'build', '--package-path', s, '--build-path', b, '-c', build_mode, '--destination', destination_json] + extra_oeswift
 
-    ret = subprocess.call(['swift', 'build', '--package-path', s, '--build-path', b, '-c', build_mode, '--destination', destination_json] + extra_oeswift, env=env, cwd=s)
+    ret = subprocess.call(args, env=env, cwd=s)
     if ret != 0:
         bb.fatal('swift build failed')
+
+    if d.getVar('SWIFT_BUILD_TESTS') == '1':
+        if d.getVar('DEBUG_BUILD') != '1':
+            bb.warn('building Swift tests with release build, @testable imports may fail')
+
+        # FIXME: why do we need to specify -lXCTest and -lTesting explicitly
+        test_args = ['--build-tests', '-Xlinker', '-lXCTest', '-Xlinker', '-lTesting']
+        ret = subprocess.call(args + test_args + extra_oeswift, env=env, cwd=s)
+        if ret != 0:
+            bb.fatal('swift build --build-tests failed')
 }
 
 EXPORT_FUNCTIONS do_configure do_compile
