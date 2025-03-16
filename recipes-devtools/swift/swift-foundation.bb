@@ -37,8 +37,7 @@ EXTRA_OECMAKE += "-DSwiftFoundation_MODULE_TRIPLE=${TARGET_ARCH}-unknown-linux-g
 
 EXTRA_OECMAKE += "-DCMAKE_FIND_ROOT_PATH:PATH=${CROSS_COMPILE_DEPS_PATH}"
 
-EXTRA_OECMAKE += "-Ddispatch_DIR=${STAGING_DIR_TARGET}${libdir}/swift/dispatch/cmake"
-
+EXTRA_OECMAKE += "-Ddispatch_DIR=${STAGING_DIR_TARGET}${libdir}/cmake/dispatch"
 EXTRA_OECMAKE += "-DENABLE_TESTING=0"
 EXTRA_OECMAKE += "-DBUILD_SHARED_LIBS=YES"
 EXTRA_OECMAKE += "-DDISPATCH_INCLUDE_PATH=${STAGING_DIR_TARGET}/${includedir}"
@@ -59,6 +58,10 @@ do_install:append() {
 
     # Since plutil was the only thing in the bindir, remove the bindir as well
     rmdir ${D}${bindir}
+
+    # Don't install CMake modules until absolute paths are corrected
+#    install -d ${D}${libdir}/cmake/Foundation
+#    install -m 0644 ${S}/cmake/modules/FoundationConfig.cmake ${D}${libdir}/cmake/Foundation
 }
 
 FILES:${PN} = "\
@@ -68,7 +71,7 @@ FILES:${PN} = "\
 "
 
 FILES:${PN}-dev = "\
-    ${libdir}/swift/CoreFoundation \
+    ${libdir}/swift/CoreFoundation/* \
     ${libdir}/swift/linux/Foundation.swiftmodule/* \
     ${libdir}/swift/linux/FoundationNetworking.swiftmodule/* \
     ${libdir}/swift/linux/FoundationXML.swiftmodule/* \

@@ -35,6 +35,11 @@ do_install:append() {
     # SwiftPM magic
     install -d ${D}${includedir}
     (cd ${D}${libdir}/swift; mv Block os dispatch ${D}${includedir})
+
+    # don't install CMake modules as they have absolute paths in them
+#    install -d ${D}${libdir}/cmake/dispatch
+#    install -m 0644 ${LIBDISPATCH_BUILDDIR}/cmake/modules/dispatchConfig.cmake ${D}${libdir}/cmake/dispatch/
+#    install -m 0644 ${LIBDISPATCH_BUILDDIR}/cmake/modules/dispatchExports.cmake ${D}${libdir}/cmake/dispatch/
 }
 
 FILES:${PN} = "\
@@ -46,7 +51,6 @@ FILES:${PN} = "\
 FILES:${PN}-dev = "\
     ${libdir}/swift/linux/${SWIFT_TARGET_ARCH}/Dispatch.swiftdoc \
     ${libdir}/swift/linux/${SWIFT_TARGET_ARCH}/Dispatch.swiftmodule \
-    ${libdir}/cmake/dispatch \
     ${includedir}/Block \
     ${includedir}/os \
     ${includedir}/dispatch \
