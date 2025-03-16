@@ -11,6 +11,7 @@ PV = "${SWIFT_VERSION}"
 SRC_URI = "git://github.com/swiftlang/swift-corelibs-xctest.git;protocol=https;tag=swift-${PV}-RELEASE;nobranch=1"
 
 S = "${WORKDIR}/git"
+B = "${WORKDIR}/build"
 
 inherit swift
 
