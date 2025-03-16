@@ -1,10 +1,16 @@
 DESCRIPTION = "Swift Hello World!"
 LICENSE = "CLOSED"
 
+SWIFT_BUILD_TESTS = "1"
+
 SRC_URI = "\
-    file://Sources \
     file://Package.swift \
+    file://Sources \
+    file://Tests \
 "
+
+S = "${WORKDIR}/git"
+B = "${WORKDIR}/build"
 
 inherit swift
 
