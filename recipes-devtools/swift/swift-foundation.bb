@@ -18,7 +18,7 @@ SRC_URI += "git://github.com/swiftlang/swift-foundation-icu.git;protocol=https;t
 
 S = "${WORKDIR}/git"
 
-DEPENDS = "swift-foundation-essentials swift-stdlib swift-native libdispatch ncurses libxml2 icu curl"
+DEPENDS = "swift-foundation-essentials swift-foundation-icu swift-stdlib swift-native libdispatch ncurses libxml2 icu curl"
 RDEPENDS:${PN} += "swift-foundation-essentials swift-stdlib libdispatch"
 
 inherit swift-cmake-base
@@ -61,5 +61,23 @@ do_install:append() {
     rmdir ${D}${bindir}
 }
 
-FILES:${PN} = "${libdir}/swift/*"
+FILES:${PN} = "\
+    ${libdir}/swift/linux/libFoundation.so \
+    ${libdir}/swift/linux/libFoundationNetworking.so \
+    ${libdir}/swift/linux/libFoundationXML.so \
+"
+
+FILES:${PN}-dev = "\
+    ${libdir}/swift/CoreFoundation \
+    ${libdir}/swift/linux/Foundation.swiftmodule/* \
+    ${libdir}/swift/linux/FoundationNetworking.swiftmodule/* \
+    ${libdir}/swift/linux/FoundationXML.swiftmodule/* \
+"
+
+FILES:${PN}-staticdev = "\
+    ${libdir}/swift/linux/libFoundation.a \
+    ${libdir}/swift/linux/libFoundationNetworking.a \
+    ${libdir}/swift/linux/libFoundationXML.a \
+"
+
 INSANE_SKIP:${PN} = "file-rdeps"

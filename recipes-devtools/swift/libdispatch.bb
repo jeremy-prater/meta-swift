@@ -38,11 +38,28 @@ do_install:append() {
 }
 
 FILES:${PN} = "\
-    ${libdir}/swift \
+    ${libdir}/swift/linux/libdispatch.so \
+    ${libdir}/swift/linux/libswiftDispatch.so \
+    ${libdir}/swift/linux/libBlocksRuntime.so \
+"
+
+FILES:${PN}-dev = "\
+    ${libdir}/swift/linux/${SWIFT_TARGET_ARCH}/Dispatch.swiftdoc \
+    ${libdir}/swift/linux/${SWIFT_TARGET_ARCH}/Dispatch.swiftmodule \
     ${libdir}/cmake/dispatch \
     ${includedir}/Block \
     ${includedir}/os \
     ${includedir}/dispatch \
+"
+
+FILES:${PN}-staticdev = "\
+    ${libdir}/swift_static/linux/libdispatch.a \
+    ${libdir}/swift_static/linux/libswiftDispatch.a \
+    ${libdir}/swift_static/linux/libBlocksRuntime.a \
+    ${libdir}/swift_static/linux/libDispatchStubs.a \
+    ${libdir}/swift_static/linux/${SWIFT_TARGET_ARCH}/Dispatch.swiftdoc \
+    ${libdir}/swift_static/linux/${SWIFT_TARGET_ARCH}/Dispatch.swiftmodule \
+    ${libdir}/swift_static/linux/dispatch \
 "
 
 INSANE_SKIP:${PN} = "file-rdeps"

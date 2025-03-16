@@ -37,5 +37,26 @@ cmake_do_generate_toolchain_file:append() {
     sed -i 's/set([ ]*CMAKE_SYSTEM_PROCESSOR .*[ ]*)/set(CMAKE_SYSTEM_PROCESSOR ${TARGET_CPU_NAME})/' ${WORKDIR}/toolchain.cmake
 }
 
-FILES:${PN} = "${libdir}/swift/*"
+do_install:append() {
+    # don't double up on Unicode
+    rm -rf ${D}${libdir}/swift/_foundation_unicode
+    rm -rf ${D}${libdir}/swift/linux/lib_FoundationICU.so
+}
+
+FILES:${PN} = "\
+    ${libdir}/swift/linux/libFoundationEssentials.so \
+    ${libdir}/swift/linux/libFoundationInternationalization.so \
+"
+
+FILES:${PN}-dev = "\
+    ${libdir}/swift/_FoundationCShims/* \
+    ${libdir}/swift/linux/FoundationEssentials.swiftmodule/* \
+    ${libdir}/swift/linux/FoundationInternationalization.swiftmodule/* \
+    ${libdir}/swift/linux/_FoundationCollections.swiftmodule/* \
+"
+
+FILES:${PN}-staticdev = "\
+    ${libdir}/swift_static/linux/libFoundationEssentials.a \
+"
+
 INSANE_SKIP:${PN} = "file-rdeps"

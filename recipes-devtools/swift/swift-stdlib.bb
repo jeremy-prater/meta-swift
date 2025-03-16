@@ -39,7 +39,7 @@ SWIFT_CXX_LINK_FLAGS = "-target ${SWIFT_TARGET_NAME} --sysroot ${STAGING_DIR_TAR
 do_fix_gcc_install_dir() {
     # symbolic links do not work, will not be found by Swift clang driver
     # this is necessary to make the libstdc++ location heuristic work, necessary for C++ interop
-    (cd ${STAGING_DIR_TARGET}/usr/lib && rm -rf gcc && mkdir -p gcc && cp -rp aarch64-oe-linux gcc)
+    (cd ${STAGING_DIR_TARGET}/usr/lib && rm -rf gcc && mkdir -p gcc && cp -rp ${SWIFT_TARGET_ARCH}-oe-linux gcc)
 }
 
 addtask fix_gcc_install_dir before do_configure after do_prepare_recipe_sysroot
@@ -83,9 +83,6 @@ do_compile() {
 }
 
 do_install:prepend() {
-    # remove Swift static libs (if any)
-    rm -rf ${SWIFT_BUILDDIR}/lib/swift_static
-
     # remove Dispatch (it will be built by another package)
     rm -f ${SWIFT_BUILDDIR}/lib/swift/linux/libBlocksRuntime.so
     rm -f ${SWIFT_BUILDDIR}/lib/swift/linux/libdispatch.so
@@ -107,7 +104,43 @@ do_install() {
     cp -rfd ${SWIFT_BUILDDIR}/lib/swift ${D}${libdir}/
 }
 
-FILES:${PN} = "${libdir}/swift"
+FILES:${PN} = "\
+    ${libdir}/swift/linux/libswift_RegexParser.so \
+    ${libdir}/swift/linux/libswiftSwiftPrivateThreadExtras.so \
+    ${libdir}/swift/linux/libswift_Concurrency.so \
+    ${libdir}/swift/linux/libswiftRegexBuilder.so \
+    ${libdir}/swift/linux/libswiftObservation.so \
+    ${libdir}/swift/linux/libswiftSwiftOnoneSupport.so \
+    ${libdir}/swift/linux/libswiftSwiftPrivateLibcExtras.so \
+    ${libdir}/swift/linux/libswiftRuntimeUnittest.so \
+    ${libdir}/swift/linux/libswift_StringProcessing.so \
+    ${libdir}/swift/linux/libswiftGlibc.so \
+    ${libdir}/swift/linux/libswiftCore.so \
+    ${libdir}/swift/linux/libswift_Builtin_float.so \
+    ${libdir}/swift/linux/libswiftSwiftPrivate.so \
+    ${libdir}/swift/linux/libswiftSynchronization.so \
+    ${libdir}/swift/linux/libswiftStdlibUnittest.so \
+"
+
+FILES:${PN}-dev = "\
+    ${libdir}/swift/shims \
+    ${libdir}/swift/apinotes \
+    ${libdir}/swift/linux/libswiftCommandLineSupport.a \
+    ${libdir}/swift/linux/libswiftCxxStdlib.a \
+    ${libdir}/swift/linux/libswiftCxx.a \
+    ${libdir}/swift/linux/libcxxshim.modulemap \
+    ${libdir}/swift/linux/libstdcxx.modulemap \
+    ${libdir}/swift/linux/libstdcxx.h \
+    ${libdir}/swift/linux/libcxxshim.h \
+    ${libdir}/swift/linux/libcxxstdlibshim.h \
+    ${libdir}/swift/linux/${SWIFT_TARGET_ARCH} \
+    ${libdir}/swift/linux/*.swiftmodule/* \
+"
+
+FILES:${PN}-staticdev = "\
+    ${libdir}/swift_static \
+"
+
 INSANE_SKIP:${PN} = "file-rdeps"
 
 do_package_qa[noexec] = "1"

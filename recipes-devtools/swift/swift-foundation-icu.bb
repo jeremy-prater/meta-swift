@@ -30,5 +30,13 @@ cmake_do_generate_toolchain_file:append() {
     sed -i 's/set([ ]*CMAKE_SYSTEM_PROCESSOR .*[ ]*)/set(CMAKE_SYSTEM_PROCESSOR ${TARGET_CPU_NAME})/' ${WORKDIR}/toolchain.cmake
 }
 
-FILES:${PN} = "${libdir}/swift/*"
+FILES:${PN} = "\
+    ${libdir}/swift/linux/lib_FoundationICU.so \
+"
+
+FILES:${PN}-dev = "\
+    ${libdir}/swift/_foundation_unicode/* \
+    ${libdir}/swift/linux/${SWIFT_TARGET_ARCH}/FoundationICU.swiftmodule/* \
+"
+
 INSANE_SKIP:${PN} = "file-rdeps"
