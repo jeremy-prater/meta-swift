@@ -194,8 +194,8 @@ python swift_do_compile() {
     env['SSH_AUTH_SOCK'] = ssh_auth_sock
 
     extra_oeswift = shlex.split(d.getVar('EXTRA_OESWIFT'))
-    if d.getVar('SWIFT_BUILD_TESTS') == 1:
-        extra.oeswift.append('--swift-build-tests')
+    if d.getVar('SWIFT_BUILD_TESTS') == '1':
+        extra_oeswift.append('--build-tests')
 
     ret = subprocess.call(['swift', 'build', '--package-path', s, '--build-path', b, '-c', build_mode, '--destination', destination_json] + extra_oeswift, env=env, cwd=s)
     if ret != 0:
