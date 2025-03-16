@@ -1,7 +1,10 @@
 # avoid conflicts with meta-clang
 TOOLCHAIN = "gcc"
 
+SWIFT_BUILD_TESTS ?= "${DEBUG_BUILD}"
+
 DEPENDS += "swift-native glibc gcc libgcc swift-stdlib libdispatch swift-foundation"
+DEPENDS += "${@oe.utils.conditional('SWIFT_BUILD_TESTS', '1', 'swift-xctest swift-testing', '', d)}"
 
 # Default build directory for SPM is "./.build"
 # (see 'swift [build|package|run|test] --help')
@@ -185,12 +188,14 @@ python swift_do_compile() {
     build_mode = d.getVar('BUILD_MODE')
     workdir = d.getVar("WORKDIR", True)
     destination_json = workdir + '/destination.json'
-    extra_oeswift = shlex.split(d.getVar('EXTRA_OESWIFT'))
-
     ssh_auth_sock = d.getVar('BB_ORIGENV')['SSH_AUTH_SOCK']
 
     env = os.environ.copy()
     env['SSH_AUTH_SOCK'] = ssh_auth_sock
+
+    extra_oeswift = shlex.split(d.getVar('EXTRA_OESWIFT'))
+    if d.getVar('SWIFT_BUILD_TESTS') == 1:
+        extra.oeswift.append('--swift-build-tests')
 
     ret = subprocess.call(['swift', 'build', '--package-path', s, '--build-path', b, '-c', build_mode, '--destination', destination_json] + extra_oeswift, env=env, cwd=s)
     if ret != 0:

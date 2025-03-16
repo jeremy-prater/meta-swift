@@ -2,6 +2,8 @@ SUMMARY = "swift-testing"
 DESCRIPTION = "A package with expressive and intuitive APIs that make testing your Swift code a breeze."
 HOMEPAGE = "https://github.com/swiftlang/swift-testing"
 
+SWIFT_BUILD_TESTS = "0"
+
 LICENSE = "Apache-2.0" 
 LIC_FILES_CHKSUM = "file://LICENSE.txt;md5=9426349f482bb39d6a4a080793545176"
 
