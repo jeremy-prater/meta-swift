@@ -175,8 +175,8 @@ python swift_do_configure() {
 }
 
 # ideally this should be handled by do_swift_package_resolve but doesn't always appear to be the case
-swift_do_compile[network] = "1"
-swift_do_compile[vardepsexclude] = "BB_ORIGENV"
+do_compile[network] = "1"
+do_compile[vardepsexclude] = "BB_ORIGENV"
 
 python swift_do_compile() {
     import subprocess
