@@ -28,7 +28,7 @@ DEPENDS = "gcc-runtime python3-native icu ncurses swift-native libgcc gcc glibc 
 
 inherit swift-cmake-base
 
-TARGET_LDFLAGS += "-w -fuse-ld=lld -L${STAGING_DIR_TARGET}/usr/lib/${TARGET_SYS}/${SWIFT_GCC_VERSION}"
+TARGET_LDFLAGS:append = " -w -fuse-ld=lld -L${STAGING_DIR_TARGET}/usr/lib/${TARGET_SYS}/${SWIFT_GCC_VERSION}"
 
 SWIFT_CMAKE_TOOLCHAIN_FILE = "${WORKDIR}/linux-${SWIFT_TARGET_ARCH}-toolchain.cmake"
 
