@@ -12,7 +12,7 @@ SRC_URI = "https://download.swift.org/swift-${PV}-release/ubuntu2004/swift-${PV}
 SRC_URI[sha256sum] = "b014975844beac5ab3a7f71420181f45d0a93243f9ea4853e6588c05cad1e363"
 
 DEPENDS = "curl"
-RDEPENDS = "ncurses-native"
+RDEPENDS:${PN} += "ncurses-native"
  
 S = "${WORKDIR}/${SRC_DIR}"
 
@@ -31,7 +31,7 @@ inherit native
 ########################################################################
 SYSROOT_DIRS_NATIVE += "${base_prefix}/opt"
 
-do_install_append () {
+do_install:append () {
     install -d ${D}${base_prefix}/opt/usr/bin/
     cp -r ${S}/usr/bin/* ${D}${base_prefix}/opt/usr/bin/
 

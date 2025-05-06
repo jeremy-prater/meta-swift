@@ -22,11 +22,11 @@ TARGET_LDFLAGS += "-L${STAGING_DIR_TARGET}/usr/lib/swift/linux"
 EXTRA_OECMAKE += "-DENABLE_SWIFT=YES"
 
 # Ensure the right CPU is targeted
-cmake_do_generate_toolchain_file_append() {
+cmake_do_generate_toolchain_file:append() {
     sed -i 's/set([ ]*CMAKE_SYSTEM_PROCESSOR .*[ ]*)/set(CMAKE_SYSTEM_PROCESSOR ${TARGET_CPU_NAME})/' ${WORKDIR}/toolchain.cmake
 }
 
-do_install_append() {
+do_install:append() {
     # Copy cmake build modules
     mkdir -p ${D}${libdir}/swift/dispatch/cmake
     cp -rf ${WORKDIR}/build/cmake/modules/* ${D}${libdir}/swift/dispatch/cmake/

@@ -13,7 +13,7 @@ S = "${WORKDIR}/icu/source"
 SPDX_S = "${WORKDIR}/icu"
 STAGING_ICU_DIR_NATIVE = "${STAGING_DATADIR_NATIVE}/${BPN}/${PV}"
 
-CPPFLAGS_append_libc-uclibc = " -DU_TIMEZONE=0"
+CPPFLAGS:append_libc-uclibc = " -DU_TIMEZONE=0"
 
 inherit autotools pkgconfig
 
@@ -25,7 +25,7 @@ EXTRA_OECONF_class-native = ""
 EXTRA_OECONF_class-nativesdk = "--with-cross-build=${STAGING_ICU_DIR_NATIVE}"
 
 PREPROCESS_RELOCATE_DIRS = "${datadir}/${BPN}/${PV}"
-do_install_append_class-native() {
+do_install:append_class-native() {
 	mkdir -p ${D}/${STAGING_ICU_DIR_NATIVE}/config
 	cp -r ${B}/config/icucross.mk ${D}/${STAGING_ICU_DIR_NATIVE}/config
 	cp -r ${B}/config/icucross.inc ${D}/${STAGING_ICU_DIR_NATIVE}/config
@@ -39,7 +39,7 @@ do_install_append_class-native() {
     rm -r ${D}${STAGING_DATADIR_NATIVE}/icu
 }
 
-do_install_append() {
+do_install:append() {
     rm -rf ${D}/usr/lib/icu
     rm -rf ${D}/usr/share/icu
     rm -f ${D}/${libdir}/*.so

@@ -16,7 +16,7 @@ inherit native
 SYSROOT_DIRS_NATIVE += "${base_prefix}/opt"
 S = "${WORKDIR}/${SRC_DIR}"
 
-do_install_append () {
+do_install:append () {
     mkdir -p ${D}${base_prefix}/opt/usr/lib/llvm-swift
     cp -rf ${S}/../bin ${D}${base_prefix}/opt/usr/lib/llvm-swift/
     cp -rf ${S}/../include ${D}${base_prefix}/opt/usr/lib/llvm-swift/

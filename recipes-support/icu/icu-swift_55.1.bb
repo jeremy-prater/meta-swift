@@ -18,7 +18,7 @@ SRC_URI = "${BASE_SRC_URI} \
            file://fix-install-manx.patch \
           "
 
-SRC_URI_append_class-target = "\
+SRC_URI:append:class-target = "\
            file://0001-Disable-LDFLAGSICUDT-for-Linux.patch \
           "
 SRC_URI[md5sum] = "e2d523df79d6cb7855c2fbe284f4db29"
