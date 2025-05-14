@@ -190,9 +190,11 @@ python swift_do_compile() {
     destination_json = workdir + '/destination.json'
     extra_oeswift = shlex.split(d.getVar('EXTRA_OESWIFT'))
     ssh_auth_sock = d.getVar('BB_ORIGENV')['SSH_AUTH_SOCK']
+    recipe_sysroot = d.getVar("STAGING_DIR_TARGET", True)
 
     env = os.environ.copy()
     env['SSH_AUTH_SOCK'] = ssh_auth_sock
+    env['SYSROOT'] = recipe_sysroot
 
     args = ['swift', 'build', '--package-path', s, '--build-path', b, '-c', build_mode, '--destination', destination_json] + extra_oeswift
 
