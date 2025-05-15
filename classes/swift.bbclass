@@ -21,6 +21,15 @@ BUILD_DIR = "${B}/${BUILD_MODE}"
 EXTRA_OESWIFT ?= ""
 
 SWIFT_TARGET_NAME = "${@oe.utils.conditional('TARGET_ARCH', 'arm', 'armv7-unknown-linux-gnueabihf', 'aarch64-unknown-linux-gnu', d)}"
+SWIFT_TARGET_ARCH = "${@oe.utils.conditional('TARGET_ARCH', 'arm', 'armv7', 'aarch64', d)}"
+
+do_fix_gcc_install_dir() {
+    # symbolic links do not work, will not be found by Swift clang driver
+    # this is necessary to make the libstdc++ location heuristic work, necessary for C++ interop
+    (cd ${STAGING_DIR_TARGET}/usr/lib && rm -rf gcc && mkdir -p gcc && cp -rp ${SWIFT_TARGET_ARCH}-oe-linux gcc)
+}
+
+addtask fix_gcc_install_dir before do_configure after do_prepare_recipe_sysroot
 
 # Workaround complex macros that cannot be automatically imported by Swift.
 # https://developer.apple.com/documentation/swift/imported_c_and_objective-c_apis/using_imported_c_macros_in_swift
@@ -157,6 +166,8 @@ python swift_do_configure() {
             "-module-cache-path", "${B}/${BUILD_MODE}/ModuleCache",
             "-Xclang-linker", "-B${STAGING_DIR_TARGET}/usr/lib/${TARGET_SYS}/${SWIFT_CXX_VERSION}",
             "-Xclang-linker", "-B${STAGING_DIR_TARGET}/usr/lib",
+
+            "-Xcc", "--gcc-install-dir=${STAGING_DIR_TARGET}/usr/lib/gcc/${TARGET_SYS}/${SWIFT_CXX_VERSION}",
 
             "-sdk", "${STAGING_DIR_TARGET}"
         ],
