@@ -120,7 +120,6 @@ python swift_do_configure() {
         "target":"${SWIFT_TARGET_NAME}",
         "dynamic-library-extension":"so",
         "extra-cc-flags":[
-            "-fPIC",
             "-I${STAGING_DIR_TARGET}/usr/include/c++/${SWIFT_CXX_VERSION}",
             "-I${STAGING_DIR_TARGET}/usr/include/c++/${SWIFT_CXX_VERSION}/${TARGET_SYS}",
             "-I${STAGING_DIR_NATIVE}/usr/lib/clang/17/include",
