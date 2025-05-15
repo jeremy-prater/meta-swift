@@ -184,6 +184,12 @@ do_install:prepend() {
 }
 
 do_install() {
+    # install bridging and custom executor headers
+    install -d ${D}${includedir}/swift
+    install -m 0644 ${SWIFT_BUILDDIR}/include/swift/*.h ${D}${includedir}/swift
+    install -m 0644 ${S}/lib/ClangImporter/SwiftBridging/swift/bridging* ${D}${includedir}/swift
+
+    # install libraries
     install -d ${D}${libdir}
     cp -rfd ${SWIFT_BUILDDIR}/lib/swift ${D}${libdir}/
 }
@@ -210,6 +216,7 @@ FILES:${PN} = "\
 "
 
 FILES:${PN}-dev = "\
+    ${includedir}/swift \
     ${libdir}/swift/shims \
     ${libdir}/swift/apinotes \
     ${libdir}/swift/linux/libswiftCommandLineSupport.a \
