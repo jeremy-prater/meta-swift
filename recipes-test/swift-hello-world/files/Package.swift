@@ -14,7 +14,12 @@ let package = Package(
         // Targets can depend on other targets in this package, and on products in packages which this package depends on.
         .executableTarget(
             name: "hello-world",
-            dependencies: []),
+            dependencies: [],
+            swiftSettings: [
+                .swiftLanguageMode(.v5),
+                .interoperabilityMode(.Cxx),
+            ]
+        ),
         .testTarget(
             name: "hello-world-test",
             dependencies: []),
