@@ -9,7 +9,6 @@ require swift-version.inc
 PV = "${SWIFT_VERSION}"
 
 SRCREV_FORMAT = "swift_foundation"
-#SRCREV = "release/${PV}"
 
 SRC_URI = "git://github.com/swiftlang/swift-foundation.git;protocol=https;tag=swift-${PV}-RELEASE;nobranch=1;"
 SRC_URI += "git://github.com/swiftlang/swift-foundation-icu.git;protocol=https;tag=swift-${PV}-RELEASE;nobranch=1;destsuffix=swift-foundation-icu;"
