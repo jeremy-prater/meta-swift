@@ -23,7 +23,7 @@ EXTRA_OECMAKE += "-DENABLE_SWIFT=YES"
 
 # Ensure the right CPU is targeted
 cmake_do_generate_toolchain_file:append() {
-    sed -i 's/set([ ]*CMAKE_SYSTEM_PROCESSOR .*[ ]*)/set(CMAKE_SYSTEM_PROCESSOR ${TARGET_CPU_NAME})/' ${WORKDIR}/toolchain.cmake
+sed -i 's|-fcanon-prefix-map[^ ]*||g' ${WORKDIR}/toolchain.cmake
 }
 
 do_install:append() {
