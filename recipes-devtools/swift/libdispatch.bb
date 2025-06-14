@@ -17,13 +17,6 @@ S = "${WORKDIR}/git"
 
 inherit swift-cmake-base
 
-#python () {
-#    rrec = d.getVar('CXXFLAGS', d, 1)
-#    if rrec:
-#        rrec = rrec.replace("-fcanon-prefix-map", "")
-#        d.setVar('CXXFLAGS', rrec)
-#}
-
 
 python () {
     for var in ['CFLAGS', 'CXXFLAGS', 'CXXLDFLAGS','CLDFLAGS', 'LDFLAGS', 'EXTRA_OECMAKE']:
@@ -32,13 +25,6 @@ python () {
             flags = flags.replace("-fcanon-prefix-map", "")
             d.setVar(var, flags)
 }
-
-#CXXFLAGS := "${@oe_utils.str_filter_out('-fcanon-prefix-map[^ ]*', '${CXXFLAGS}', d)}"
-#CXXFLAGS := "${@oe_filter_out('-fcanon-prefix-map[^ ]*', '${CXXFLAGS}', d)}"
-#LDFLAGS := "${@oe_filter_out('-fcanon-prefix-map[^ ]*', '${LDFLAGS}', d)}"
-#TARGET_CFLAGS := "${@oe_filter_out('-fcanon-prefix-map[^ ]*', '${TARGET_CFLAGS}', d)}"
-#TARGET_CXXFLAGS := "${@oe_filter_out('-fcanon-prefix-map[^ ]*', '${TARGET_CXXFLAGS}', d)}"
-#TARGET_LDFLAGS := "${@oe_filter_out('-fcanon-prefix-map[^ ]*', '${TARGET_LDFLAGS}', d)}"
 
 TARGET_LDFLAGS += "-L${STAGING_DIR_TARGET}/usr/lib/swift/linux"
 
