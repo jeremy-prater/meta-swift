@@ -23,7 +23,7 @@ DEPENDS += " swift-native swift-llvm-native libgcc gcc glibc libxml2"
 
 inherit swift-cmake-base
 
-SWIFT_GGC_VERSION = "9.3.0"
+SWIFT_GGC_VERSION = "13.3.0"
 
 EXTRA_INCLUDE_FLAGS = "\
     -I${STAGING_DIR_TARGET}/usr/include/c++/${SWIFT_GGC_VERSION}/${TARGET_SYS} \
