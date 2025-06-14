@@ -32,5 +32,5 @@ do_install:append() {
     cp -rf ${WORKDIR}/build/cmake/modules/* ${D}${libdir}/swift/dispatch/cmake/
 }
 
-FILES_${PN} = "${libdir}/swift/**"
+FILES:${PN} += "${libdir}/swift/**"
 INSANE_SKIP_${PN} = "file-rdeps"
