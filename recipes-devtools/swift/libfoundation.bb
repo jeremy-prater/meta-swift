@@ -16,6 +16,14 @@ RDEPENDS_${PN} += "swift-stdlib libdispatch"
 
 inherit swift-cmake-base
 
+python () {
+    for var in ['CFLAGS', 'CXXFLAGS', 'LDFLAGS']:
+        flags = d.getVar(var, expand=True)
+        if flags:
+            flags = flags.replace("-fcanon-prefix-map", "")
+            d.setVar(var, flags)
+}
+
 TARGET_LDFLAGS += "-L${STAGING_DIR_TARGET}/usr/lib/swift/linux"
 
 # Enable Swift parts
@@ -30,6 +38,7 @@ EXTRA_OECMAKE+= "-Ddispatch_DIR=${STAGING_DIR_TARGET}/usr/lib/swift/dispatch/cma
 # Ensure the right CPU is targeted
 cmake_do_generate_toolchain_file:append() {
     sed -i 's/set([ ]*CMAKE_SYSTEM_PROCESSOR .*[ ]*)/set(CMAKE_SYSTEM_PROCESSOR ${TARGET_CPU_NAME})/' ${WORKDIR}/toolchain.cmake
+sed -i 's|-fcanon-prefix-map[^ ]*||g' ${WORKDIR}/toolchain.cmake
 }
 
 do_configure:append() {
