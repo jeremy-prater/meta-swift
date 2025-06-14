@@ -19,7 +19,7 @@ inherit swift-cmake-base
 
 
 python () {
-    for var in ['CFLAGS', 'CXXFLAGS', 'CXXLDFLAGS','CLDFLAGS', 'LDFLAGS', 'EXTRA_OECMAKE']:
+    for var in ['CFLAGS', 'CXXFLAGS', 'LDFLAGS']:
         flags = d.getVar(var, expand=True)
         if flags:
             flags = flags.replace("-fcanon-prefix-map", "")
