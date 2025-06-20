@@ -8,9 +8,9 @@ LICENSE = "Apache-2.0"
 LIC_FILES_CHKSUM = "file://LICENSE;md5=1cd73afe3fb82e8d5c899b9d926451d0"
 
 require swift-version.inc
-PV = "${SWIFT_VERSION}"
+PV = "${SWIFT_VERSION}+git${SRCPV}"
 
-SRC_URI = "git://github.com/swiftlang/swift-corelibs-xctest.git;protocol=https;tag=swift-${PV}-RELEASE;nobranch=1"
+SRC_URI = "git://github.com/swiftlang/swift-corelibs-xctest.git;protocol=https;tag=swift-${SWIFT_VERSION}-RELEASE;nobranch=1"
 
 S = "${WORKDIR}/git"
 B = "${WORKDIR}/build"

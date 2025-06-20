@@ -25,8 +25,8 @@ def swift_native_arch_checksum(d):
 
 SWIFT_ARCH_SUFFIX = "${@swift_native_arch_suffix(d)}"
 
-SRC_DIR = "swift-${PV}-RELEASE-ubuntu24.04${SWIFT_ARCH_SUFFIX}"
-SRC_URI = "https://download.swift.org/swift-${PV}-release/ubuntu2404${SWIFT_ARCH_SUFFIX}/swift-${PV}-RELEASE/swift-${PV}-RELEASE-ubuntu24.04${SWIFT_ARCH_SUFFIX}.tar.gz"
+SRC_DIR = "swift-${SWIFT_VERSION}-RELEASE-ubuntu24.04${SWIFT_ARCH_SUFFIX}"
+SRC_URI = "https://download.swift.org/swift-${SWIFT_VERSION}-release/ubuntu2404${SWIFT_ARCH_SUFFIX}/swift-${SWIFT_VERSION}-RELEASE/swift-${SWIFT_VERSION}-RELEASE-ubuntu24.04${SWIFT_ARCH_SUFFIX}.tar.gz"
 SRC_URI[sha256sum] = "${@swift_native_arch_checksum(d)}"
 
 DEPENDS = "curl"

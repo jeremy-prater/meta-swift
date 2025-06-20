@@ -6,11 +6,11 @@ LICENSE = "Apache-2.0"
 LIC_FILES_CHKSUM = "file://${S}/LICENSE;md5=1cd73afe3fb82e8d5c899b9d926451d0"
 
 require swift-version.inc
-PV = "${SWIFT_VERSION}"
+PV = "${SWIFT_VERSION}+git${SRCPV}"
 
 DEPENDS = "swift-stdlib"
 
-SRC_URI = "git://github.com/swiftlang/swift-corelibs-libdispatch.git;protocol=https;tag=swift-${PV}-RELEASE;nobranch=1"
+SRC_URI = "git://github.com/swiftlang/swift-corelibs-libdispatch.git;protocol=https;tag=swift-${SWIFT_VERSION}-RELEASE;nobranch=1"
 
 S = "${WORKDIR}/git"
 LIBDISPATCH_BUILDDIR = "${WORKDIR}/build"

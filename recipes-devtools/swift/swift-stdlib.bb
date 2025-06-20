@@ -8,15 +8,14 @@ LIC_FILES_CHKSUM = "file://${S}/LICENSE.txt;md5=f6c482a0548ea60d6c2e015776534035
 PACKAGES:append = " ${PN}-embedded"
 
 require swift-version.inc
-PV = "${SWIFT_VERSION}"
-
-SRCREV_FORMAT = "swift_stdlib"
+PV = "${SWIFT_VERSION}+git${SRCPV}"
+SRCREV_FORMAT = "swift_libdispatch_stringproc_syntax"
 
 SRC_URI = "\
-    git://github.com/swiftlang/swift.git;protocol=https;tag=swift-${PV}-RELEASE;nobranch=1;destsuffix=swift; \
-    git://github.com/swiftlang/swift-corelibs-libdispatch.git;protocol=https;tag=swift-${PV}-RELEASE;nobranch=1;destsuffix=libdispatch; \
-    git://github.com/swiftlang/swift-experimental-string-processing.git;protocol=https;tag=swift-${PV}-RELEASE;nobranch=1;destsuffix=swift-experimental-string-processing; \
-    git://github.com/swiftlang/swift-syntax.git;protocol=https;tag=swift-${PV}-RELEASE;nobranch=1;destsuffix=swift-syntax; \
+    git://github.com/swiftlang/swift.git;protocol=https;name=swift;tag=swift-${SWIFT_VERSION}-RELEASE;nobranch=1;destsuffix=swift; \
+    git://github.com/swiftlang/swift-corelibs-libdispatch.git;protocol=https;name=libdispatch;tag=swift-${SWIFT_VERSION}-RELEASE;nobranch=1;destsuffix=libdispatch; \
+    git://github.com/swiftlang/swift-experimental-string-processing.git;protocol=https;name=stringproc;tag=swift-${SWIFT_VERSION}-RELEASE;nobranch=1;destsuffix=swift-experimental-string-processing; \
+    git://github.com/swiftlang/swift-syntax.git;protocol=https;name=syntax;tag=swift-${SWIFT_VERSION}-RELEASE;nobranch=1;destsuffix=swift-syntax; \
     file://llvm-cmake-modules \
     file://PR75367-buildbot-cross-compile.diff \
     "

@@ -6,15 +6,14 @@ LICENSE = "Apache-2.0"
 LIC_FILES_CHKSUM = "file://LICENSE;md5=1cd73afe3fb82e8d5c899b9d926451d0"
 
 require swift-version.inc
-PV = "${SWIFT_VERSION}"
+PV = "${SWIFT_VERSION}+git${SRCPV}"
+SRCREV_FORMAT = "corelibs_foundation_icu_syntax"
 
-SRCREV_FORMAT = "swift_corelibs_foundation"
-
-SRC_URI = "git://github.com/swiftlang/swift-corelibs-foundation.git;protocol=https;tag=swift-${PV}-RELEASE;nobranch=1;"
+SRC_URI = "git://github.com/swiftlang/swift-corelibs-foundation.git;protocol=https;name=corelibs;tag=swift-${SWIFT_VERSION}-RELEASE;nobranch=1;"
 SRC_URI += "file://0001-CFRunLoopTimerGetTolerance-CFRunLoopTimerSetToleranc.patch;striplevel=1;"
-SRC_URI += "git://github.com/swiftlang/swift-foundation.git;protocol=https;tag=swift-${PV}-RELEASE;nobranch=1;destsuffix=swift-foundation;"
-SRC_URI += "git://github.com/swiftlang/swift-foundation-icu.git;protocol=https;tag=swift-${PV}-RELEASE;nobranch=1;destsuffix=swift-foundation-icu;"
-SRC_URI += "git://github.com/swiftlang/swift-syntax.git;protocol=https;tag=swift-${PV}-RELEASE;nobranch=1;destsuffix=swift-syntax;"
+SRC_URI += "git://github.com/swiftlang/swift-foundation.git;protocol=https;name=foundation;tag=swift-${SWIFT_VERSION}-RELEASE;nobranch=1;destsuffix=swift-foundation;"
+SRC_URI += "git://github.com/swiftlang/swift-foundation-icu.git;protocol=https;name=icu;tag=swift-${SWIFT_VERSION}-RELEASE;nobranch=1;destsuffix=swift-foundation-icu;"
+SRC_URI += "git://github.com/swiftlang/swift-syntax.git;protocol=https;name=syntax;tag=swift-${SWIFT_VERSION}-RELEASE;nobranch=1;destsuffix=swift-syntax;"
 
 S = "${WORKDIR}/git"
 

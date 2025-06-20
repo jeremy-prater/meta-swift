@@ -8,9 +8,10 @@ LICENSE = "Apache-2.0"
 LIC_FILES_CHKSUM = "file://LICENSE.txt;md5=9426349f482bb39d6a4a080793545176"
 
 require swift-version.inc
-PV = "${SWIFT_VERSION}"
+PV = "${SWIFT_VERSION}+git${SRCPV}"
+SRCREV_FORMAT = "swift_testing"
 
-SRC_URI = "git://github.com/swiftlang/swift-testing.git;protocol=https;tag=swift-${PV}-RELEASE;nobranch=1"
+SRC_URI = "git://github.com/swiftlang/swift-testing.git;protocol=https;tag=swift-${SWIFT_VERSION}-RELEASE;nobranch=1"
 SRC_URI += "file://0001-build-as-dynamic-library.patch;striplevel=1;"
 
 S = "${WORKDIR}/git"
