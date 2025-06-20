@@ -66,10 +66,11 @@ python do_swift_package_resolve() {
     s = d.getVar('S')
     b = d.getVar('B')
 
-    ssh_auth_sock = d.getVar('BB_ORIGENV')['SSH_AUTH_SOCK']
-
     env = os.environ.copy()
-    env['SSH_AUTH_SOCK'] = ssh_auth_sock
+
+    ssh_auth_sock = d.getVar('BB_ORIGENV').get('SSH_AUTH_SOCK')
+    if ssh_auth_sock:
+        env['SSH_AUTH_SOCK'] = ssh_auth_sock
 
     ret = subprocess.call(['swift', 'package', 'resolve', '--package-path', s, '--build-path', b], env=env)
     if ret != 0:
