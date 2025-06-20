@@ -9,7 +9,14 @@ SWIFT_TARGET_ARCH = "${@oe.utils.conditional('TARGET_ARCH', 'arm', 'armv7', 'aar
 SWIFT_TARGET_NAME = "${@oe.utils.conditional('TARGET_ARCH', 'arm', 'armv7-unknown-linux-gnueabihf', 'aarch64-unknown-linux-gnu', d)}"
 TARGET_CPU_NAME = "${@oe.utils.conditional('TARGET_ARCH', 'arm', 'armv7-a', 'aarch64', d)}"
 
-SWIFT_GCC_VERSION = "13.3.0"
+# Determine SWIFT_GCC_VERSION by examining bitbake's context dictionary key
+# RECIPE_MAINTAINER:pn-gcc-source-<version>
+python () {
+    gcc_src_maint_pkg = [x for x in d if x.startswith("RECIPE_MAINTAINER:pn-gcc-source-")][0]
+    gcc_ver = gcc_src_maint_pkg.rpartition("-")[2]
+
+    d.setVar("SWIFT_GCC_VERSION", gcc_ver)
+}
 
 EXTRA_INCLUDE_FLAGS ?= "\
     -I${STAGING_DIR_TARGET}/usr/include/c++/${SWIFT_GCC_VERSION}/${TARGET_SYS} \
