@@ -226,6 +226,27 @@ python swift_do_compile() {
             bb.fatal('swift build --build-tests failed')
 }
 
-EXPORT_FUNCTIONS do_configure do_compile
+do_package_update() {
+    cd ${S}
+    swift package update
+
+    # Iterate over the search dirs for this recipes' files
+    # The first one that has a Package.resolved is the one bitbake got the file
+    # from in the first places
+    RESOLVED_PATH=""
+    for i in $(echo "${FILESPATH}" | tr ':' '\n'); do
+        if [ -r "${i}"/Package.resolved ]; then
+            RESOLVED_PATH="${i}/Package.resolved"
+            cp Package.resolved "${RESOLVED_PATH}"
+            bbwarn "Replaced ${RESOLVED_PATH} with updated Package.resolved."
+            break
+        fi
+    done
+    [ -z "${RESOLVED_PATH}" ] && bbwarn "Updated Package.resolved located at ${S}/Package.resolved" || :
+}
+do_package_update[network] = "1"
+addtask do_package_update after do_configure
+
+EXPORT_FUNCTIONS do_configure do_compile do_package_update
 
 EXTRANATIVEPATH += "swift-tools"
