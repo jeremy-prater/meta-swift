@@ -66,20 +66,20 @@ BUILD_MODE = "${@['release', 'debug'][d.getVar('DEBUG_BUILD') == '1']}"
 EXTRA_SWIFTC_FLAGS ??= ""
 
 SWIFT_FLAGS = "-target ${SWIFT_TARGET_NAME} -use-ld=lld \
--resource-dir ${STAGING_DIR_TARGET}/usr/lib/swift \
--module-cache-path ${B}/${BUILD_MODE}/ModuleCache \
--Xclang-linker -B${STAGING_DIR_TARGET}/usr/lib/${TARGET_SYS}/current \
--Xclang-linker -B${STAGING_DIR_TARGET}/usr/lib \
--Xcc -I${STAGING_DIR_NATIVE}/usr/lib/${TARGET_SYS}/gcc/${TARGET_SYS}/current/include \
--Xcc -I${STAGING_DIR_NATIVE}/usr/lib/${TARGET_SYS}/gcc/${TARGET_SYS}/current/include-fixed \
--L${STAGING_DIR_TARGET} \
--L${STAGING_DIR_TARGET}/lib \
--L${STAGING_DIR_TARGET}/usr/lib \
--L${STAGING_DIR_TARGET}/usr/lib/swift \
--L${STAGING_DIR_TARGET}/usr/lib/swift/linux \
--L${STAGING_DIR_TARGET}/usr/lib/${TARGET_SYS}/current \
--sdk ${STAGING_DIR_TARGET} \
-${EXTRA_SWIFTC_FLAGS} \
+    -resource-dir ${STAGING_DIR_TARGET}/usr/lib/swift \
+    -module-cache-path ${B}/${BUILD_MODE}/ModuleCache \
+    -Xclang-linker -B${STAGING_DIR_TARGET}/usr/lib \
+    -Xclang-linker -B${STAGING_DIR_TARGET}/usr/lib/${TARGET_SYS}/${SWIFT_GCC_VERSION} \
+    -Xcc -I${STAGING_DIR_NATIVE}/usr/lib/${TARGET_SYS}/gcc/${TARGET_SYS}/${SWIFT_GCC_VERSION}/include \
+    -Xcc -I${STAGING_DIR_NATIVE}/usr/lib/${TARGET_SYS}/gcc/${TARGET_SYS}/${SWIFT_GCC_VERSION}/include-fixed \
+    -L${STAGING_DIR_TARGET} \
+    -L${STAGING_DIR_TARGET}/lib \
+    -L${STAGING_DIR_TARGET}/usr/lib \
+    -L${STAGING_DIR_TARGET}/usr/lib/swift \
+    -L${STAGING_DIR_TARGET}/usr/lib/swift/linux \
+    -L${STAGING_DIR_TARGET}/usr/lib/${TARGET_SYS}/${SWIFT_GCC_VERSION} \
+    -sdk ${STAGING_DIR_TARGET} \
+    ${EXTRA_SWIFTC_FLAGS} \
 "
 
 HOST_LLVM_PATH = "${STAGING_DIR_NATIVE}/usr/lib"
