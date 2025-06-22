@@ -26,7 +26,7 @@ SWIFT_TARGET_ARCH = "${@oe.utils.conditional('TARGET_ARCH', 'arm', 'armv7', 'aar
 do_fix_gcc_install_dir() {
     # symbolic links do not work, will not be found by Swift clang driver
     # this is necessary to make the libstdc++ location heuristic work, necessary for C++ interop
-    (cd ${STAGING_DIR_TARGET}/usr/lib && rm -rf gcc && mkdir -p gcc && cp -rp ${SWIFT_TARGET_ARCH}-oe-linux gcc)
+    (cd ${STAGING_DIR_TARGET}/usr/lib && rm -rf gcc && mkdir -p gcc && cp -rp ${TARGET_ARCH}${TARGET_VENDOR}-${TARGET_OS} gcc)
 }
 
 addtask fix_gcc_install_dir before do_configure after do_prepare_recipe_sysroot
