@@ -2,25 +2,27 @@ inherit cmake
 
 DEPENDS_append += " swift-native libgcc gcc glibc "
 
+DEPENDS:append = " swift-native libgcc gcc glibc "
+
 SWIFT_TARGET_ARCH = "${@oe.utils.conditional('TARGET_ARCH', 'arm', 'armv7', 'aarch64', d)}"
 SWIFT_TARGET_NAME = "${@oe.utils.conditional('TARGET_ARCH', 'arm', 'armv7-unknown-linux-gnueabihf', 'aarch64-unknown-linux-gnu', d)}"
 TARGET_CPU_NAME = "${@oe.utils.conditional('TARGET_ARCH', 'arm', 'armv7-a', 'aarch64', d)}"
 
-HOST_CC_ARCH_prepend = "-target ${SWIFT_TARGET_NAME}"
+HOST_CC_ARCH:prepend = "-target ${SWIFT_TARGET_NAME} "
 
 ################################################################################
 # NOTE: The host running bitbake must have lld available and the following     #
 # must be added to the local.conf file:                                        #
 #                                                                              #
-# HOSTTOOLS += "ld.lld"                                                        #
+# HOSTTOOLS:append = " ld.lld"                                                 #
 #                                                                              #
 ################################################################################
 
 # Use lld (see note above)
-TARGET_LDFLAGS += "-fuse-ld=lld"
+TARGET_LDFLAGS:append = " -fuse-ld=lld"
 
 # Add build-id to generated binaries
-TARGET_LDFLAGS += "-Xlinker --build-id=sha1"
+TARGET_LDFLAGS:append = " -Xlinker --build-id=sha1"
 
 # Use Apple's provided clang (it understands Apple's custom compiler flags)
 # Made available via swift-native package.
@@ -31,10 +33,14 @@ OECMAKE_CXX_COMPILER = "clang++"
 RUNTIME_FLAGS = "-w -fuse-ld=lld -B${STAGING_DIR_TARGET}/usr/lib/${TARGET_SYS}/current"
 TARGET_LDFLAGS += "-w -fuse-ld=lld -L${STAGING_DIR_TARGET}/usr/lib/${TARGET_SYS}/current"
 
-EXTRA_INCLUDE_FLAGS ?= ""
-OECMAKE_C_FLAGS += "${RUNTIME_FLAGS} ${EXTRA_INCLUDE_FLAGS}"
-OECMAKE_CXX_FLAGS += "${RUNTIME_FLAGS} ${EXTRA_INCLUDE_FLAGS}"
-OECMAKE_ASM_FLAGS += "${RUNTIME_FLAGS} ${EXTRA_INCLUDE_FLAGS}"
+OECMAKE_C_FLAGS:append = " ${RUNTIME_FLAGS} ${EXTRA_INCLUDE_FLAGS}"
+OECMAKE_CXX_FLAGS:append = " ${RUNTIME_FLAGS} ${EXTRA_INCLUDE_FLAGS}"
+OECMAKE_ASM_FLAGS:append = " ${RUNTIME_FLAGS} ${EXTRA_INCLUDE_FLAGS}"
+
+SWIFTC_BIN = "${STAGING_DIR_NATIVE}/usr/bin/swiftc"
+
+EXTRA_OECMAKE:append = " -DCMAKE_Swift_COMPILER=${SWIFTC_BIN}"
+EXTRA_OECMAKE:append = " -DCMAKE_SWIFT_COMPILER=${SWIFTC_BIN}"
 
 BUILD_MODE = "${@['release', 'debug'][d.getVar('DEBUG_BUILD') == '1']}"
 
@@ -58,12 +64,7 @@ SWIFT_FLAGS = "-target ${SWIFT_TARGET_NAME} -use-ld=lld \
 ${EXTRA_SWIFTC_FLAGS} \
 "
 
-HOST_LLVM_PATH = "${STAGING_DIR_NATIVE}/opt/usr/lib/llvm-swift"
-EXTRA_OECMAKE += '-DCMAKE_Swift_FLAGS="${SWIFT_FLAGS}"'
-EXTRA_OECMAKE += " -DSWIFT_USE_LINKER=lld"
-EXTRA_OECMAKE += " -DLLVM_USE_LINKER=lld"
-EXTRA_OECMAKE += " -DLLVM_DIR=${HOST_LLVM_PATH}/lib/cmake/llvm"
-EXTRA_OECMAKE += " -DLLVM_BUILD_LIBRARY_DIR=${HOST_LLVM_PATH}"
+HOST_LLVM_PATH = "${STAGING_DIR_NATIVE}/usr/lib"
 
 EXTRANATIVEPATH += "swift-tools"
 
@@ -104,4 +105,10 @@ do_create_gcc_version_symlinks() {
 }
 
 addtask do_create_gcc_version_symlinks after do_prepare_recipe_sysroot before do_configure
+EXTRA_OECMAKE:append = ' -DCMAKE_Swift_FLAGS="${SWIFT_FLAGS}"'
+EXTRA_OECMAKE:append = " -DSWIFT_USE_LINKER=lld"
+EXTRA_OECMAKE:append = " -DLLVM_USE_LINKER=lld"
+EXTRA_OECMAKE:append = " -DLLVM_DIR=${HOST_LLVM_PATH}/cmake/llvm"
+EXTRA_OECMAKE:append = " -DLLVM_BUILD_LIBRARY_DIR=${HOST_LLVM_PATH}"
 
+EXTRANATIVEPATH:append = " swift-tools"
