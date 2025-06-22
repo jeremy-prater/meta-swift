@@ -1,14 +1,15 @@
 # meta-swift
-Yocto meta-layer for swift-on-arm (Swift 5.7.1)
+
+Yocto layer for the Swift programming language.
 
 # Usage
 
-Add this meta layer to your project (refer to yocto user manual)
+Add this layer to your project (refer to Yocto user manual, or use `bitbake-layers add-layer`).
 
-Create a new swift application and include it in your yocto build as follows...
+Create a new Swift application and include it in your build as follows:
 
 ```
-DESCRIPTION = "My swift 5.7.1 app"
+DESCRIPTION = "My Swift app"
 LICENSE = "CLOSED"
 
 SRC_URI = "file://Sources/hello-world/main.swift \
@@ -18,14 +19,14 @@ SRC_URI = "file://Sources/hello-world/main.swift \
 inherit swift
 ```
 
-This does a few things, when you `inherit swift` meta-layer class, it will does the following...
+When you `inherit swift` class, it does the following:
 
-- Automatically download the x86_64 and ARMv7 swift 5.7.1 binaries and create a cross-compiling sys-root
-- Add an RDEPENDS_${PN} for `swift` which is the Armv7 runtime
+- Automatically download the x86\_64 SDK binaries and create a cross-compiling sysroot
+- Add an RDEPENDS:${PN} for `swift`
 - Performs the required build steps
 
 # Deployment
 
-The user of this meta-layer must provide their own `do_install` function.
+The user of this layer must provide their own `do_install` function.
 
-The finished binaries are located in ${WORKDIR}/.build/release/*
+The finished binaries are located in ${BUILD\_DIR}.
