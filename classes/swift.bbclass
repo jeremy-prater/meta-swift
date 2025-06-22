@@ -1,3 +1,5 @@
+# avoid conflicts with meta-clang
+TOOLCHAIN = "gcc"
 
 DEPENDS += "swift-native glibc gcc libgcc swift-stdlib libdispatch libfoundation"
 

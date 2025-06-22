@@ -1,6 +1,7 @@
 inherit cmake
 
-DEPENDS_append += " swift-native libgcc gcc glibc "
+# avoid conflicts with meta-clang
+TOOLCHAIN = "gcc"
 
 DEPENDS:append = " swift-native libgcc gcc glibc "
 
