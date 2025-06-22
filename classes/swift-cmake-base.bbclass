@@ -9,6 +9,23 @@ SWIFT_TARGET_ARCH = "${@oe.utils.conditional('TARGET_ARCH', 'arm', 'armv7', 'aar
 SWIFT_TARGET_NAME = "${@oe.utils.conditional('TARGET_ARCH', 'arm', 'armv7-unknown-linux-gnueabihf', 'aarch64-unknown-linux-gnu', d)}"
 TARGET_CPU_NAME = "${@oe.utils.conditional('TARGET_ARCH', 'arm', 'armv7-a', 'aarch64', d)}"
 
+# Determine SWIFT_GCC_VERSION by examining bitbake's context dictionary key
+# RECIPE_MAINTAINER:pn-gcc-source-<version>
+python () {
+    gcc_src_maint_pkg = [x for x in d if x.startswith("RECIPE_MAINTAINER:pn-gcc-source-")][0]
+    gcc_ver = gcc_src_maint_pkg.rpartition("-")[2]
+
+    d.setVar("SWIFT_GCC_VERSION", gcc_ver)
+}
+
+EXTRA_INCLUDE_FLAGS ?= "\
+    -I${STAGING_DIR_TARGET}/usr/include/c++/${SWIFT_GCC_VERSION}/${TARGET_SYS} \
+    -I${STAGING_DIR_TARGET}/usr/include/c++/${SWIFT_GCC_VERSION} \
+    -I${STAGING_DIR_TARGET}"
+
+# not supported by clang
+DEBUG_PREFIX_MAP:remove = "-fcanon-prefix-map"
+
 HOST_CC_ARCH:prepend = "-target ${SWIFT_TARGET_NAME} "
 
 ################################################################################
@@ -31,8 +48,8 @@ OECMAKE_C_COMPILER = "clang"
 OECMAKE_CXX_COMPILER = "clang++"
 
 # Point clang to where the C++ runtime is for our target arch
-RUNTIME_FLAGS = "-w -fuse-ld=lld -B${STAGING_DIR_TARGET}/usr/lib/${TARGET_SYS}/current"
-TARGET_LDFLAGS += "-w -fuse-ld=lld -L${STAGING_DIR_TARGET}/usr/lib/${TARGET_SYS}/current"
+RUNTIME_FLAGS = "-w -fuse-ld=lld -B${STAGING_DIR_TARGET}/usr/lib/${TARGET_SYS}/${SWIFT_GCC_VERSION}"
+TARGET_LDFLAGS:append = " -w -fuse-ld=lld -L${STAGING_DIR_TARGET}/usr/lib/${TARGET_SYS}/${SWIFT_GCC_VERSION}"
 
 OECMAKE_C_FLAGS:append = " ${RUNTIME_FLAGS} ${EXTRA_INCLUDE_FLAGS}"
 OECMAKE_CXX_FLAGS:append = " ${RUNTIME_FLAGS} ${EXTRA_INCLUDE_FLAGS}"
@@ -67,45 +84,6 @@ ${EXTRA_SWIFTC_FLAGS} \
 
 HOST_LLVM_PATH = "${STAGING_DIR_NATIVE}/usr/lib"
 
-EXTRANATIVEPATH += "swift-tools"
-
-################################################################################
-# Create symlinks to the directories containing the gcc version specific       #
-# headers, objects and libraries we need.                                      #
-#                                                                              #
-# We can't just use ${GCC_VERSION} in the path variables in the recipe         #
-# because bitbake parses and expands variables before GCC_VERSION is           #
-# defined. GCC_VERSION cannot be defined until the sysroot is populated        #
-# because we inspect the sysroot to determine the GCC version number string.   #
-# If there was an env or bitbake var with the GCC version, we could use that   #
-# and avoid all of this but the closest thing we have access to is             #
-# ${GCCVERSION} which yields and incomplete version number (ex: "9.%").        #
-#                                                                              #
-# Also there is some suspicion that these path variables and these symlinks    #
-# may not be necessary if the --gcc-toolchain clang flag was used. But that    #
-# is an unproven theory.                                                       #
-################################################################################
-
-do_create_gcc_version_symlinks() {
-    GCC_VERSION=`basename ${STAGING_DIR_TARGET}/usr/include/c++/*`
-
-    if [ ! -L "${STAGING_DIR_TARGET}/usr/lib/${TARGET_SYS}/current" ]; then
-        cd ${STAGING_DIR_TARGET}/usr/lib/${TARGET_SYS}
-        ln -s -r ${GCC_VERSION} current
-    fi
-
-    if [ ! -L "${STAGING_DIR_TARGET}/usr/include/c++/current" ]; then
-        cd ${STAGING_DIR_TARGET}/usr/include/c++
-        ln -s -r ${GCC_VERSION} current
-    fi
-
-    if [ ! -L "${STAGING_DIR_NATIVE}/usr/lib/${TARGET_SYS}/gcc/${TARGET_SYS}/current" ]; then
-        cd ${STAGING_DIR_NATIVE}/usr/lib/${TARGET_SYS}/gcc/${TARGET_SYS}
-        ln -s -r ${GCC_VERSION} current
-    fi
-}
-
-addtask do_create_gcc_version_symlinks after do_prepare_recipe_sysroot before do_configure
 EXTRA_OECMAKE:append = ' -DCMAKE_Swift_FLAGS="${SWIFT_FLAGS}"'
 EXTRA_OECMAKE:append = " -DSWIFT_USE_LINKER=lld"
 EXTRA_OECMAKE:append = " -DLLVM_USE_LINKER=lld"
