@@ -18,6 +18,7 @@ echo "# Swift for Yocto" >> $CONF_FILE
 echo "MACHINE=\"${MACHINE}\"" >> $CONF_FILE
 echo 'CFLAGS:remove = "-fcanon-prefix-map"' >> $CONF_FILE
 echo 'IMAGE_FEATURES += "debug-tweaks"' >> $CONF_FILE
+echo 'IMAGE_INSTALL:append = " swift-hello-world"' >> $CONF_FILE
 
 
 #echo 'SSTATE_MIRRORS ?= "file://.* http://sstate.yoctoproject.org/all/PATH;downloadfilename=PATH"' >> $CONF_FILE
