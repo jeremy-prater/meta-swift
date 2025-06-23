@@ -4,7 +4,7 @@ set -e
 # Configuration
 SRC_ROOT="${SRC_ROOT:=$(pwd)}"
 POKY_DIR="${POKY_DIR:=$SRC_ROOT/../poky}"
-MACHINE="${MACHINE:=beaglebone-yocto}"
+MACHINE="${MACHINE:=qemuarm}"
 
 # Build Yocto Poky
 cd $POKY_DIR
