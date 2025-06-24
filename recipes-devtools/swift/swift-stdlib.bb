@@ -161,6 +161,11 @@ set(LibRT_LIBRARIES ${STAGING_DIR_TARGET}/usr/lib/librt.a)
 set(ZLIB_LIBRARY ${STAGING_DIR_TARGET}/usr/lib/libz.so)
 EOF
 
+    # pthreads does not work with armv7, so use c11 threading package in lieu
+    if [ "${SWIFT_TARGET_ARCH}" = "armv7" ]; then
+        echo "set(SWIFT_THREADING_PACKAGE c11)" >> ${SWIFT_CMAKE_TOOLCHAIN_FILE}
+    fi
+
     cmake -S ${SWIFT_SRCDIR} -B ${SWIFT_BUILDDIR} -G Ninja \
         -DSDKROOT=${STAGING_DIR_TARGET} \
         -DCMAKE_SYSROOT=${STAGING_DIR_TARGET} \
