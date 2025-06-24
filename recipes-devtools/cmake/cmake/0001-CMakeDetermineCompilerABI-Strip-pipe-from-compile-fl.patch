@@ -1,4 +1,4 @@
-From dab7ba34f87be0172f6586325656ee962de0029e Mon Sep 17 00:00:00 2001
+From bd94bbdc35a9da4c73d538e0cc55bc95944f620d Mon Sep 17 00:00:00 2001
 From: Philip Lorenz <philip.lorenz@bmw.de>
 Date: Mon, 3 Jun 2024 13:19:24 +0200
 Subject: [PATCH] CMakeDetermineCompilerABI: Strip -pipe from compile flags
@@ -35,13 +35,13 @@ Signed-off-by: Philip Lorenz <philip.lorenz@bmw.de>
  1 file changed, 5 insertions(+)
 
 diff --git a/Modules/CMakeDetermineCompilerABI.cmake b/Modules/CMakeDetermineCompilerABI.cmake
-index 8191d819bf..ae4c9ee44e 100644
+index efc18f93c2..f2e40479b1 100644
 --- a/Modules/CMakeDetermineCompilerABI.cmake
 +++ b/Modules/CMakeDetermineCompilerABI.cmake
-@@ -35,6 +35,11 @@ function(CMAKE_DETERMINE_COMPILER_ABI lang src)
+@@ -43,6 +43,11 @@ function(CMAKE_DETERMINE_COMPILER_ABI lang src)
  
      # Avoid failing ABI detection on warnings.
-     string(REGEX REPLACE "(^| )-Werror([= ][^ ]*)?( |$)" " " CMAKE_${lang}_FLAGS "${CMAKE_${lang}_FLAGS}")
+     string(REGEX REPLACE "(^| )-Werror([= ][^-][^ ]*)?( |$)" " " CMAKE_${lang}_FLAGS "${CMAKE_${lang}_FLAGS}")
 +    # Avoid passing of "-pipe" when determining the compiler internals. With
 +    # "-pipe" GCC will use pipes to pass data between the involved
 +    # executables.  This may lead to issues when their stderr output (which
