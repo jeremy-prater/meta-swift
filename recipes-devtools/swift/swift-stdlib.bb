@@ -17,6 +17,7 @@ SRC_URI = "\
     git://github.com/swiftlang/swift-corelibs-libdispatch.git;protocol=https;name=libdispatch;tag=swift-${SWIFT_VERSION}-RELEASE;nobranch=1;destsuffix=libdispatch; \
     git://github.com/swiftlang/swift-experimental-string-processing.git;protocol=https;name=stringproc;tag=swift-${SWIFT_VERSION}-RELEASE;nobranch=1;destsuffix=swift-experimental-string-processing; \
     git://github.com/swiftlang/swift-syntax.git;protocol=https;name=syntax;tag=swift-${SWIFT_VERSION}-RELEASE;nobranch=1;destsuffix=swift-syntax; \
+    file://0001-add-arm-to-float16support-for-armv7.patch;striplevel=1; \
     "
 
 S = "${WORKDIR}/swift"
