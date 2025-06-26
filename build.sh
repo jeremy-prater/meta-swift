@@ -24,4 +24,4 @@ echo 'IMAGE_INSTALL:append = " swift-hello-world"' >> $CONF_FILE
 #echo "USER_CLASSES += \"buildstats buildstats-summary\"" >> $CONF_FILE
 
 # build Swift
-bitbake swift-hello-world
+bitbake core-image-minimal
