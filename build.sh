@@ -16,7 +16,6 @@ CONF_FILE=./conf/local.conf
 rm -rf $CONF_FILE
 echo "# Swift for Yocto" >> $CONF_FILE
 echo "MACHINE=\"${MACHINE}\"" >> $CONF_FILE
-echo 'CFLAGS:remove = "-fcanon-prefix-map"' >> $CONF_FILE
 echo 'IMAGE_FEATURES += "debug-tweaks"' >> $CONF_FILE
 echo 'IMAGE_INSTALL:append = " swift-hello-world"' >> $CONF_FILE
 
