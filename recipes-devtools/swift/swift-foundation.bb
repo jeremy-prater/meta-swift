@@ -43,8 +43,6 @@ EXTRA_OECMAKE += "-DENABLE_TESTING=0"
 EXTRA_OECMAKE += "-DBUILD_SHARED_LIBS=YES"
 EXTRA_OECMAKE += "-DDISPATCH_INCLUDE_PATH=${STAGING_DIR_TARGET}/${includedir}"
 
-lcl_maybe_fortify="-D_FORTIFY_SOURCE=0"
-
 # Ensure the right CPU is targeted
 cmake_do_generate_toolchain_file:append() {
     sed -i 's/set([ ]*CMAKE_SYSTEM_PROCESSOR .*[ ]*)/set(CMAKE_SYSTEM_PROCESSOR ${TARGET_CPU_NAME})/' ${WORKDIR}/toolchain.cmake

@@ -23,8 +23,6 @@ TARGET_LDFLAGS += "-L${STAGING_DIR_TARGET}/usr/lib/swift/linux"
 EXTRA_OECMAKE += "-DENABLE_SWIFT=YES"
 EXTRA_OECMAKE += "-DBUILD_SHARED_LIBS=YES"
 
-lcl_maybe_fortify="-D_FORTIFY_SOURCE=0"
-
 # Ensure the right CPU is targeted
 cmake_do_generate_toolchain_file:append() {
     sed -i 's/set([ ]*CMAKE_SYSTEM_PROCESSOR .*[ ]*)/set(CMAKE_SYSTEM_PROCESSOR ${TARGET_CPU_NAME})/' ${WORKDIR}/toolchain.cmake
