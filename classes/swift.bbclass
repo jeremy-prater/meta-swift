@@ -1,6 +1,8 @@
 # avoid conflicts with meta-clang
 TOOLCHAIN = "gcc"
 
+TARGET_CC_ARCH:remove = "-mbranch-protection=standard"
+
 SWIFT_BUILD_TESTS ?= "${DEBUG_BUILD}"
 
 DEPENDS += "swift-native glibc gcc libgcc swift-stdlib libdispatch swift-foundation"
