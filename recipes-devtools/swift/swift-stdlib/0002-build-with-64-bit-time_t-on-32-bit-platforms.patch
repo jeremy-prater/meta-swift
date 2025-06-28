@@ -1,0 +1,54 @@
+From 06073712f137bd1db7f0b94f4526b00be81ec3fb Mon Sep 17 00:00:00 2001
+From: Luke Howard <lukeh@padl.com>
+Date: Sat, 28 Jun 2025 15:01:30 +1000
+Subject: [PATCH] build with 64-bit time_t on 32-bit platforms
+
+It is good practice to build with 64-bit time_t/timeval on 32-bit platforms to
+avoid the Y2038 issue. This is the default when building on Yocto for armv7,
+for example. Unfortunately suseconds_t is not an alias to a type of the correct
+width (unlike time_t).
+---
+ stdlib/public/Platform/Platform.swift | 18 +++++++++++-------
+ 1 file changed, 11 insertions(+), 7 deletions(-)
+
+diff --git a/stdlib/public/Platform/Platform.swift b/stdlib/public/Platform/Platform.swift
+index 0c2d63a0cff..4949fc66456 100644
+--- a/stdlib/public/Platform/Platform.swift
++++ b/stdlib/public/Platform/Platform.swift
+@@ -439,7 +439,7 @@ extension timespec {
+   @available(SwiftStdlib 5.7, *)
+   public init(_ duration: Duration) {
+     let comps = duration.components
+-    self.init(tv_sec: Int(comps.seconds),
++    self.init(tv_sec: time_t(comps.seconds),
+               tv_nsec: Int(comps.attoseconds / 1_000_000_000))
+   }
+ }
+@@ -458,14 +458,18 @@ extension timeval {
+   public init(_ duration: Duration) {
+     let comps = duration.components
+ #if os(Linux)
+-  // Linux platforms define timeval as Int/Int
+-  self.init(tv_sec: Int(comps.seconds),
+-              tv_usec: Int(comps.attoseconds / 1_000_000_000_000))
++    // Linux platforms define timeval as Int/Int, except on 32-bit platforms
++    // where _TIME_BITS=64 is defined. Abuse time_t as an alias for the correct
++    // suseconds_t type, as it is not an alias to the 64-bit type on 32-bit
++    // platforms.
++    typealias _Seconds = time_t
++    typealias _Microseconds = time_t
+ #else
+-    // Darwin platforms define timeval as Int/Int32
+-    self.init(tv_sec: Int(comps.seconds),
+-              tv_usec: Int32(comps.attoseconds / 1_000_000_000_000))
++    typealias _Seconds = Int
++    typealias _Microseconds = Int32
+ #endif
++    self.init(tv_sec: _Seconds(comps.seconds),
++              tv_usec: _Microseconds(comps.attoseconds / 1_000_000_000_000))
+   }
+ }
+ 
+-- 
+2.39.5 (Apple Git-154)
+

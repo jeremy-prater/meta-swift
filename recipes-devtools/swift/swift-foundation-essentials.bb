@@ -13,6 +13,8 @@ SRC_URI = "git://github.com/swiftlang/swift-foundation.git;protocol=https;name=f
 SRC_URI += "git://github.com/swiftlang/swift-foundation-icu.git;protocol=https;name=icu;tag=swift-${SWIFT_VERSION}-RELEASE;nobranch=1;destsuffix=swift-foundation-icu;"
 SRC_URI += "git://github.com/swiftlang/swift-syntax.git;protocol=https;name=syntax;tag=swift-${SWIFT_VERSION}-RELEASE;nobranch=1;destsuffix=swift-foundation-icu;"
 SRC_URI += "git://github.com/apple/swift-collections.git;protocol=https;nobranch=1;name=collections;tag=1.1.4;destsuffix=swift-collections;"
+SRC_URI += "file://0001-build-with-64-bit-fsblkcnt_t-on-32-bit-glibc-platfor.patch;striplevel=1;"
+SRC_URI += "file://0002-build-with-64-bit-time_t-on-32-bit-platforms.patch;striplevel=1;"
 
 S = "${WORKDIR}/git"
 

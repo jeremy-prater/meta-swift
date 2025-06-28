@@ -1,0 +1,34 @@
+From ad2b4b35979caf1d66d77933dda66012f7108294 Mon Sep 17 00:00:00 2001
+From: Luke Howard <lukeh@padl.com>
+Date: Sat, 28 Jun 2025 11:59:30 +1000
+Subject: [PATCH 2/2] build with 64-bit time_t on 32-bit platforms
+
+It is good practice to build with 64-bit time_t/timeval on 32-bit platforms to
+avoid the Y2038 issue. This is the default when building on Yocto for armv7,
+for example. Unfortunately suseconds_t is not an alias to a type of the correct
+width (unlike time_t), so for Glibc make it a private alias of time_t to fix
+the build.
+---
+ .../FileManager/FileManager+Files.swift                     | 6 ++++++
+ 1 file changed, 6 insertions(+)
+
+diff --git a/Sources/FoundationEssentials/FileManager/FileManager+Files.swift b/Sources/FoundationEssentials/FileManager/FileManager+Files.swift
+index 824c3ac..c7ea78c 100644
+--- a/Sources/FoundationEssentials/FileManager/FileManager+Files.swift
++++ b/Sources/FoundationEssentials/FileManager/FileManager+Files.swift
+@@ -951,6 +951,12 @@ extension _FileManagerImpl {
+                 #endif
+             }
+             
++            #if canImport(Glibc)
++            // support for 64-bit timestamps on 32-bit platforms; unfortunately
++            // suseconds_t is not an alias of the appropriate type, but time_t is
++            typealias suseconds_t = time_t
++            #endif
++
+             if let date = attributes[.modificationDate] as? Date {
+                 let (isecs, fsecs) = modf(date.timeIntervalSince1970)
+                 if let tv_sec = time_t(exactly: isecs),
+-- 
+2.43.0
+
