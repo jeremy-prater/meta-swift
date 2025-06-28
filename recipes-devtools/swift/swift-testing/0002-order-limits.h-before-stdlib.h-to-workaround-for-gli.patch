@@ -1,0 +1,42 @@
+From 2ee53c692f781dff38dcbabe819ecfe841841588 Mon Sep 17 00:00:00 2001
+From: Luke Howard <lukeh@padl.com>
+Date: Sat, 28 Jun 2025 16:00:04 +1000
+Subject: [PATCH] order limits.h before stdlib.h to workaround for glibc
+ fortify source issue
+
+limits.h must be included before stdlib.h with glibc, otherwise the fortified
+realpath() in this module's stdlib  will differ from the one in SwiftGlibc.
+---
+ Sources/_TestingInternals/include/Includes.h | 9 +++++----
+ 1 file changed, 5 insertions(+), 4 deletions(-)
+
+diff --git a/Sources/_TestingInternals/include/Includes.h b/Sources/_TestingInternals/include/Includes.h
+index 1b95151..acc38df 100644
+--- a/Sources/_TestingInternals/include/Includes.h
++++ b/Sources/_TestingInternals/include/Includes.h
+@@ -39,6 +39,11 @@
+ #include <stdbool.h>
+ #include <stdint.h>
+ #include <stdio.h>
++#if __has_include(<limits.h>)
++/// limits.h must be included before stdlib.h with glibc, otherwise the
++/// fortified realpath() in this module will differ from the one in SwiftGlibc.
++#include <limits.h>
++#endif
+ #include <stdlib.h>
+ #include <string.h>
+ #include <time.h>
+@@ -97,10 +102,6 @@
+ #include <pwd.h>
+ #endif
+ 
+-#if __has_include(<limits.h>)
+-#include <limits.h>
+-#endif
+-
+ #if __has_include(<spawn.h>)
+ #include <spawn.h>
+ #endif
+-- 
+2.39.5 (Apple Git-154)
+
