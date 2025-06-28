@@ -90,6 +90,7 @@ python swift_do_configure() {
     import os
     import os.path
     import shutil
+    import shlex
 
     workdir = d.getVar("WORKDIR", True)
     recipe_sysroot = d.getVar("STAGING_DIR_TARGET", True)
@@ -114,6 +115,23 @@ python swift_do_configure() {
 
     d.setVar('SWIFT_CXX_VERSION', cxx_version)
 
+    def expand_swiftc_cc_flags(flags):
+        flags = [['-Xcc', flag] for flag in flags]
+        return sum(flags, [])
+
+    def concat_flags(flags):
+        flags = [f'"{flag}"' for flag in flags]
+        return ", ".join(flags)
+
+    # ensure target-specific tune CC flags are propagated to clang and swiftc.
+    # Note we are not doing this at present for LD flags, as there are none in
+    # the architectures we support (and it would make the string expansion more
+    # complicated).
+    target_cc_arch = shlex.split(d.getVar("TARGET_CC_ARCH"))
+
+    d.setVar("SWIFT_EXTRA_CC_FLAGS", concat_flags(target_cc_arch))
+    d.setVar("SWIFT_EXTRA_SWIFTC_CC_FLAGS", concat_flags(expand_swiftc_cc_flags(target_cc_arch)))
+
     swift_destination_template = """{
         "version":1,
         "sdk":"${STAGING_DIR_TARGET}/",
@@ -121,6 +139,7 @@ python swift_do_configure() {
         "target":"${SWIFT_TARGET_NAME}",
         "dynamic-library-extension":"so",
         "extra-cc-flags":[
+            ${SWIFT_EXTRA_CC_FLAGS},
             "-fPIC",
             "-I${STAGING_INCDIR}",
             "-I${STAGING_DIR_TARGET}/usr/include/c++/${SWIFT_CXX_VERSION}",
@@ -166,9 +185,11 @@ python swift_do_configure() {
 
             "-resource-dir", "${STAGING_DIR_TARGET}/usr/lib/swift",
             "-module-cache-path", "${B}/${BUILD_MODE}/ModuleCache",
+
             "-Xclang-linker", "-B${STAGING_DIR_TARGET}/usr/lib/${TARGET_SYS}/${SWIFT_CXX_VERSION}",
             "-Xclang-linker", "-B${STAGING_DIR_TARGET}/usr/lib",
 
+            ${SWIFT_EXTRA_SWIFTC_CC_FLAGS},
             "-Xcc", "--gcc-install-dir=${STAGING_DIR_TARGET}/usr/lib/gcc/${TARGET_SYS}/${SWIFT_CXX_VERSION}",
 
             "-sdk", "${STAGING_DIR_TARGET}"
@@ -181,6 +202,9 @@ python swift_do_configure() {
     swift_destination =  d.expand(swift_destination_template)
 
     d.delVar("SWIFT_CXX_VERSION")
+
+    d.delVar("SWIFT_EXTRA_CC_FLAGS")
+    d.delVar("SWIFT_EXTRA_SWIFTC_CC_FLAGS")
 
     configJSON = open(workdir + "/destination.json", "w")
     configJSON.write(swift_destination)

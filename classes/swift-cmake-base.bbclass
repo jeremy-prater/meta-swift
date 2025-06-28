@@ -12,10 +12,27 @@ TARGET_CPU_NAME = "${@oe.utils.conditional('TARGET_ARCH', 'arm', 'armv7-a', '${T
 # Determine SWIFT_GCC_VERSION by examining bitbake's context dictionary key
 # RECIPE_MAINTAINER:pn-gcc-source-<version>
 python () {
+    import shlex
+
     gcc_src_maint_pkg = [x for x in d if x.startswith("RECIPE_MAINTAINER:pn-gcc-source-")][0]
     gcc_ver = gcc_src_maint_pkg.rpartition("-")[2]
 
     d.setVar("SWIFT_GCC_VERSION", gcc_ver)
+
+    def expand_swiftc_cc_flags(flags):
+        flags = [['-Xcc', flag] for flag in flags]
+        return sum(flags, [])
+
+    def concat_flags(flags):
+        return " ".join(flags)
+
+    # ensure target-specific tune CC flags are propagated to clang and swiftc.
+    # Note we are not doing this at present for LD flags, as there are none in
+    # the architectures we support (and it would make the string expansion more
+    # complicated).
+    target_cc_arch = shlex.split(d.getVar("TARGET_CC_ARCH"))
+
+    d.setVar("SWIFT_EXTRA_SWIFTC_CC_FLAGS", concat_flags(expand_swiftc_cc_flags(target_cc_arch)))
 }
 
 EXTRA_INCLUDE_FLAGS ?= "\
@@ -48,8 +65,8 @@ OECMAKE_C_COMPILER = "clang"
 OECMAKE_CXX_COMPILER = "clang++"
 
 # Point clang to where the C++ runtime is for our target arch
-RUNTIME_FLAGS = "-w -fuse-ld=lld -B${STAGING_DIR_TARGET}/usr/lib/${TARGET_SYS}/${SWIFT_GCC_VERSION}"
-TARGET_LDFLAGS:append = " -w -fuse-ld=lld -L${STAGING_DIR_TARGET}/usr/lib/${TARGET_SYS}/${SWIFT_GCC_VERSION}"
+RUNTIME_FLAGS = "${TARGET_CC_ARCH} -w -fuse-ld=lld -B${STAGING_DIR_TARGET}/usr/lib/${TARGET_SYS}/${SWIFT_GCC_VERSION}"
+TARGET_LDFLAGS:append = " ${TARGET_LD_ARCH} -w -fuse-ld=lld -L${STAGING_DIR_TARGET}/usr/lib/${TARGET_SYS}/${SWIFT_GCC_VERSION}"
 
 OECMAKE_C_FLAGS:append = " ${RUNTIME_FLAGS} ${EXTRA_INCLUDE_FLAGS}"
 OECMAKE_CXX_FLAGS:append = " ${RUNTIME_FLAGS} ${EXTRA_INCLUDE_FLAGS}"
@@ -70,6 +87,7 @@ SWIFT_FLAGS = "-target ${SWIFT_TARGET_NAME} -use-ld=lld \
     -module-cache-path ${B}/${BUILD_MODE}/ModuleCache \
     -Xclang-linker -B${STAGING_DIR_TARGET}/usr/lib \
     -Xclang-linker -B${STAGING_DIR_TARGET}/usr/lib/${TARGET_SYS}/${SWIFT_GCC_VERSION} \
+    ${SWIFT_EXTRA_SWIFTC_CC_FLAGS} \
     -Xcc -I${STAGING_DIR_NATIVE}/usr/lib/${TARGET_SYS}/gcc/${TARGET_SYS}/${SWIFT_GCC_VERSION}/include \
     -Xcc -I${STAGING_DIR_NATIVE}/usr/lib/${TARGET_SYS}/gcc/${TARGET_SYS}/${SWIFT_GCC_VERSION}/include-fixed \
     -L${STAGING_DIR_TARGET} \
