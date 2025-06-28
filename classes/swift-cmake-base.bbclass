@@ -1,11 +1,7 @@
 inherit cmake
+inherit swift-common
 
-# avoid conflicts with meta-clang
-TOOLCHAIN = "gcc"
-
-TARGET_CC_ARCH:remove = "-mbranch-protection=standard"
-
-DEPENDS:append = " swift-native libgcc gcc glibc "
+DEPENDS:append = " swift-native libgcc gcc glibc"
 
 SWIFT_TARGET_NAME = "${@oe.utils.conditional('TARGET_ARCH', 'arm', 'armv7-unknown-linux-gnueabihf', '${TARGET_ARCH}-unknown-linux-gnu', d)}"
 SWIFT_TARGET_ARCH = "${@oe.utils.conditional('TARGET_ARCH', 'arm', 'armv7', '${TARGET_ARCH}', d)}"

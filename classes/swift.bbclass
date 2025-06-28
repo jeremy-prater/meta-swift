@@ -1,12 +1,9 @@
-# avoid conflicts with meta-clang
-TOOLCHAIN = "gcc"
-
-TARGET_CC_ARCH:remove = "-mbranch-protection=standard"
+inherit swift-common
 
 SWIFT_BUILD_TESTS ?= "${DEBUG_BUILD}"
 
-DEPENDS += "swift-native glibc gcc libgcc swift-stdlib libdispatch swift-foundation"
-DEPENDS += "${@oe.utils.conditional('SWIFT_BUILD_TESTS', '1', 'swift-xctest swift-testing', '', d)}"
+DEPENDS:append = " swift-native glibc gcc libgcc swift-stdlib libdispatch swift-foundation"
+DEPENDS:append = " ${@oe.utils.conditional('SWIFT_BUILD_TESTS', '1', ' swift-xctest swift-testing', '', d)}"
 
 # Default build directory for SPM is "./.build"
 # (see 'swift [build|package|run|test] --help')
