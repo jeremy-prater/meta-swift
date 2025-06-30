@@ -12,11 +12,11 @@ PV = "${SWIFT_VERSION}+git${SRCPV}"
 SRCREV_FORMAT = "swift_libdispatch_stringproc_syntax"
 
 SRC_URI = "\
-    git://github.com/swiftlang/llvm-project.git;protocol=https;name=llvm-project;tag=swift-${SWIFT_VERSION}-RELEASE;nobranch=1;destsuffix=llvm-project; \
-    git://github.com/swiftlang/swift.git;protocol=https;name=swift;tag=swift-${SWIFT_VERSION}-RELEASE;nobranch=1;destsuffix=swift; \
-    git://github.com/swiftlang/swift-corelibs-libdispatch.git;protocol=https;name=libdispatch;tag=swift-${SWIFT_VERSION}-RELEASE;nobranch=1;destsuffix=libdispatch; \
-    git://github.com/swiftlang/swift-experimental-string-processing.git;protocol=https;name=stringproc;tag=swift-${SWIFT_VERSION}-RELEASE;nobranch=1;destsuffix=swift-experimental-string-processing; \
-    git://github.com/swiftlang/swift-syntax.git;protocol=https;name=syntax;tag=swift-${SWIFT_VERSION}-RELEASE;nobranch=1;destsuffix=swift-syntax; \
+    git://github.com/swiftlang/llvm-project.git;protocol=https;name=llvm-project;tag=${SWIFT_TAG};nobranch=1;destsuffix=llvm-project; \
+    git://github.com/swiftlang/swift.git;protocol=https;name=swift;tag=${SWIFT_TAG};nobranch=1;destsuffix=swift; \
+    git://github.com/swiftlang/swift-corelibs-libdispatch.git;protocol=https;name=libdispatch;tag=${SWIFT_TAG};nobranch=1;destsuffix=libdispatch; \
+    git://github.com/swiftlang/swift-experimental-string-processing.git;protocol=https;name=stringproc;tag=${SWIFT_TAG};nobranch=1;destsuffix=swift-experimental-string-processing; \
+    git://github.com/swiftlang/swift-syntax.git;protocol=https;name=syntax;tag=${SWIFT_TAG};nobranch=1;destsuffix=swift-syntax; \
     file://0001-add-arm-to-float16support-for-armv7.patch;striplevel=1; \
     file://0002-build-with-64-bit-time_t-on-32-bit-platforms.patch;striplevel=1; \
     "

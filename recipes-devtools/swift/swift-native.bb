@@ -27,8 +27,8 @@ SWIFT_ARCH_SUFFIX = "${@swift_native_arch_suffix(d)}"
 
 SWIFT_LINUX_DISTRO = "amazonlinux2"
 
-SRC_DIR = "swift-${SWIFT_VERSION}-RELEASE-${SWIFT_LINUX_DISTRO}${SWIFT_ARCH_SUFFIX}"
-SRC_URI = "https://download.swift.org/swift-${SWIFT_VERSION}-release/${SWIFT_LINUX_DISTRO}${SWIFT_ARCH_SUFFIX}/swift-${SWIFT_VERSION}-RELEASE/swift-${SWIFT_VERSION}-RELEASE-${SWIFT_LINUX_DISTRO}${SWIFT_ARCH_SUFFIX}.tar.gz"
+SRC_DIR = "${SWIFT_TAG}-${SWIFT_LINUX_DISTRO}${SWIFT_ARCH_SUFFIX}"
+SRC_URI = "https://download.swift.org/swift-${SWIFT_VERSION}-release/${SWIFT_LINUX_DISTRO}${SWIFT_ARCH_SUFFIX}/${SWIFT_TAG}/${SWIFT_TAG}-${SWIFT_LINUX_DISTRO}${SWIFT_ARCH_SUFFIX}.tar.gz"
 SRC_URI[sha256sum] = "${@swift_native_arch_checksum(d)}"
 
 DEPENDS = "curl"

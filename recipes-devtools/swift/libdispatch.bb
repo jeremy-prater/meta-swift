@@ -10,7 +10,7 @@ PV = "${SWIFT_VERSION}+git${SRCPV}"
 
 DEPENDS = "swift-stdlib"
 
-SRC_URI = "git://github.com/swiftlang/swift-corelibs-libdispatch.git;protocol=https;tag=swift-${SWIFT_VERSION}-RELEASE;nobranch=1"
+SRC_URI = "git://github.com/swiftlang/swift-corelibs-libdispatch.git;protocol=https;tag=${SWIFT_TAG};nobranch=1"
 
 S = "${WORKDIR}/git"
 LIBDISPATCH_BUILDDIR = "${WORKDIR}/build"
