@@ -1,0 +1,44 @@
+From a38fd03fd9411ac5ffa94a523f0228f8ef75f058 Mon Sep 17 00:00:00 2001
+From: Luke Howard <lukeh@padl.com>
+Date: Tue, 4 Mar 2025 12:58:32 +1100
+Subject: [PATCH] CFRunLoopTimerGetTolerance/CFRunLoopTimerSetTolerance for
+ non-Mac
+
+---
+ Sources/CoreFoundation/CFRunLoop.c | 6 ------
+ 1 file changed, 6 deletions(-)
+
+diff --git a/Sources/CoreFoundation/CFRunLoop.c b/Sources/CoreFoundation/CFRunLoop.c
+index 91299fc5..3d2ed85d 100644
+--- a/Sources/CoreFoundation/CFRunLoop.c
++++ b/Sources/CoreFoundation/CFRunLoop.c
+@@ -4735,18 +4735,13 @@ void CFRunLoopTimerGetContext(CFRunLoopTimerRef rlt, CFRunLoopTimerContext *cont
+ }
+ 
+ CFTimeInterval CFRunLoopTimerGetTolerance(CFRunLoopTimerRef rlt) {
+-#if TARGET_OS_MAC
+     CHECK_FOR_FORK();
+     CF_OBJC_FUNCDISPATCHV(CFRunLoopTimerGetTypeID(), CFTimeInterval, (NSTimer *)rlt, tolerance);
+     __CFGenericValidateType(rlt, CFRunLoopTimerGetTypeID());
+     return rlt->_tolerance;
+-#else
+-    return 0.0;
+-#endif
+ }
+ 
+ void CFRunLoopTimerSetTolerance(CFRunLoopTimerRef rlt, CFTimeInterval tolerance) {
+-#if TARGET_OS_MAC
+     CHECK_FOR_FORK();
+     CF_OBJC_FUNCDISPATCHV(CFRunLoopTimerGetTypeID(), void, (NSTimer *)rlt, setTolerance:tolerance);
+     __CFGenericValidateType(rlt, CFRunLoopTimerGetTypeID());
+@@ -4764,7 +4759,6 @@ void CFRunLoopTimerSetTolerance(CFRunLoopTimerRef rlt, CFTimeInterval tolerance)
+         if (tolerance < 0) tolerance = 0.0;
+         rlt->_tolerance = tolerance;
+     }
+-#endif
+ }
+ 
+ #endif /* __HAS_DISPATCH__ */
+-- 
+2.39.5 (Apple Git-154)
+

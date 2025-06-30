@@ -1,0 +1,33 @@
+From 3eb8a04f9597ed71ddd3eb54db77a9d5e37f032d Mon Sep 17 00:00:00 2001
+From: Luke Howard <lukeh@padl.com>
+Date: Sat, 28 Jun 2025 11:58:13 +1000
+Subject: [PATCH 1/2] build with 64-bit fsblkcnt_t on 32-bit glibc platforms
+
+It is possible to build with 64-bit file offsets on 32-bit platforms such as
+armv7, and indeed this is the default for some build environments such as
+Yocto. Use fsblkcnt_t, which is an alias to a type of the correct width, when
+computing blockSize.
+---
+ .../FoundationEssentials/FileManager/FileManager+Files.swift  | 4 ++++
+ 1 file changed, 4 insertions(+)
+
+diff --git a/Sources/FoundationEssentials/FileManager/FileManager+Files.swift b/Sources/FoundationEssentials/FileManager/FileManager+Files.swift
+index 64f8e21..824c3ac 100644
+--- a/Sources/FoundationEssentials/FileManager/FileManager+Files.swift
++++ b/Sources/FoundationEssentials/FileManager/FileManager+Files.swift
+@@ -727,8 +727,12 @@ extension _FileManagerImpl {
+             let blockSize = UInt64(result.f_bsize)
+             #else
+             let fsNumber = result.f_fsid
++            #if canImport(Glibc)
++            let blockSize = fsblkcnt_t(result.f_frsize) // support 64-bit block sizes on 32-bit platforms
++            #else
+             let blockSize = UInt(result.f_frsize)
+             #endif
++            #endif
+             var totalSizeBytes = result.f_blocks * blockSize
+             var availSizeBytes = result.f_bavail * blockSize
+             var totalFiles = result.f_files
+-- 
+2.43.0
+

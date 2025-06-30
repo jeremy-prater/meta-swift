@@ -1,25 +1,100 @@
-name: Build
+name: build
 
-on: [push]
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
 
 jobs:
+  yocto-aarch64:
+    runs-on: ubuntu-24.04
+    container:
+    steps:
+      - name: Packages
+        run: |
+          sudo apt-get update
+          sudo apt install -y build-essential chrpath cpio debianutils diffstat file gawk gcc git iputils-ping libacl1 liblz4-tool locales python3 python3-git python3-jinja2 python3-pexpect python3-pip python3-subunit socat texinfo unzip wget xz-utils zstd
+          echo 0 | sudo tee /proc/sys/kernel/apparmor_restrict_unprivileged_userns
+      - name: Checkout Poky
+        uses: actions/checkout@v4
+        with:
+          repository: yoctoproject/poky
+          path: poky
+          ref: scarthgap
+          fetch_depth: 0
+      - name: Checkout Swift layer
+        uses: actions/checkout@v4
+        with:
+          path: poky/meta-swift
+          fetch_depth: 0
+      - name: Build
+        run: |
+          cd $GITHUB_WORKSPACE/poky
+          source oe-init-build-env
+          bitbake-layers add-layer ../meta-swift
+          rm -f conf/local.conf
+          echo 'MACHINE = "qemuarm64"' > conf/local.conf
+          echo 'INHERIT += "rm_work"' >> conf/local.conf
+          bitbake swift-hello-world
 
-    build:
-        name: Build
-        runs-on: ubuntu-latest
-        container: colemancda/meta-swift
-        strategy:
-          matrix:
-            machine: [beaglebone-yocto, qemuarm64]
-        steps:
-        - name: Checkout
-          uses: actions/checkout@v3
-        - name: Build
-          run: |
-            export SRC_ROOT=$GITHUB_WORKSPACE
-            export POKY_DIR=/tmp/poky
-            export MACHINE=${{ matrix.machine }}
-            cd /tmp/
-            git clone --branch dunfell-23.0.20-cmake-3.22.3 https://github.com/MillerTechnologyPeru/poky.git
-            cd $SRC_ROOT
-            ./build.sh
+  yocto-armv7:
+    runs-on: ubuntu-24.04
+    container:
+    steps:
+      - name: Packages
+        run: |
+          sudo apt-get update
+          sudo apt install -y build-essential chrpath cpio debianutils diffstat file gawk gcc git iputils-ping libacl1 liblz4-tool locales python3 python3-git python3-jinja2 python3-pexpect python3-pip python3-subunit socat texinfo unzip wget xz-utils zstd
+          echo 0 | sudo tee /proc/sys/kernel/apparmor_restrict_unprivileged_userns
+      - name: Checkout Poky
+        uses: actions/checkout@v4
+        with:
+          repository: yoctoproject/poky
+          path: poky
+          ref: scarthgap
+          fetch_depth: 0
+      - name: Checkout Swift layer
+        uses: actions/checkout@v4
+        with:
+          path: poky/meta-swift
+          fetch_depth: 0
+      - name: Build
+        run: |
+          cd $GITHUB_WORKSPACE/poky
+          source oe-init-build-env
+          bitbake-layers add-layer ../meta-swift
+          rm -f conf/local.conf
+          echo 'MACHINE = "qemuarm"' > conf/local.conf
+          echo 'INHERIT += "rm_work"' >> conf/local.conf
+          bitbake swift-hello-world
+
+  yocto-x86_64:
+    runs-on: ubuntu-24.04
+    container:
+    steps:
+      - name: Packages
+        run: |
+          sudo apt-get update
+          sudo apt install -y build-essential chrpath cpio debianutils diffstat file gawk gcc git iputils-ping libacl1 liblz4-tool locales python3 python3-git python3-jinja2 python3-pexpect python3-pip python3-subunit socat texinfo unzip wget xz-utils zstd
+          echo 0 | sudo tee /proc/sys/kernel/apparmor_restrict_unprivileged_userns
+      - name: Checkout Poky
+        uses: actions/checkout@v4
+        with:
+          repository: yoctoproject/poky
+          path: poky
+          ref: scarthgap
+          fetch_depth: 0
+      - name: Checkout Swift layer
+        uses: actions/checkout@v4
+        with:
+          path: poky/meta-swift
+          fetch_depth: 0
+      - name: Build
+        run: |
+          cd $GITHUB_WORKSPACE/poky
+          source oe-init-build-env
+          bitbake-layers add-layer ../meta-swift
+          rm -f conf/local.conf
+          echo 'MACHINE = "qemux86-64"' > conf/local.conf
+          echo 'INHERIT += "rm_work"' >> conf/local.conf
+          bitbake swift-hello-world
