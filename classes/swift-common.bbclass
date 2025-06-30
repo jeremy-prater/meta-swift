@@ -1,18 +1,13 @@
 # avoid conflicts with meta-clang
 TOOLCHAIN = "gcc"
 
-# force disable GLIBC_64BIT_TIME_FLAGS until SwiftNIO and other common packages
-# are updated to support 64-bit time_t on 32-bit systems. ABI incompatibility
-# may cause your program to crash; you have been warned.
-TARGET_CC_ARCH:remove:arm = "${GLIBC_64BIT_TIME_FLAGS}"
+DEPENDS:append = " swift-native glibc gcc libgcc"
+EXTRANATIVEPATH:append = " swift-tools"
 
-# appears to cause segfault
-TARGET_CC_ARCH:remove:aarch64 = "-mbranch-protection=standard"
+SWIFT_TARGET_NAME = "${@oe.utils.conditional('TARGET_ARCH', 'arm', 'armv7-unknown-linux-gnueabihf', '${TARGET_ARCH}-unknown-linux-gnu', d)}"
+SWIFT_TARGET_ARCH = "${@oe.utils.conditional('TARGET_ARCH', 'arm', 'armv7', '${TARGET_ARCH}', d)}"
+TARGET_CPU_NAME = "${@oe.utils.conditional('TARGET_ARCH', 'arm', 'armv7-a', '${TARGET_ARCH}', d)}"
 
-# workaround for building on x86_64: SSE appears to cause cyclic header
-# dependency when building C++ std module. This needs investigation and an
-# upstream fix
-TARGET_CC_ARCH:remove:x86-64 = "-march=core2"
-TARGET_CC_ARCH:remove:x86-64 = "-mtune=core2"
-TARGET_CC_ARCH:remove:x86-64 = "-msse3"
-TARGET_CC_ARCH:remove:x86-64 = "-mfpmath=sse"
+BUILD_MODE = "${@['release', 'debug'][d.getVar('DEBUG_BUILD') == '1']}"
+
+inherit swift-target-tune

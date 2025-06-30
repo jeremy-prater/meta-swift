@@ -2,7 +2,7 @@ inherit swift-common
 
 SWIFT_BUILD_TESTS ?= "${DEBUG_BUILD}"
 
-DEPENDS:append = " swift-native glibc gcc libgcc swift-stdlib libdispatch swift-foundation"
+DEPENDS:append = " swift-stdlib libdispatch swift-foundation"
 DEPENDS:append = " ${@oe.utils.conditional('SWIFT_BUILD_TESTS', '1', ' swift-xctest swift-testing', '', d)}"
 
 # Default build directory for SPM is "./.build"
@@ -13,14 +13,10 @@ DEPENDS:append = " ${@oe.utils.conditional('SWIFT_BUILD_TESTS', '1', ' swift-xct
 B ?= "${S}/.build"
 EXTERNALSRC_BUILD ?= "${EXTERNALSRC}/.build"
 
-BUILD_MODE = "${@['release', 'debug'][d.getVar('DEBUG_BUILD') == '1']}"
 BUILD_DIR = "${B}/${BUILD_MODE}"
 
 # Additional parameters to pass to SPM
 EXTRA_OESWIFT ?= ""
-
-SWIFT_TARGET_NAME = "${@oe.utils.conditional('TARGET_ARCH', 'arm', 'armv7-unknown-linux-gnueabihf', '${TARGET_ARCH}-unknown-linux-gnu', d)}"
-SWIFT_TARGET_ARCH = "${@oe.utils.conditional('TARGET_ARCH', 'arm', 'armv7', '${TARGET_ARCH}', d)}"
 
 do_fix_gcc_install_dir() {
     # symbolic links do not work, will not be found by Swift clang driver
@@ -272,5 +268,3 @@ do_package_update[network] = "1"
 addtask do_package_update after do_configure
 
 EXPORT_FUNCTIONS do_configure do_compile do_package_update
-
-EXTRANATIVEPATH += "swift-tools"

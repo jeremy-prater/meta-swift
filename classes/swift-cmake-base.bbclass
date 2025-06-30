@@ -1,15 +1,9 @@
 inherit cmake
 inherit swift-common
 
-DEPENDS:append = " swift-native libgcc gcc glibc"
-
-SWIFT_TARGET_NAME = "${@oe.utils.conditional('TARGET_ARCH', 'arm', 'armv7-unknown-linux-gnueabihf', '${TARGET_ARCH}-unknown-linux-gnu', d)}"
-SWIFT_TARGET_ARCH = "${@oe.utils.conditional('TARGET_ARCH', 'arm', 'armv7', '${TARGET_ARCH}', d)}"
-TARGET_CPU_NAME = "${@oe.utils.conditional('TARGET_ARCH', 'arm', 'armv7-a', '${TARGET_ARCH}', d)}"
-
-# Determine SWIFT_GCC_VERSION by examining bitbake's context dictionary key
-# RECIPE_MAINTAINER:pn-gcc-source-<version>
 python () {
+    # Determine SWIFT_GCC_VERSION by examining bitbake's context dictionary key
+    # RECIPE_MAINTAINER:pn-gcc-source-<version>
     import shlex
 
     gcc_src_maint_pkg = [x for x in d if x.startswith("RECIPE_MAINTAINER:pn-gcc-source-")][0]
@@ -74,8 +68,11 @@ SWIFTC_BIN = "${STAGING_DIR_NATIVE}/usr/bin/swiftc"
 
 EXTRA_OECMAKE:append = " -DCMAKE_Swift_COMPILER=${SWIFTC_BIN}"
 EXTRA_OECMAKE:append = " -DCMAKE_SWIFT_COMPILER=${SWIFTC_BIN}"
-
-BUILD_MODE = "${@['release', 'debug'][d.getVar('DEBUG_BUILD') == '1']}"
+EXTRA_OECMAKE:append = ' -DCMAKE_Swift_FLAGS="${SWIFT_FLAGS}"'
+EXTRA_OECMAKE:append = " -DSWIFT_USE_LINKER=lld"
+EXTRA_OECMAKE:append = " -DLLVM_USE_LINKER=lld"
+EXTRA_OECMAKE:append = " -DLLVM_DIR=${HOST_LLVM_PATH}/cmake/llvm"
+EXTRA_OECMAKE:append = " -DLLVM_BUILD_LIBRARY_DIR=${HOST_LLVM_PATH}"
 
 # Additional parameters to pass to swiftc
 EXTRA_SWIFTC_FLAGS ??= ""
@@ -99,11 +96,3 @@ SWIFT_FLAGS = "-target ${SWIFT_TARGET_NAME} -use-ld=lld \
 "
 
 HOST_LLVM_PATH = "${STAGING_DIR_NATIVE}/usr/lib"
-
-EXTRA_OECMAKE:append = ' -DCMAKE_Swift_FLAGS="${SWIFT_FLAGS}"'
-EXTRA_OECMAKE:append = " -DSWIFT_USE_LINKER=lld"
-EXTRA_OECMAKE:append = " -DLLVM_USE_LINKER=lld"
-EXTRA_OECMAKE:append = " -DLLVM_DIR=${HOST_LLVM_PATH}/cmake/llvm"
-EXTRA_OECMAKE:append = " -DLLVM_BUILD_LIBRARY_DIR=${HOST_LLVM_PATH}"
-
-EXTRANATIVEPATH:append = " swift-tools"
