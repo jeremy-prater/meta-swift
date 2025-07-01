@@ -1,32 +1,40 @@
-From 2ee53c692f781dff38dcbabe819ecfe841841588 Mon Sep 17 00:00:00 2001
+From db76ea7d388ac4f3af4b74754f20da1b664e7017 Mon Sep 17 00:00:00 2001
 From: Luke Howard <lukeh@padl.com>
-Date: Sat, 28 Jun 2025 16:00:04 +1000
+Date: Tue, 1 Jul 2025 10:32:38 +1000
 Subject: [PATCH] order limits.h before stdlib.h to workaround for glibc
- fortify source issue
+ _FORTIFY_SOURCE (#1184)
 
-limits.h must be included before stdlib.h with glibc, otherwise the fortified
-realpath() in this module's stdlib  will differ from the one in SwiftGlibc.
+`limits.h` must be included before `stdlib.h` when building with glibc
+and having `_FORTIFY_SOURCE` set to a non-zero value.
+
+When building with `_FORTIFY_SOURCE`, `realpath()` is inlined, and its
+definition depends on whether `limits.h` has been included or not
+(clearly, this is a terrible idea in terms of interacting with Clang
+modules and should probably be fixed upstream). If the definition
+differs from the one in SwiftGlibc, then _TestingInternals will not
+build.
 ---
- Sources/_TestingInternals/include/Includes.h | 9 +++++----
- 1 file changed, 5 insertions(+), 4 deletions(-)
+ Sources/_TestingInternals/include/Includes.h | 10 ++++++----
+ 1 file changed, 6 insertions(+), 4 deletions(-)
 
 diff --git a/Sources/_TestingInternals/include/Includes.h b/Sources/_TestingInternals/include/Includes.h
-index 1b95151..acc38df 100644
+index 1b95151..869fcff 100644
 --- a/Sources/_TestingInternals/include/Includes.h
 +++ b/Sources/_TestingInternals/include/Includes.h
-@@ -39,6 +39,11 @@
- #include <stdbool.h>
- #include <stdint.h>
- #include <stdio.h>
-+#if __has_include(<limits.h>)
+@@ -29,6 +29,12 @@
+ #include <ctype.h>
+ #include <errno.h>
+ #include <inttypes.h>
 +/// limits.h must be included before stdlib.h with glibc, otherwise the
 +/// fortified realpath() in this module will differ from the one in SwiftGlibc.
++/// glibc bug: https://sourceware.org/bugzilla/show_bug.cgi?id=30516
++#if __has_include(<limits.h>)
 +#include <limits.h>
 +#endif
- #include <stdlib.h>
- #include <string.h>
- #include <time.h>
-@@ -97,10 +102,6 @@
+ /// Guard against including `signal.h` on WASI. The `signal.h` header file
+ /// itself is available in wasi-libc, but it's just a stub that doesn't actually
+ /// do anything. And also including it requires a special macro definition
+@@ -97,10 +103,6 @@
  #include <pwd.h>
  #endif
  
