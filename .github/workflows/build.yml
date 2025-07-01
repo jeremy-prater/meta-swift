@@ -7,7 +7,7 @@ on:
 
 jobs:
   yocto-aarch64:
-    runs-on: ubuntu-24.04
+    runs-on: [self-hosted, ubuntu-24.04]
     container:
     steps:
       - name: Packages
@@ -38,7 +38,7 @@ jobs:
           bitbake swift-hello-world
 
   yocto-armv7:
-    runs-on: ubuntu-24.04
+    runs-on: [self-hosted, ubuntu-24.04]
     container:
     steps:
       - name: Packages
@@ -69,7 +69,7 @@ jobs:
           bitbake swift-hello-world
 
   yocto-x86_64:
-    runs-on: ubuntu-24.04
+    runs-on: [self-hosted, ubuntu-24.04]
     container:
     steps:
       - name: Packages
