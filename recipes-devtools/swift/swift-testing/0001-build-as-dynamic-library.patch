@@ -1,0 +1,35 @@
+From 150381e5bda561daa70b53aee1f222254bb4cf00 Mon Sep 17 00:00:00 2001
+From: Luke Howard <lukeh@padl.com>
+Date: Mon, 17 Mar 2025 10:14:02 +1100
+Subject: [PATCH] build as dynamic library
+
+---
+ Package.swift | 5 ++++-
+ 1 file changed, 4 insertions(+), 1 deletion(-)
+
+diff --git a/Package.swift b/Package.swift
+index c498b59..7065f6f 100644
+--- a/Package.swift
++++ b/Package.swift
+@@ -28,6 +28,7 @@ let package = Package(
+   products: [
+     .library(
+       name: "Testing",
++      type: .dynamic,
+       targets: ["Testing"]
+     ),
+   ],
+@@ -45,7 +46,9 @@ let package = Package(
+       ],
+       exclude: ["CMakeLists.txt"],
+       cxxSettings: .packageSettings,
+-      swiftSettings: .packageSettings
++      swiftSettings: .packageSettings + [
++        .unsafeFlags(["-enable-library-evolution", "-emit-module-interface", "-emit-module-interface-path", "Testing.swiftinterface"])
++      ]
+     ),
+     .testTarget(
+       name: "TestingTests",
+-- 
+2.43.0
+

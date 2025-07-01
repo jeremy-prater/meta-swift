@@ -1,0 +1,24 @@
+From 59b301cf43388999cc230814043a9720710533e5 Mon Sep 17 00:00:00 2001
+From: "Jesse L. Zamora" <xtremekforever@gmail.com>
+Date: Fri, 28 Feb 2025 15:27:33 -0500
+Subject: [PATCH] Add __arm__ to Float16Support for missing symbol
+
+---
+ stdlib/public/runtime/Float16Support.cpp | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/stdlib/public/runtime/Float16Support.cpp b/stdlib/public/runtime/Float16Support.cpp
+index fa259559e45..dfa9c9876de 100644
+--- a/stdlib/public/runtime/Float16Support.cpp
++++ b/stdlib/public/runtime/Float16Support.cpp
+@@ -31,7 +31,7 @@
+ // Android NDK <r21 do not provide `__aeabi_d2h` in the compiler runtime,
+ // provide shims in that case.
+ #if (defined(__ANDROID__) && defined(__ARM_ARCH_7A__) && defined(__ARM_EABI__)) || \
+-  ((defined(__i386__) || defined(__i686__) || defined(__x86_64__)) && !defined(__APPLE__))
++  ((defined(__i386__) || defined(__i686__) || defined(__arm__) || defined(__x86_64__)) && !defined(__APPLE__))
+ 
+ #include "swift/shims/Visibility.h"
+ 
+-- 
+2.43.0
