@@ -60,6 +60,7 @@ python swift_do_package_resolve() {
 
     s = d.getVar('S')
     b = d.getVar('B')
+    recipe_sysroot_native = d.getVar("STAGING_DIR_NATIVE", True)
 
     env = os.environ.copy()
 
@@ -67,7 +68,7 @@ python swift_do_package_resolve() {
     if ssh_auth_sock:
         env['SSH_AUTH_SOCK'] = ssh_auth_sock
 
-    ret = subprocess.call(['swift', 'package', 'resolve', '--package-path', s, '--build-path', b], env=env)
+    ret = subprocess.call([f'{recipe_sysroot_native}/usr/bin/swift', 'package', 'resolve', '--package-path', s, '--build-path', b], env=env)
     if ret != 0:
         bb.fatal('swift package resolve failed')
 
@@ -222,13 +223,14 @@ python swift_do_compile() {
     extra_oeswift = shlex.split(d.getVar('EXTRA_OESWIFT'))
     ssh_auth_sock = d.getVar('BB_ORIGENV').get('SSH_AUTH_SOCK')
     recipe_sysroot = d.getVar("STAGING_DIR_TARGET", True)
+    recipe_sysroot_native = d.getVar("STAGING_DIR_NATIVE", True)
 
     env = os.environ.copy()
     if ssh_auth_sock:
         env['SSH_AUTH_SOCK'] = ssh_auth_sock
     env['SYSROOT'] = recipe_sysroot
 
-    args = ['swift', 'build', '--package-path', s, '--build-path', b, '-c', build_mode, '--destination', destination_json] + extra_oeswift
+    args = [f'{recipe_sysroot_native}/usr/bin/swift', 'build', '--package-path', s, '--build-path', b, '-c', build_mode, '--destination', destination_json] + extra_oeswift
 
     ret = subprocess.call(args, env=env, cwd=s)
     if ret != 0:
