@@ -50,11 +50,11 @@ def fix_socket_header(filename):
         f.write(line)
 
 # Support for SwiftPM fetching packages and their GitHub submodules
-do_swift_package_resolve[depends] += "unzip-native:do_populate_sysroot swift-native:do_populate_sysroot"
-do_swift_package_resolve[network] = "1"
-do_swift_package_resolve[vardepsexclude] = "BB_ORIGENV"
+swift_do_package_resolve[depends] += "unzip-native:do_populate_sysroot swift-native:do_populate_sysroot"
+swift_do_package_resolve[network] = "1"
+swift_do_package_resolve[vardepsexclude] = "BB_ORIGENV"
 
-python do_swift_package_resolve() {
+python swift_do_package_resolve() {
     import subprocess
     import os
 
@@ -79,7 +79,7 @@ python do_swift_package_resolve() {
             bb.fatal('git submodule update failed')
 }
 
-addtask swift_package_resolve after do_unpack before do_compile
+addtask do_package_resolve after do_unpack before do_compile
 
 python swift_do_configure() {
     import os
@@ -205,7 +205,7 @@ python swift_do_configure() {
     configJSON.close()
 }
 
-# ideally this should be handled by do_swift_package_resolve but doesn't always appear to be the case
+# ideally this should be handled by swift_do_package_resolve but doesn't always appear to be the case
 do_compile[network] = "1"
 swift_do_compile[vardepsexclude] = "BB_ORIGENV"
 
@@ -266,4 +266,4 @@ do_package_update() {
 do_package_update[network] = "1"
 addtask do_package_update after do_configure
 
-EXPORT_FUNCTIONS do_configure do_compile do_package_update
+EXPORT_FUNCTIONS do_package_resolve do_configure do_compile do_package_update
