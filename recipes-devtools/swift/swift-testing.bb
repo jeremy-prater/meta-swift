@@ -40,5 +40,3 @@ FILES:${PN}-dev = "\
     ${libdir}/swift/linux/Testing.swiftdoc \
     ${libdir}/swift/linux/Testing.swiftinterface \
 "
-
-INSANE_SKIP:${PN} = "patch-fuzz"

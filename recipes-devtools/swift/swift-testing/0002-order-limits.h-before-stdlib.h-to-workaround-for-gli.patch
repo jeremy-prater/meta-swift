@@ -1,4 +1,4 @@
-From db76ea7d388ac4f3af4b74754f20da1b664e7017 Mon Sep 17 00:00:00 2001
+From 4754c7f585e9ecaab9c302e5c2e5646f74349181 Mon Sep 17 00:00:00 2001
 From: Luke Howard <lukeh@padl.com>
 Date: Tue, 1 Jul 2025 10:32:38 +1000
 Subject: [PATCH] order limits.h before stdlib.h to workaround for glibc
@@ -18,11 +18,11 @@ build.
  1 file changed, 6 insertions(+), 4 deletions(-)
 
 diff --git a/Sources/_TestingInternals/include/Includes.h b/Sources/_TestingInternals/include/Includes.h
-index 1b95151..869fcff 100644
+index 4a621d5..9cca090 100644
 --- a/Sources/_TestingInternals/include/Includes.h
 +++ b/Sources/_TestingInternals/include/Includes.h
-@@ -29,6 +29,12 @@
- #include <ctype.h>
+@@ -28,6 +28,12 @@
+ 
  #include <errno.h>
  #include <inttypes.h>
 +/// limits.h must be included before stdlib.h with glibc, otherwise the
@@ -34,7 +34,7 @@ index 1b95151..869fcff 100644
  /// Guard against including `signal.h` on WASI. The `signal.h` header file
  /// itself is available in wasi-libc, but it's just a stub that doesn't actually
  /// do anything. And also including it requires a special macro definition
-@@ -97,10 +103,6 @@
+@@ -88,10 +94,6 @@
  #include <pwd.h>
  #endif
  
