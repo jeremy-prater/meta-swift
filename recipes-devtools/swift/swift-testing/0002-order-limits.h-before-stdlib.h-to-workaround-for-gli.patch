@@ -13,6 +13,8 @@ definition depends on whether `limits.h` has been included or not
 modules and should probably be fixed upstream). If the definition
 differs from the one in SwiftGlibc, then _TestingInternals will not
 build.
+
+Upstream-Status: Backport
 ---
  Sources/_TestingInternals/include/Includes.h | 10 ++++++----
  1 file changed, 6 insertions(+), 4 deletions(-)

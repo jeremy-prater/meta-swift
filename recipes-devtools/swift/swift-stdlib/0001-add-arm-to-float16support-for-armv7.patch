@@ -3,6 +3,7 @@ From: "Jesse L. Zamora" <xtremekforever@gmail.com>
 Date: Fri, 28 Feb 2025 15:27:33 -0500
 Subject: [PATCH] Add __arm__ to Float16Support for missing symbol
 
+Upstream-Status: Inappropriate [os specific]
 ---
  stdlib/public/runtime/Float16Support.cpp | 2 +-
  1 file changed, 1 insertion(+), 1 deletion(-)

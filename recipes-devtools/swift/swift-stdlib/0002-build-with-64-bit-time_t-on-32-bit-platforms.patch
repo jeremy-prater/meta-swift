@@ -7,6 +7,8 @@ It is good practice to build with 64-bit time_t/timeval on 32-bit platforms to
 avoid the Y2038 issue. This is the default when building on Yocto for armv7,
 for example. Unfortunately suseconds_t is not an alias to a type of the correct
 width (unlike time_t).
+
+Upstream-Status: Backport
 ---
  stdlib/public/Platform/Platform.swift | 18 +++++++++++-------
  1 file changed, 11 insertions(+), 7 deletions(-)

@@ -8,6 +8,8 @@ avoid the Y2038 issue. This is the default when building on Yocto for armv7,
 for example. Unfortunately suseconds_t is not an alias to a type of the correct
 width (unlike time_t), so for Glibc make it a private alias of time_t to fix
 the build.
+
+Upstream-Status: Submitted
 ---
  .../FileManager/FileManager+Files.swift                     | 6 ++++++
  1 file changed, 6 insertions(+)
