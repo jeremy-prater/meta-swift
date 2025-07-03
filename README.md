@@ -1,3 +1,9 @@
+⚠️ This branch is locked and is read only ⚠️
+
+This is here for historical reasons to support build systems that were previously using the `master` branch
+
+🚨 `trunk` is the new default branch 🚨
+
 # meta-swift
 
 Yocto layer for the Swift programming language.
