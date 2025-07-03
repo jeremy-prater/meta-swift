@@ -7,6 +7,8 @@ It is possible to build with 64-bit file offsets on 32-bit platforms such as
 armv7, and indeed this is the default for some build environments such as
 Yocto. Use fsblkcnt_t, which is an alias to a type of the correct width, when
 computing blockSize.
+
+Upstream-Status: Submitted
 ---
  .../FoundationEssentials/FileManager/FileManager+Files.swift  | 4 ++++
  1 file changed, 4 insertions(+)

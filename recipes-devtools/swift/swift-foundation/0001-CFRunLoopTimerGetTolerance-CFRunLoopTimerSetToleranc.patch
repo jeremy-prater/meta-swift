@@ -4,6 +4,7 @@ Date: Tue, 4 Mar 2025 12:58:32 +1100
 Subject: [PATCH] CFRunLoopTimerGetTolerance/CFRunLoopTimerSetTolerance for
  non-Mac
 
+Upstream-Status: Inappropriate [oe specific]
 ---
  Sources/CoreFoundation/CFRunLoop.c | 6 ------
  1 file changed, 6 deletions(-)
