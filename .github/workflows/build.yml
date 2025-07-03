@@ -1,13 +1,16 @@
 name: build
-
 on:
   push:
   pull_request:
   workflow_dispatch:
+    inputs:
+      is_self_hosted:
+        type: boolean
+        default: false
 
 jobs:
   yocto-aarch64:
-    runs-on: [self-hosted, ubuntu-24.04]
+    runs-on: ${{ inputs.is_self_hosted && 'self-hosted' || 'ubuntu-24.04' }}
     container:
     steps:
       - name: Packages
@@ -38,7 +41,7 @@ jobs:
           bitbake swift-hello-world
 
   yocto-armv7:
-    runs-on: [self-hosted, ubuntu-24.04]
+    runs-on: ${{ inputs.is_self_hosted && 'self-hosted' || 'ubuntu-24.04' }}
     container:
     steps:
       - name: Packages
@@ -69,7 +72,7 @@ jobs:
           bitbake swift-hello-world
 
   yocto-x86_64:
-    runs-on: [self-hosted, ubuntu-24.04]
+    runs-on: ${{ inputs.is_self_hosted && 'self-hosted' || 'ubuntu-24.04' }}
     container:
     steps:
       - name: Packages
