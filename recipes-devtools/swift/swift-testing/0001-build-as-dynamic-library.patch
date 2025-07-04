@@ -3,6 +3,7 @@ From: Luke Howard <lukeh@padl.com>
 Date: Mon, 17 Mar 2025 10:14:02 +1100
 Subject: [PATCH] build as dynamic library
 
+Upstream-Status: Inappropriate [oe specific]
 ---
  Package.swift | 5 ++++-
  1 file changed, 4 insertions(+), 1 deletion(-)
