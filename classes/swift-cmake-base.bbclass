@@ -45,9 +45,6 @@ HOST_CC_ARCH:prepend = "-target ${SWIFT_TARGET_NAME} "
 #                                                                              #
 ################################################################################
 
-# Use lld (see note above)
-TARGET_LDFLAGS:append = " -fuse-ld=lld"
-
 # Add build-id to generated binaries
 TARGET_LDFLAGS:append = " -Xlinker --build-id=sha1"
 
@@ -58,7 +55,15 @@ OECMAKE_CXX_COMPILER = "clang++"
 
 # Point clang to where the C++ runtime is for our target arch
 RUNTIME_FLAGS = "${TARGET_CC_ARCH} -w -fuse-ld=lld -B${STAGING_DIR_TARGET}/usr/lib/${TARGET_SYS}/${SWIFT_GCC_VERSION}"
-TARGET_LDFLAGS:append = " ${TARGET_LD_ARCH} -w -fuse-ld=lld -L${STAGING_DIR_TARGET}/usr/lib/${TARGET_SYS}/${SWIFT_GCC_VERSION}"
+TARGET_LDFLAGS:append = " ${TARGET_LD_ARCH} -L${STAGING_DIR_TARGET}/usr/lib/${TARGET_SYS}/${SWIFT_GCC_VERSION}"
+
+# Remove unsupported linker flags
+TARGET_LDFLAGS:remove = "-Wl,-O1"
+TARGET_LDFLAGS:remove = "-Wl,--hash-style=gnu"
+TARGET_LDFLAGS:remove = "-Wl,--as-needed"
+
+# Disable prefix map since we're not using GCC
+DEBUG_PREFIX_MAP = ""
 
 OECMAKE_C_FLAGS:append = " ${RUNTIME_FLAGS} ${EXTRA_INCLUDE_FLAGS}"
 OECMAKE_CXX_FLAGS:append = " ${RUNTIME_FLAGS} ${EXTRA_INCLUDE_FLAGS}"
