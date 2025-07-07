@@ -16,7 +16,7 @@ SRC_URI += "git://github.com/swiftlang/swift-syntax.git;protocol=https;name=synt
 SRC_URI += "file://0001-CFRunLoopTimerGetTolerance-CFRunLoopTimerSetToleranc.patch;striplevel=1;"
 SRC_URI += "file://0002-build-with-64-bit-time_t-on-32-bit-platforms.patch;striplevel=1;"
 
-S = "${WORKDIR}/git"
+S = "${UNPACKDIR}/git"
 
 DEPENDS = "swift-foundation-essentials swift-foundation-icu swift-stdlib swift-native libdispatch ncurses libxml2 icu curl"
 RDEPENDS:${PN} += "swift-foundation-essentials swift-stdlib libdispatch"
