@@ -37,4 +37,5 @@ FILES:${PN}-dev = "\
     ${libdir}/swift/linux/${SWIFT_TARGET_ARCH}/FoundationICU.swiftmodule/* \
 "
 
-INSANE_SKIP:${PN} = "file-rdeps"
+INSANE_SKIP:${PN} = "file-rdeps buildpaths"
+INSANE_SKIP:${PN}-dbg = "buildpaths"

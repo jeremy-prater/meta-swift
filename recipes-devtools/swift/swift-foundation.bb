@@ -82,4 +82,5 @@ FILES:${PN}-staticdev = "\
     ${libdir}/swift/linux/libFoundationXML.a \
 "
 
-INSANE_SKIP:${PN} = "file-rdeps"
+INSANE_SKIP:${PN} = "file-rdeps buildpaths"
+INSANE_SKIP:${PN}-dbg = "buildpaths"
