@@ -37,3 +37,6 @@ FILES:${PN}-dev = "\
     ${libdir}/swift/linux/XCTest.swiftmodule \
     ${libdir}/swift/linux/XCTest.swiftdoc \
 "
+
+INSANE_SKIP:${PN} = "buildpaths"
+INSANE_SKIP:${PN}-dbg = "buildpaths"

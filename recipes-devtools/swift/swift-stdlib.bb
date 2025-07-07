@@ -256,6 +256,7 @@ FILES:${PN}-embedded = "\
     ${libdir}/swift/embedded \
 "
 
-INSANE_SKIP:${PN} = "file-rdeps"
-
-do_package_qa[noexec] = "1"
+INSANE_SKIP:${PN} = "file-rdeps buildpaths"
+INSANE_SKIP:${PN}-dbg = "buildpaths"
+INSANE_SKIP:${PN}-dev = "buildpaths staticdev"
+INSANE_SKIP:${PN}-embedded = "staticdev"

@@ -61,4 +61,5 @@ FILES:${PN}-staticdev = "\
     ${libdir}/swift_static/linux/libFoundationEssentials.a \
 "
 
-INSANE_SKIP:${PN} = "file-rdeps"
+INSANE_SKIP:${PN} = "file-rdeps buildpaths"
+INSANE_SKIP:${PN}-dbg = "buildpaths"
