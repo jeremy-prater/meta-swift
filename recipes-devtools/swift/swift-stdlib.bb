@@ -21,7 +21,7 @@ SRC_URI = "\
     file://0002-build-with-64-bit-time_t-on-32-bit-platforms.patch;striplevel=1; \
     "
 
-S = "${WORKDIR}/swift"
+S = "${UNPACKDIR}/swift"
 
 SWIFT_BUILDDIR = "${S}/build"
 DEPENDS = "gcc-runtime python3-native icu ncurses swift-native libgcc gcc glibc libxml2 libxml2-native ninja-native"
@@ -48,7 +48,7 @@ addtask fix_gcc_install_dir before do_configure after do_prepare_recipe_sysroot
 
 do_configure() {
     export SDKROOT=${STAGING_DIR_TARGET}
-    export LLVM_SRCDIR=${WORKDIR}/llvm-project
+    export LLVM_SRCDIR=${UNPACKDIR}/llvm-project
     export LLVM_BUILDDIR=${LLVM_SRCDIR}/build
     export SWIFT_SRCDIR=${S}
     export SWIFT_NATIVE_PATH=${STAGING_DIR_NATIVE}/usr/bin
@@ -139,7 +139,7 @@ set(SWIFT_SDK_LINUX_ARCH_${SWIFT_TARGET_ARCH}_LIBC_INCLUDE_DIRECTORY ${STAGING_D
 set(SWIFT_SDK_LINUX_ARCH_${SWIFT_TARGET_ARCH}_LIBC_ARCHITECTURE_INCLUDE_DIRECTORY ${STAGING_DIR_TARGET}/usr/include)
 set(SWIFT_LINUX_${SWIFT_TARGET_ARCH}_ICU_I18N ${STAGING_DIR_TARGET}/usr/lib/libicui18n.so)
 set(SWIFT_LINUX_${SWIFT_TARGET_ARCH}_ICU_UC ${STAGING_DIR_TARGET}/usr/lib/libicuuc.so)
-set(SWIFT_PATH_TO_LIBDISPATCH_SOURCE ${WORKDIR}/libdispatch)
+set(SWIFT_PATH_TO_LIBDISPATCH_SOURCE ${UNPACKDIR}/libdispatch)
 set(SWIFT_ENABLE_EXPERIMENTAL_CONCURRENCY ON)
 set(SWIFT_ENABLE_EXPERIMENTAL_CXX_INTEROP ON)
 set(SWIFT_ENABLE_EXPERIMENTAL_STRING_PROCESSING ON)
@@ -148,9 +148,9 @@ set(SWIFT_ENABLE_EXPERIMENTAL_DISTRIBUTED ON)
 set(SWIFT_ENABLE_EXPERIMENTAL_NONESCAPABLE_TYPES ON)
 set(SWIFT_ENABLE_EXPERIMENTAL_OBSERVATION ON)
 set(SWIFT_ENABLE_SYNCHRONIZATION ON)
-set(SWIFT_PATH_TO_STRING_PROCESSING_SOURCE ${WORKDIR}/swift-experimental-string-processing)
-set(SWIFT_SYNTAX_SOURCE_DIR ${WORKDIR}/swift-syntax)
-set(SWIFTSYNTAX_SOURCE_DIR ${WORKDIR}/swift-syntax)
+set(SWIFT_PATH_TO_STRING_PROCESSING_SOURCE ${UNPACKDIR}/swift-experimental-string-processing)
+set(SWIFT_SYNTAX_SOURCE_DIR ${UNPACKDIR}/swift-syntax)
+set(SWIFTSYNTAX_SOURCE_DIR ${UNPACKDIR}/swift-syntax)
 set(SWIFT_STANDARD_LIBRARY_SWIFT_FLAGS -Xcc --gcc-install-dir=${STAGING_DIR_TARGET}/usr/lib/gcc/${TARGET_SYS}/${SWIFT_GCC_VERSION} -I${STAGING_DIR_TARGET}/usr/include/c++/${SWIFT_GCC_VERSION} -I${STAGING_DIR_TARGET}/usr/include/c++/${SWIFT_GCC_VERSION}/${TARGET_SYS} -no-verify-emitted-module-interface ${SWIFT_EXTRA_SWIFTC_CC_FLAGS})
 set(SWIFT_SDK_LINUX_CXX_OVERLAY_SWIFT_COMPILE_FLAGS "")
 

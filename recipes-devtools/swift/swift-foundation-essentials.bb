@@ -16,7 +16,7 @@ SRC_URI += "git://github.com/apple/swift-collections.git;protocol=https;nobranch
 SRC_URI += "file://0001-build-with-64-bit-fsblkcnt_t-on-32-bit-glibc-platfor.patch;striplevel=1;"
 SRC_URI += "file://0002-build-with-64-bit-time_t-on-32-bit-platforms.patch;striplevel=1;"
 
-S = "${WORKDIR}/git"
+S = "${UNPACKDIR}/git"
 
 DEPENDS = "icu swift-stdlib swift-native swift-foundation-icu"
 RDEPENDS:${PN} += "icu swift-stdlib swift-foundation-icu"
@@ -28,10 +28,10 @@ TARGET_LDFLAGS += "-L${STAGING_DIR_TARGET}/usr/lib/swift/linux"
 # Enable Swift parts
 EXTRA_OECMAKE += "-DENABLE_SWIFT=YES"
 EXTRA_OECMAKE += "-DBUILD_SHARED_LIBS=YES"
-EXTRA_OECMAKE += "-D_SwiftFoundationICU_SourceDIR=${WORKDIR}/swift-foundation-icu"
-EXTRA_OECMAKE += "-D_SwiftCollections_SourceDIR=${WORKDIR}/swift-collections"
+EXTRA_OECMAKE += "-D_SwiftFoundationICU_SourceDIR=${UNPACKDIR}/swift-foundation-icu"
+EXTRA_OECMAKE += "-D_SwiftCollections_SourceDIR=${UNPACKDIR}/swift-collections"
 EXTRA_OECMAKE += "-DSwiftFoundation_MODULE_TRIPLE=${SWIFT_TARGET_NAME}"
-EXTRA_OECMAKE += "-DSwiftSyntax_DIR=${WORKDIR}/swift-syntax/cmake/modules"
+EXTRA_OECMAKE += "-DSwiftSyntax_DIR=${UNPACKDIR}/swift-syntax/cmake/modules"
 
 # Ensure the right CPU is targeted
 cmake_do_generate_toolchain_file:append() {

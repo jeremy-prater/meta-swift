@@ -11,7 +11,7 @@ SRC_URI = "\
     file://Tests \
 "
 
-S = "${WORKDIR}/git"
+S = "${SWIFT_UNPACKDIR}"
 B = "${WORKDIR}/build"
 
 inherit swift
