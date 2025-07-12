@@ -10,7 +10,7 @@ PV = "${SWIFT_VERSION}+git${SRCPV}"
 
 SRC_URI = "git://github.com/swiftlang/swift-foundation-icu.git;protocol=https;name=icu;tag=${SWIFT_TAG};nobranch=1;"
 
-S = "${WORKDIR}/git"
+S = "${UNPACKDIR}/git"
 
 DEPENDS = "icu swift-stdlib"
 RDEPENDS:${PN} += "swift-stdlib"
@@ -37,4 +37,5 @@ FILES:${PN}-dev = "\
     ${libdir}/swift/linux/${SWIFT_TARGET_ARCH}/FoundationICU.swiftmodule/* \
 "
 
-INSANE_SKIP:${PN} = "file-rdeps"
+INSANE_SKIP:${PN} = "file-rdeps buildpaths"
+INSANE_SKIP:${PN}-dbg = "buildpaths"

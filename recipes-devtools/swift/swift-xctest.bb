@@ -12,7 +12,7 @@ PV = "${SWIFT_VERSION}+git${SRCPV}"
 
 SRC_URI = "git://github.com/swiftlang/swift-corelibs-xctest.git;protocol=https;tag=${SWIFT_TAG};nobranch=1"
 
-S = "${WORKDIR}/git"
+S = "${UNPACKDIR}/git"
 B = "${WORKDIR}/build"
 
 inherit swift
@@ -37,3 +37,6 @@ FILES:${PN}-dev = "\
     ${libdir}/swift/linux/XCTest.swiftmodule \
     ${libdir}/swift/linux/XCTest.swiftdoc \
 "
+
+INSANE_SKIP:${PN} = "buildpaths"
+INSANE_SKIP:${PN}-dbg = "buildpaths"

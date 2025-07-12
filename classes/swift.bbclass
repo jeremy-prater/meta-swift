@@ -5,6 +5,10 @@ SWIFT_BUILD_TESTS ?= "${DEBUG_BUILD}"
 DEPENDS:append = " swift-stdlib libdispatch swift-foundation"
 DEPENDS:append = " ${@oe.utils.conditional('SWIFT_BUILD_TESTS', '1', ' swift-xctest swift-testing', '', d)}"
 
+# Depending on the Yocto version, the sources may be in ${UNPACKDIR} or may just need to be placed
+# at ${WORKDIR}/git instead.
+SWIFT_UNPACKDIR = "${@oe.utils.conditional('UNPACKDIR', '${WORKDIR}', '${WORKDIR}/git', '${UNPACKDIR}', d)}"
+
 # Default build directory for SPM is "./.build"
 # (see 'swift [build|package|run|test] --help')
 #

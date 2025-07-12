@@ -11,7 +11,7 @@ SRC_URI = "\
     file://Tests \
 "
 
-S = "${WORKDIR}/git"
+S = "${SWIFT_UNPACKDIR}"
 B = "${WORKDIR}/build"
 
 inherit swift
@@ -21,3 +21,6 @@ do_install() {
     install -m 0755 ${BUILD_DIR}/hello-world ${D}${bindir}
     install -m 0755 ${BUILD_DIR}/hello-worldPackageTests.xctest ${D}${bindir}
 }
+
+INSANE_SKIP:${PN} = "buildpaths"
+INSANE_SKIP:${PN}-dbg = "buildpaths"

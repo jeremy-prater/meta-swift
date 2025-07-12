@@ -15,7 +15,7 @@ SRC_URI = "git://github.com/swiftlang/swift-testing.git;protocol=https;tag=${SWI
 SRC_URI += "file://0001-build-as-dynamic-library.patch;striplevel=1;"
 SRC_URI += "file://0002-order-limits.h-before-stdlib.h-to-workaround-for-gli.patch;striplevel=1;"
 
-S = "${WORKDIR}/git"
+S = "${UNPACKDIR}/git"
 B = "${WORKDIR}/build"
 
 inherit swift
@@ -40,3 +40,6 @@ FILES:${PN}-dev = "\
     ${libdir}/swift/linux/Testing.swiftdoc \
     ${libdir}/swift/linux/Testing.swiftinterface \
 "
+
+INSANE_SKIP:${PN} = "buildpaths"
+INSANE_SKIP:${PN}-dbg = "buildpaths"
