@@ -1,32 +1,79 @@
 # meta-swift
 
-Yocto layer for the Swift programming language.
+meta-swift is a [Yocto](https://www.yoctoproject.org) layer for the [Swift](https://www.swift.org) programming language.
 
-# Usage
+This layer presently supports the latest version of Swift (6.1.2) for several Yocto versions. It should also be compatible with earlier versions of Swift, after updating the version in [swift-version.inc](recipes-devtools/swift/swift-version.inc). (This may also require changes to [swift-native.bb](recipes-devtools/swift/swift-native.bb) to reflect the different install artifacts.)
 
-Add this layer to your project (refer to Yocto user manual, or use `bitbake-layers add-layer`).
+Both `x86_64` and `aarch64` host architectures are supported. The layer follows the convention of matching branch names with their corresponding Yocto release.
 
-Create a new Swift application and include it in your build as follows:
+The meta-swift layer has been tested with the following Yocto target machines:
 
-```
-DESCRIPTION = "My Swift app"
+- `qemuarm`
+- `qemuarm64`
+- `qemux86-64`
+- `beaglebone-yocto`
+- `raspberrypi-armv7`
+- `raspberrypi-armv8`
+- `raspberrypi4-64`
+
+Other machines that use `x86_64`, `armv7` or `aarch64` target architectures should also work.
+
+## Compiling
+
+A good way to get started is to look at the [meta-swift-examples](https://github.com/xavgru12/meta-swift-examples) repository, which contains scripts and a workspace for building under Docker.
+
+The local [CI workflows](.github/workflows/build.yml) also provide some examples of how the layer is compiled.
+
+## Usage
+
+First, add the meta-swift layer to your project, by checking out the appropriate branch for your Yocto version (e.g. scarthgap) and using `bitbake-layers add-layer`. (You may also modify `bblayers.conf` directly.)
+
+Create a new Swift package and include it in your BitBake recipe as follows:
+
+```bash
+DESCRIPTION = "An example Swift application"
 LICENSE = "CLOSED"
 
-SRC_URI = "file://Sources/hello-world/main.swift \
-           file://Package.swift \
+SRC_URI = "\
+    file://Sources/hello-world/main.swift \
+    file://Package.swift \
 "
+
+S = "${SWIFT_UNPACKDIR}"
+B = "${WORKDIR}/build"
 
 inherit swift
 ```
 
-When you `inherit swift` class, it does the following:
+When you inherit the `swift` class, BitBake does the following:
 
-- Automatically download the x86\_64 SDK binaries and create a cross-compiling sysroot
-- Add an RDEPENDS:${PN} for `swift`
-- Performs the required build steps
+- Automatically downloads the Swift toolchain for the host architecture and creates a cross-compiling sysroot
+- Adds build dependencies for the Swift standard libraries, including Foundation
+- Performs the required build steps to build a Swift package
 
-# Deployment
+By default, Swift tests are not built. To build them, add:
 
-The user of this layer must provide their own `do_install` function.
+```bash
+SWIFT_BUILD_TESTS = "1"
+```
 
-The finished binaries are located in ${BUILD\_DIR}.
+to your recipe.
+
+Note that Yocto will automatically detect and add runtime dependencies for the Swift runtime, so it is not necessary to add them explicitly in your package.
+
+## Deployment
+
+The user of this layer must provide their own `do_install` function for swift packages. An example of this is available in `swift-hello-world.bb`:
+
+```bash
+do_install() {
+    install -d ${D}${bindir}
+    install -m 0755 ${BUILD_DIR}/hello-world ${D}${bindir}
+    install -m 0755 ${BUILD_DIR}/hello-worldPackageTests.xctest ${D}${bindir}
+}
+
+INSANE_SKIP:${PN} = "buildpaths"
+INSANE_SKIP:${PN}-dbg = "buildpaths"
+```
+
+The finished binaries are located in ${BUILD\_DIR}. Skipping `buildpaths` package QA is required on styhead and higher, as these warnings are treated as errors (and the build directory path is often embedded in Swift binaries, a [known issue](https://github.com/jeremy-prater/meta-swift/issues/28)).
