@@ -2,7 +2,7 @@
 
 meta-swift is a [Yocto](https://www.yoctoproject.org) layer for the [Swift](https://www.swift.org) programming language.
 
-This layer presently supports the latest version of Swift (6.1.2) for several Yocto versions. It should also be compatible with earlier versions of Swift, after updating the version in [swift-version.inc](recipes-devtools/swift/swift-version.inc). (This may also require changes to [swift-native.bb](recipes-devtools/swift/swift-native.bb) to reflect the different install artifacts.)
+This layer presently supports the latest version of Swift (6.1.3) for several Yocto versions. It should also be compatible with earlier versions of Swift, after updating the version in [swift-version.inc](recipes-devtools/swift/swift-version.inc). (This may also require changes to [swift-native.bb](recipes-devtools/swift/swift-native.bb) to reflect the different install artifacts.)
 
 Both `x86_64` and `aarch64` host architectures are supported. The layer follows the convention of matching branch names with their corresponding Yocto release.
 
