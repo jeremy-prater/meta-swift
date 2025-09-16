@@ -58,6 +58,7 @@ FILES:${PN}-dev = "\
 
 FILES:${PN}-staticdev = "\
     ${libdir}/lib_SwiftLibraryPluginProviderCShims.a \
+    ${libdir}/lib_SwiftSyntaxCShims.a \
     ${libdir}/swift_static/linux/libFoundationEssentials.a \
 "
 
