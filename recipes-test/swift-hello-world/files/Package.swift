@@ -17,7 +17,6 @@ let package = Package(
             dependencies: [],
             swiftSettings: [
                 .swiftLanguageMode(.v5),
-                .interoperabilityMode(.Cxx),
             ]
         ),
         .testTarget(
