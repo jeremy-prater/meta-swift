@@ -88,8 +88,14 @@ SWIFT_FLAGS = "-target ${SWIFT_TARGET_NAME} -use-ld=lld \
     -Xclang-linker -B${STAGING_DIR_TARGET}/usr/lib \
     -Xclang-linker -B${STAGING_DIR_TARGET}/usr/lib/${TARGET_SYS}/${SWIFT_GCC_VERSION} \
     ${SWIFT_EXTRA_SWIFTC_CC_FLAGS} \
+    -I${STAGING_DIR_NATIVE}/usr/lib/${TARGET_SYS}/gcc/${TARGET_SYS}/${SWIFT_GCC_VERSION}/include \
+    -I${STAGING_DIR_NATIVE}/usr/lib/${TARGET_SYS}/gcc/${TARGET_SYS}/${SWIFT_GCC_VERSION}/include-fixed \
+    -I${STAGING_DIR_NATIVE}/usr/lib/clang/17/include \
+    -I${STAGING_DIR_NATIVE}/usr/lib/clang/17/include-fixed \
     -Xcc -I${STAGING_DIR_NATIVE}/usr/lib/${TARGET_SYS}/gcc/${TARGET_SYS}/${SWIFT_GCC_VERSION}/include \
     -Xcc -I${STAGING_DIR_NATIVE}/usr/lib/${TARGET_SYS}/gcc/${TARGET_SYS}/${SWIFT_GCC_VERSION}/include-fixed \
+    -Xcc -I${STAGING_DIR_NATIVE}/usr/lib/clang/17/include \
+    -Xcc -I${STAGING_DIR_NATIVE}/usr/lib/clang/17/include-fixed \
     -L${STAGING_DIR_TARGET} \
     -L${STAGING_DIR_TARGET}/lib \
     -L${STAGING_DIR_TARGET}/usr/lib \
