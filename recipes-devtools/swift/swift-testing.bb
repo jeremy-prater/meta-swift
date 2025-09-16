@@ -11,6 +11,8 @@ require swift-version.inc
 PV = "${SWIFT_VERSION}+git${SRCPV}"
 SRCREV_FORMAT = "swift_testing"
 
+EXTRA_OESWIFT = "-Xswiftc -enable-testing"
+
 SRC_URI = "git://github.com/swiftlang/swift-testing.git;protocol=https;tag=${SWIFT_TAG};nobranch=1"
 SRC_URI += "file://0001-build-as-dynamic-library.patch;striplevel=1;"
 SRC_URI += "file://0002-order-limits.h-before-stdlib.h-to-workaround-for-gli.patch;striplevel=1;"
