@@ -1,9 +1,7 @@
 import Foundation
 import Dispatch
 import Glibc
-// awaiting integration of fix for swiftlang/swift#83915 before we can reenable
-// C++ interop on Swift 6.2. This should be fixed in Swift 6.2.1.
-// import CxxStdlib
+import CxxStdlib
 
 func main() async throws {
     print("Hello, world! 👋")
