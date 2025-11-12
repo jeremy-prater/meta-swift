@@ -211,6 +211,13 @@ do_install() {
     cp -rfd ${SWIFT_BUILDDIR}/lib/swift ${D}${libdir}/
 }
 
+do_install:append() {
+    # Remove CxxStdlib interface files that don't work in cross-compilation
+    # The binary .swiftmodule files work fine without them
+    rm -f ${D}${libdir}/swift/linux/CxxStdlib.swiftmodule/*/swiftinterface
+    rm -f ${D}${libdir}/swift/linux/CxxStdlib.swiftmodule/*.swiftinterface
+}
+
 FILES:${PN} = "\
     ${libdir}/swift/linux/libswift_RegexParser.so \
     ${libdir}/swift/linux/libswiftSwiftPrivateThreadExtras.so \
