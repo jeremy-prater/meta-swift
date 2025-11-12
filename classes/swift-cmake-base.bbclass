@@ -2,14 +2,7 @@ inherit cmake
 inherit swift-common
 
 python () {
-    # Determine SWIFT_GCC_VERSION by examining bitbake's context dictionary key
-    # RECIPE_MAINTAINER:pn-gcc-source-<version>
     import shlex
-
-    gcc_src_maint_pkg = [x for x in d if x.startswith("RECIPE_MAINTAINER:pn-gcc-source-")][0]
-    gcc_ver = gcc_src_maint_pkg.rpartition("-")[2]
-
-    d.setVar("SWIFT_GCC_VERSION", gcc_ver)
 
     def expand_swiftc_cc_flags(flags):
         flags = [['-Xcc', flag] for flag in flags]
