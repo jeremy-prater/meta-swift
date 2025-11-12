@@ -148,33 +148,14 @@ python swift_do_configure() {
             "-I${STAGING_DIR_NATIVE}/usr/lib/clang/17/include-fixed"
         ],
         "extra-swiftc-flags":[
-            "-target",
-            "${SWIFT_TARGET_NAME}",
+            "-target", "${SWIFT_TARGET_NAME}",
             "-use-ld=lld",
-            "-tools-directory",
-            "${STAGING_DIR_NATIVE}/usr/bin",
+            "-tools-directory", "${STAGING_DIR_NATIVE}/usr/bin",
 
             "-enforce-exclusivity=unchecked",
-
-            "-Xlinker", "-rpath", "-Xlinker", "/usr/lib/swift/linux",
-
-            "-Xlinker",
-            "-L${STAGING_DIR_TARGET}",
-
-            "-Xlinker",
-            "-L${STAGING_DIR_TARGET}/lib",
-
-            "-Xlinker",
-            "-L${STAGING_DIR_TARGET}/usr/lib",
-
-            "-Xlinker",
-            "-L${STAGING_DIR_TARGET}/usr/lib/swift/linux",
-
-            "-Xlinker",
-            "-L${STAGING_DIR_TARGET}/usr/lib/${TARGET_SYS}/${SWIFT_CXX_VERSION}",
-
-            "-Xlinker",
-            "--build-id=sha1",
+            "-resource-dir", "${STAGING_DIR_TARGET}/usr/lib/swift",
+            "-module-cache-path", "${B}/${BUILD_MODE}/ModuleCache",
+            "-sdk", "${STAGING_DIR_TARGET}",
 
             "-I${STAGING_INCDIR}",
             "-I${STAGING_DIR_TARGET}/usr/include/c++/${SWIFT_CXX_VERSION}",
@@ -182,16 +163,22 @@ python swift_do_configure() {
             "-I${STAGING_DIR_NATIVE}/usr/lib/clang/17/include",
             "-I${STAGING_DIR_NATIVE}/usr/lib/clang/17/include-fixed",
 
-            "-resource-dir", "${STAGING_DIR_TARGET}/usr/lib/swift",
-            "-module-cache-path", "${B}/${BUILD_MODE}/ModuleCache",
+            "-Xlinker", "-rpath", "-Xlinker", "/usr/lib/swift/linux",
+
+            "-Xlinker", "-L${STAGING_DIR_TARGET}",
+            "-Xlinker", "-L${STAGING_DIR_TARGET}/lib",
+            "-Xlinker", "-L${STAGING_DIR_TARGET}/usr/lib",
+            "-Xlinker", "-L${STAGING_DIR_TARGET}/usr/lib/swift/linux",
+            "-Xlinker", "-L${STAGING_DIR_TARGET}/usr/lib/${TARGET_SYS}/${SWIFT_CXX_VERSION}",
+
+            "-Xlinker", "--build-id=sha1",
 
             "-Xclang-linker", "-B${STAGING_DIR_TARGET}/usr/lib/${TARGET_SYS}/${SWIFT_CXX_VERSION}",
             "-Xclang-linker", "-B${STAGING_DIR_TARGET}/usr/lib",
 
-            ${SWIFT_EXTRA_SWIFTC_CC_FLAGS},
             "-Xcc", "--gcc-install-dir=${STAGING_DIR_TARGET}/usr/lib/gcc/${TARGET_SYS}/${SWIFT_CXX_VERSION}",
 
-            "-sdk", "${STAGING_DIR_TARGET}"
+            ${SWIFT_EXTRA_SWIFTC_CC_FLAGS}
         ],
         "extra-cpp-flags":[
             "-lstdc++"
