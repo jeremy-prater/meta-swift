@@ -103,18 +103,6 @@ python swift_do_configure() {
     socket_header = recipe_sysroot + "/usr/include/asm-generic/socket.h"
     fix_socket_header(socket_header)
 
-    # Detect the version of the C++ runtime
-    # This is used to determine necessary include paths
-    cxx_include_base = recipe_sysroot + "/usr/include/c++"
-    cxx_include_list = os.listdir(cxx_include_base)
-    if 'current' in cxx_include_list:
-        cxx_include_list.remove('current')
-    if len(cxx_include_list) != 1:
-        bb.fatal("swift bbclass detected more than one c++ runtime, unable to determine which one to use")
-    cxx_version = cxx_include_list[0]
-
-    d.setVar('SWIFT_CXX_VERSION', cxx_version)
-
     def expand_swiftc_cc_flags(flags):
         flags = [['-Xcc', flag] for flag in flags]
         return sum(flags, [])
@@ -142,8 +130,8 @@ python swift_do_configure() {
             ${SWIFT_EXTRA_CC_FLAGS},
             "-fPIC",
             "-I${STAGING_INCDIR}",
-            "-I${STAGING_DIR_TARGET}/usr/include/c++/${SWIFT_CXX_VERSION}",
-            "-I${STAGING_DIR_TARGET}/usr/include/c++/${SWIFT_CXX_VERSION}/${TARGET_SYS}",
+            "-I${STAGING_DIR_TARGET}/usr/include/c++/${SWIFT_GCC_VERSION}",
+            "-I${STAGING_DIR_TARGET}/usr/include/c++/${SWIFT_GCC_VERSION}/${TARGET_SYS}",
             "-I${STAGING_DIR_NATIVE}/usr/lib/clang/17/include",
             "-I${STAGING_DIR_NATIVE}/usr/lib/clang/17/include-fixed"
         ],
@@ -158,8 +146,8 @@ python swift_do_configure() {
             "-sdk", "${STAGING_DIR_TARGET}",
 
             "-I${STAGING_INCDIR}",
-            "-I${STAGING_DIR_TARGET}/usr/include/c++/${SWIFT_CXX_VERSION}",
-            "-I${STAGING_DIR_TARGET}/usr/include/c++/${SWIFT_CXX_VERSION}/${TARGET_SYS}",
+            "-I${STAGING_DIR_TARGET}/usr/include/c++/${SWIFT_GCC_VERSION}",
+            "-I${STAGING_DIR_TARGET}/usr/include/c++/${SWIFT_GCC_VERSION}/${TARGET_SYS}",
             "-I${STAGING_DIR_NATIVE}/usr/lib/clang/17/include",
             "-I${STAGING_DIR_NATIVE}/usr/lib/clang/17/include-fixed",
 
@@ -169,14 +157,14 @@ python swift_do_configure() {
             "-Xlinker", "-L${STAGING_DIR_TARGET}/lib",
             "-Xlinker", "-L${STAGING_DIR_TARGET}/usr/lib",
             "-Xlinker", "-L${STAGING_DIR_TARGET}/usr/lib/swift/linux",
-            "-Xlinker", "-L${STAGING_DIR_TARGET}/usr/lib/${TARGET_SYS}/${SWIFT_CXX_VERSION}",
+            "-Xlinker", "-L${STAGING_DIR_TARGET}/usr/lib/${TARGET_SYS}/${SWIFT_GCC_VERSION}",
 
             "-Xlinker", "--build-id=sha1",
 
-            "-Xclang-linker", "-B${STAGING_DIR_TARGET}/usr/lib/${TARGET_SYS}/${SWIFT_CXX_VERSION}",
             "-Xclang-linker", "-B${STAGING_DIR_TARGET}/usr/lib",
+            "-Xclang-linker", "-B${STAGING_DIR_TARGET}/usr/lib/${TARGET_SYS}/${SWIFT_GCC_VERSION}",
 
-            "-Xcc", "--gcc-install-dir=${STAGING_DIR_TARGET}/usr/lib/gcc/${TARGET_SYS}/${SWIFT_CXX_VERSION}",
+            "-Xcc", "--gcc-install-dir=${STAGING_DIR_TARGET}/usr/lib/gcc/${TARGET_SYS}/${SWIFT_GCC_VERSION}",
 
             ${SWIFT_EXTRA_SWIFTC_CC_FLAGS}
         ],
@@ -186,8 +174,6 @@ python swift_do_configure() {
     }"""
 
     swift_destination =  d.expand(swift_destination_template)
-
-    d.delVar("SWIFT_CXX_VERSION")
 
     d.delVar("SWIFT_EXTRA_CC_FLAGS")
     d.delVar("SWIFT_EXTRA_SWIFTC_CC_FLAGS")
