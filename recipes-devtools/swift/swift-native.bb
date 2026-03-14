@@ -35,7 +35,7 @@ SRC_DIR = "${SWIFT_TAG}-${SWIFT_LINUX_DISTRO}${SWIFT_ARCH_SUFFIX}"
 SRC_URI = "https://download.swift.org/swift-${SWIFT_VERSION}-release/${SWIFT_LINUX_DISTRO}${SWIFT_ARCH_SUFFIX}/${SWIFT_TAG}/${SWIFT_TAG}-${SWIFT_LINUX_DISTRO}${SWIFT_ARCH_SUFFIX}.tar.gz"
 SRC_URI[sha256sum] = "${@swift_native_arch_checksum(d)}"
 
-DEPENDS = "curl"
+DEPENDS = "curl-native"
 RDEPENDS:${PN} = "ncurses-native"
 
 S = "${WORKDIR}/${SRC_DIR}"
