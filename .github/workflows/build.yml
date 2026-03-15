@@ -24,12 +24,10 @@ jobs:
           repository: yoctoproject/poky
           path: poky
           ref: scarthgap
-          fetch_depth: 0
       - name: Checkout Swift layer
         uses: actions/checkout@v4
         with:
           path: poky/meta-swift
-          fetch_depth: 0
       - name: Build
         run: |
           cd $GITHUB_WORKSPACE/poky
@@ -55,12 +53,10 @@ jobs:
           repository: yoctoproject/poky
           path: poky
           ref: scarthgap
-          fetch_depth: 0
       - name: Checkout Swift layer
         uses: actions/checkout@v4
         with:
           path: poky/meta-swift
-          fetch_depth: 0
       - name: Build
         run: |
           cd $GITHUB_WORKSPACE/poky
@@ -86,12 +82,10 @@ jobs:
           repository: yoctoproject/poky
           path: poky
           ref: scarthgap
-          fetch_depth: 0
       - name: Checkout Swift layer
         uses: actions/checkout@v4
         with:
           path: poky/meta-swift
-          fetch_depth: 0
       - name: Build
         run: |
           cd $GITHUB_WORKSPACE/poky
