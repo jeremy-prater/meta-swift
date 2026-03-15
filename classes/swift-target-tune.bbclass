@@ -28,6 +28,12 @@ python () {
     # complicated).
     target_cc_arch = shlex.split(d.getVar("TARGET_CC_ARCH"))
 
+    swift_target = d.getVar("SWIFT_TARGET_NAME") or ""
+    target_arch = d.getVar("TARGET_ARCH") or ""
+    if target_arch == "arm" and "armv7" in swift_target:
+        if "-mthumb" in target_cc_arch:
+            target_cc_arch.remove("-mthumb")
+
     d.setVar("SWIFT_EXTRA_CC_FLAGS_DESTINATION", concat_destination_flags(target_cc_arch))
 
     d.setVar("SWIFT_EXTRA_SWIFTC_CC_FLAGS_DESTINATION", concat_destination_flags(expand_swiftc_cc_flags(target_cc_arch)))
