@@ -17,7 +17,17 @@ python () {
     # complicated).
     target_cc_arch = shlex.split(d.getVar("TARGET_CC_ARCH"))
 
+    target_cc_arch_std_lib = shlex.split(d.getVar("TARGET_CC_ARCH"))
+
+    swift_target = d.getVar("SWIFT_TARGET_NAME") or ""
+    target_arch = d.getVar("TARGET_ARCH") or ""
+    if target_arch == "arm" and "armv7" in swift_target:
+        if "-mthumb" in target_cc_arch_std_lib:
+            target_cc_arch_std_lib.remove("-mthumb")
+
     d.setVar("SWIFT_EXTRA_SWIFTC_CC_FLAGS", concat_flags(expand_swiftc_cc_flags(target_cc_arch)))
+
+    d.setVar("SWIFT_EXTRA_SWIFTC_CC_FLAGS_STANDARD_LIBRARY", concat_flags(expand_swiftc_cc_flags(target_cc_arch_std_lib)))
 }
 
 EXTRA_INCLUDE_FLAGS ?= "\
