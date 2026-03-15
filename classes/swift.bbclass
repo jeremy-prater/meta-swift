@@ -103,23 +103,6 @@ python swift_do_configure() {
     socket_header = recipe_sysroot + "/usr/include/asm-generic/socket.h"
     fix_socket_header(socket_header)
 
-    def expand_swiftc_cc_flags(flags):
-        flags = [['-Xcc', flag] for flag in flags]
-        return sum(flags, [])
-
-    def concat_flags(flags):
-        flags = [f'"{flag}"' for flag in flags]
-        return ", ".join(flags)
-
-    # ensure target-specific tune CC flags are propagated to clang and swiftc.
-    # Note we are not doing this at present for LD flags, as there are none in
-    # the architectures we support (and it would make the string expansion more
-    # complicated).
-    target_cc_arch = shlex.split(d.getVar("TARGET_CC_ARCH"))
-
-    d.setVar("SWIFT_EXTRA_CC_FLAGS", concat_flags(target_cc_arch))
-    d.setVar("SWIFT_EXTRA_SWIFTC_CC_FLAGS", concat_flags(expand_swiftc_cc_flags(target_cc_arch)))
-
     swift_destination_template = """{
         "version":1,
         "sdk":"${STAGING_DIR_TARGET}/",
@@ -127,7 +110,7 @@ python swift_do_configure() {
         "target":"${SWIFT_TARGET_NAME}",
         "dynamic-library-extension":"so",
         "extra-cc-flags":[
-            ${SWIFT_EXTRA_CC_FLAGS},
+            ${SWIFT_EXTRA_CC_FLAGS_DESTINATION},
             "-fPIC",
             "-I${STAGING_INCDIR}",
             "-I${STAGING_DIR_TARGET}/usr/include/c++/${SWIFT_GCC_VERSION}",
@@ -166,7 +149,7 @@ python swift_do_configure() {
 
             "-Xcc", "--gcc-install-dir=${STAGING_DIR_TARGET}/usr/lib/gcc/${TARGET_SYS}/${SWIFT_GCC_VERSION}",
 
-            ${SWIFT_EXTRA_SWIFTC_CC_FLAGS}
+            ${SWIFT_EXTRA_SWIFTC_CC_FLAGS_DESTINATION}
         ],
         "extra-cpp-flags":[
             "-lstdc++"
@@ -174,9 +157,6 @@ python swift_do_configure() {
     }"""
 
     swift_destination =  d.expand(swift_destination_template)
-
-    d.delVar("SWIFT_EXTRA_CC_FLAGS")
-    d.delVar("SWIFT_EXTRA_SWIFTC_CC_FLAGS")
 
     configJSON = open(workdir + "/destination.json", "w")
     configJSON.write(swift_destination)

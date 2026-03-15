@@ -1,25 +1,6 @@
 inherit cmake
 inherit swift-common
 
-python () {
-    import shlex
-
-    def expand_swiftc_cc_flags(flags):
-        flags = [['-Xcc', flag] for flag in flags]
-        return sum(flags, [])
-
-    def concat_flags(flags):
-        return " ".join(flags)
-
-    # ensure target-specific tune CC flags are propagated to clang and swiftc.
-    # Note we are not doing this at present for LD flags, as there are none in
-    # the architectures we support (and it would make the string expansion more
-    # complicated).
-    target_cc_arch = shlex.split(d.getVar("TARGET_CC_ARCH"))
-
-    d.setVar("SWIFT_EXTRA_SWIFTC_CC_FLAGS", concat_flags(expand_swiftc_cc_flags(target_cc_arch)))
-}
-
 EXTRA_INCLUDE_FLAGS ?= "\
     -I${STAGING_DIR_TARGET}/usr/include/c++/${SWIFT_GCC_VERSION}/${TARGET_SYS} \
     -I${STAGING_DIR_TARGET}/usr/include/c++/${SWIFT_GCC_VERSION} \
@@ -47,7 +28,7 @@ OECMAKE_C_COMPILER = "clang"
 OECMAKE_CXX_COMPILER = "clang++"
 
 # Point clang to where the C++ runtime is for our target arch
-RUNTIME_FLAGS = "${TARGET_CC_ARCH} -w -fuse-ld=lld -B${STAGING_DIR_TARGET}/usr/lib/${TARGET_SYS}/${SWIFT_GCC_VERSION}"
+RUNTIME_FLAGS = "${SWIFT_EXTRA_CC_FLAGS} -w -fuse-ld=lld -B${STAGING_DIR_TARGET}/usr/lib/${TARGET_SYS}/${SWIFT_GCC_VERSION}"
 TARGET_LDFLAGS:append = " ${TARGET_LD_ARCH} -L${STAGING_DIR_TARGET}/usr/lib/${TARGET_SYS}/${SWIFT_GCC_VERSION}"
 
 # Remove unsupported linker flags
