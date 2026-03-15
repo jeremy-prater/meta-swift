@@ -1,5 +1,6 @@
 # appears to cause segfault
 TARGET_CC_ARCH:remove:aarch64 = "-mbranch-protection=standard"
+TARGET_CC_ARCH:remove:arm = "-mthumb"
 
 # workaround for building on x86_64: SSE appears to cause cyclic header
 # dependency when building C++ std module. This needs investigation and an
