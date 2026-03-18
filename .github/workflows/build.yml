@@ -16,7 +16,7 @@ jobs:
       - name: Packages
         run: |
           sudo apt-get update
-          sudo apt install -y build-essential chrpath cpio debianutils diffstat file gawk gcc git iputils-ping libacl1 liblz4-tool locales python3 python3-git python3-jinja2 python3-pexpect python3-pip python3-subunit socat texinfo unzip wget xz-utils zstd
+          sudo apt install -y build-essential chrpath cpio debianutils diffstat file gawk gcc git iputils-ping libacl1 liblz4-tool locales python3 python3-git python3-jinja2 python3-pexpect python3-pip python3-subunit socat texinfo unzip wget xz-utils zstd qemu-user
           echo 0 | sudo tee /proc/sys/kernel/apparmor_restrict_unprivileged_userns
       - name: Checkout Poky
         uses: actions/checkout@v4
@@ -35,8 +35,10 @@ jobs:
           bitbake-layers add-layer ../meta-swift
           rm -f conf/local.conf
           echo 'MACHINE = "qemuarm64"' > conf/local.conf
-          echo 'INHERIT += "rm_work"' >> conf/local.conf
           bitbake swift-hello-world
+          WORKDIR=$(bitbake -e swift-hello-world | grep '^WORKDIR=' | cut -d'"' -f2)
+          qemu-arm64 -L $WORKDIR/recipe-sysroot $WORKDIR/build/release/hello-world
+          qemu-arm64 -L $WORKDIR/recipe-sysroot $WORKDIR/build/release/hello-worldPackageTests.xctest --testing-library swift-testing
 
   yocto-armv7:
     runs-on: ${{ inputs.is_self_hosted && 'self-hosted' || 'ubuntu-24.04' }}
@@ -45,7 +47,7 @@ jobs:
       - name: Packages
         run: |
           sudo apt-get update
-          sudo apt install -y build-essential chrpath cpio debianutils diffstat file gawk gcc git iputils-ping libacl1 liblz4-tool locales python3 python3-git python3-jinja2 python3-pexpect python3-pip python3-subunit socat texinfo unzip wget xz-utils zstd
+          sudo apt install -y build-essential chrpath cpio debianutils diffstat file gawk gcc git iputils-ping libacl1 liblz4-tool locales python3 python3-git python3-jinja2 python3-pexpect python3-pip python3-subunit socat texinfo unzip wget xz-utils zstd qemu-user
           echo 0 | sudo tee /proc/sys/kernel/apparmor_restrict_unprivileged_userns
       - name: Checkout Poky
         uses: actions/checkout@v4
@@ -64,8 +66,10 @@ jobs:
           bitbake-layers add-layer ../meta-swift
           rm -f conf/local.conf
           echo 'MACHINE = "qemuarm"' > conf/local.conf
-          echo 'INHERIT += "rm_work"' >> conf/local.conf
           bitbake swift-hello-world
+          WORKDIR=$(bitbake -e swift-hello-world | grep '^WORKDIR=' | cut -d'"' -f2)
+          qemu-arm -L $WORKDIR/recipe-sysroot $WORKDIR/build/release/hello-world
+          qemu-arm -L $WORKDIR/recipe-sysroot $WORKDIR/build/release/hello-worldPackageTests.xctest --testing-library swift-testing
 
   yocto-x86_64:
     runs-on: ${{ inputs.is_self_hosted && 'self-hosted' || 'ubuntu-24.04' }}
@@ -74,7 +78,7 @@ jobs:
       - name: Packages
         run: |
           sudo apt-get update
-          sudo apt install -y build-essential chrpath cpio debianutils diffstat file gawk gcc git iputils-ping libacl1 liblz4-tool locales python3 python3-git python3-jinja2 python3-pexpect python3-pip python3-subunit socat texinfo unzip wget xz-utils zstd
+          sudo apt install -y build-essential chrpath cpio debianutils diffstat file gawk gcc git iputils-ping libacl1 liblz4-tool locales python3 python3-git python3-jinja2 python3-pexpect python3-pip python3-subunit socat texinfo unzip wget xz-utils zstd qemu-user
           echo 0 | sudo tee /proc/sys/kernel/apparmor_restrict_unprivileged_userns
       - name: Checkout Poky
         uses: actions/checkout@v4
@@ -93,5 +97,7 @@ jobs:
           bitbake-layers add-layer ../meta-swift
           rm -f conf/local.conf
           echo 'MACHINE = "qemux86-64"' > conf/local.conf
-          echo 'INHERIT += "rm_work"' >> conf/local.conf
           bitbake swift-hello-world
+          WORKDIR=$(bitbake -e swift-hello-world | grep '^WORKDIR=' | cut -d'"' -f2)
+          qemu-x86_64 -L $WORKDIR/recipe-sysroot $WORKDIR/build/release/hello-world
+          qemu-x86_64 -L $WORKDIR/recipe-sysroot $WORKDIR/build/release/hello-worldPackageTests.xctest --testing-library swift-testing
