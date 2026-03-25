@@ -21,6 +21,7 @@ TARGET_LDFLAGS += "-L${STAGING_DIR_TARGET}/usr/lib/swift/linux"
 
 # Enable Swift parts
 EXTRA_OECMAKE += "-DENABLE_SWIFT=YES"
+EXTRA_OECMAKE += "-Ddispatch_MODULE_TRIPLE=${SWIFT_TARGET_NAME}"
 
 # Ensure the right CPU is targeted
 cmake_do_generate_toolchain_file:append() {
@@ -49,6 +50,7 @@ FILES:${PN} = "\
 FILES:${PN}-dev = "\
     ${libdir}/swift/linux/${SWIFT_TARGET_ARCH}/Dispatch.swiftdoc \
     ${libdir}/swift/linux/${SWIFT_TARGET_ARCH}/Dispatch.swiftmodule \
+    ${libdir}/swift/linux/Dispatch.swiftmodule \
     ${includedir}/Block \
     ${includedir}/os \
     ${includedir}/dispatch \
