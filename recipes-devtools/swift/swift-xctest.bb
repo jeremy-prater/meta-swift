@@ -23,8 +23,10 @@ do_install() {
     install -d ${D}${libdir}/swift/linux
 
     install -m 0755 ${BUILD_DIR}/libXCTest.so ${D}${libdir}/swift/linux
-    install -m 0644 ${BUILD_DIR}/Modules/XCTest.swiftmodule ${D}${libdir}/swift/linux
-    install -m 0644 ${BUILD_DIR}/Modules/XCTest.swiftdoc ${D}${libdir}/swift/linux
+    cp -r ${BUILD_DIR}/Modules/XCTest.swiftmodule ${D}${libdir}/swift/linux/
+    if [ -f ${BUILD_DIR}/Modules/XCTest.swiftdoc ]; then
+        install -m 0644 ${BUILD_DIR}/Modules/XCTest.swiftdoc ${D}${libdir}/swift/linux
+    fi
 
     rm -f ${BUILD_DIR}/Modules/XCTest.swiftsourceinfo
 }
