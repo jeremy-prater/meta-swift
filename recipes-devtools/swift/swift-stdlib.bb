@@ -19,6 +19,7 @@ SRC_URI = "\
     git://github.com/swiftlang/swift-syntax.git;protocol=https;name=syntax;tag=${SWIFT_TAG};nobranch=1;destsuffix=swift-syntax; \
     file://0001-add-arm-to-float16support-for-armv7.patch;striplevel=1; \
     file://0002-build-with-64-bit-time_t-on-32-bit-platforms.patch;striplevel=1; \
+    file://0003-add-fix-for-metadataaccessor-abi-mismatch.patch;striplevel=1; \
     "
 
 S = "${UNPACKDIR}/swift"
