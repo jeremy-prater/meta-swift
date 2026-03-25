@@ -49,6 +49,7 @@ FILES:${PN} = "\
 FILES:${PN}-dev = "\
     ${libdir}/swift/linux/${SWIFT_TARGET_ARCH}/Dispatch.swiftdoc \
     ${libdir}/swift/linux/${SWIFT_TARGET_ARCH}/Dispatch.swiftmodule \
+    ${libdir}/swift/linux/Dispatch.swiftmodule \
     ${includedir}/Block \
     ${includedir}/os \
     ${includedir}/dispatch \

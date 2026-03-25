@@ -15,7 +15,6 @@ EXTRA_OESWIFT = "-Xswiftc -enable-testing"
 
 SRC_URI = "git://github.com/swiftlang/swift-testing.git;protocol=https;tag=${SWIFT_TAG};nobranch=1"
 SRC_URI += "file://0001-build-as-dynamic-library.patch;striplevel=1;"
-SRC_URI += "file://0002-order-limits.h-before-stdlib.h-to-workaround-for-gli.patch;striplevel=1;"
 
 S = "${UNPACKDIR}/git"
 B = "${WORKDIR}/build"
@@ -26,9 +25,13 @@ do_install() {
     install -d ${D}${libdir}/swift/linux
 
     install -m 0644 ${BUILD_DIR}/libTesting.so ${D}${libdir}/swift/linux
-    install -m 0644 ${BUILD_DIR}/Modules/Testing.swiftmodule ${D}${libdir}/swift/linux
-    install -m 0644 ${BUILD_DIR}/Modules/Testing.swiftdoc ${D}${libdir}/swift/linux
-    install -m 0644 ${BUILD_DIR}/Modules/Testing.swiftinterface ${D}${libdir}/swift/linux
+    cp -rp ${BUILD_DIR}/Modules/Testing.swiftmodule ${D}${libdir}/swift/linux/
+    if [ -f ${BUILD_DIR}/Modules/Testing.swiftdoc ]; then
+        install -m 0644 ${BUILD_DIR}/Modules/Testing.swiftdoc ${D}${libdir}/swift/linux
+    fi
+    if [ -f ${BUILD_DIR}/Modules/Testing.swiftinterface ]; then
+        install -m 0644 ${BUILD_DIR}/Modules/Testing.swiftinterface ${D}${libdir}/swift/linux
+    fi
 
     rm -f ${BUILD_DIR}/Modules/*.swiftsourceinfo
 }

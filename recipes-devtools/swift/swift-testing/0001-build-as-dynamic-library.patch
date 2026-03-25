@@ -1,15 +1,15 @@
-From 1621c2cc4d75e6df6f6919acc18867e8c5412190 Mon Sep 17 00:00:00 2001
+From 79312a8cba76dc923d755543f73c65f659effdc5 Mon Sep 17 00:00:00 2001
 From: Luke Howard <lukeh@padl.com>
-Date: Tue, 16 Sep 2025 17:28:03 +1000
+Date: Wed, 25 Mar 2026 13:52:46 +1100
 Subject: [PATCH] build as dynamic library
 
 Upstream-Status: Inappropriate [oe specific]
 ---
- Package.swift | 17 +++++++----------
- 1 file changed, 7 insertions(+), 10 deletions(-)
+ Package.swift | 11 +++--------
+ 1 file changed, 3 insertions(+), 8 deletions(-)
 
 diff --git a/Package.swift b/Package.swift
-index 4360aab..16238ff 100644
+index 246a3561..8980ed35 100644
 --- a/Package.swift
 +++ b/Package.swift
 @@ -79,6 +79,7 @@ let package = Package(
@@ -20,57 +20,29 @@ index 4360aab..16238ff 100644
          targets: ["Testing"]
        )
      )
-@@ -116,7 +117,7 @@ let package = Package(
-       ],
-       exclude: ["CMakeLists.txt", "Testing.swiftcrossimport"],
-       cxxSettings: .packageSettings,
--      swiftSettings: .packageSettings + .enableLibraryEvolution(),
-+      swiftSettings: .packageSettings + .enableLibraryEvolution("Testing"),
-       linkerSettings: [
-         .linkedLibrary("execinfo", .when(platforms: [.custom("freebsd"), .openbsd]))
-       ]
-@@ -186,7 +187,7 @@ let package = Package(
-       dependencies: ["_TestingInternals",],
-       exclude: ["CMakeLists.txt"],
-       cxxSettings: .packageSettings,
--      swiftSettings: .packageSettings + .enableLibraryEvolution()
-+      swiftSettings: .packageSettings + .enableLibraryEvolution("_TestDiscovery")
-     ),
- 
-     // Cross-import overlays (not supported by Swift Package Manager)
-@@ -196,7 +197,7 @@ let package = Package(
-         "Testing",
-       ],
-       path: "Sources/Overlays/_Testing_CoreGraphics",
--      swiftSettings: .packageSettings + .enableLibraryEvolution()
-+      swiftSettings: .packageSettings + .enableLibraryEvolution("_Testing_CoreGraphics")
-     ),
-     .target(
-       name: "_Testing_Foundation",
-@@ -208,7 +209,7 @@ let package = Package(
-       // The Foundation module only has Library Evolution enabled on Apple
-       // platforms, and since this target's module publicly imports Foundation,
-       // it can only enable Library Evolution itself on those platforms.
--      swiftSettings: .packageSettings + .enableLibraryEvolution(.whenApple())
-+      swiftSettings: .packageSettings + .enableLibraryEvolution("_Testing_Foundation", .whenApple())
-     ),
- 
-     // Utility targets: These are utilities intended for use when developing
-@@ -376,13 +377,9 @@ extension Array where Element == PackageDescription.SwiftSetting {
-   ///   - condition: A build setting condition to apply to this setting.
+@@ -446,13 +447,7 @@ extension Array where Element == PackageDescription.SwiftSetting {
    ///
    /// - Returns: A Swift setting that enables Library Evolution.
--  static func enableLibraryEvolution(_ condition: BuildSettingCondition? = nil) -> Self {
-+  static func enableLibraryEvolution(_ target: String, _ condition: BuildSettingCondition? = nil) -> Self {
-     var result = [PackageDescription.SwiftSetting]()
+   static func enableLibraryEvolution(_ condition: BuildSettingCondition? = nil) -> Self {
+-    var result = [PackageDescription.SwiftSetting]()
 -
 -    if buildingForDevelopment {
 -      result.append(.unsafeFlags(["-enable-library-evolution"], condition))
 -    }
 -
-+    result.append(.unsafeFlags(["-enable-library-evolution", "-emit-module-interface", "-emit-module-interface-path", "\(target).swiftinterface"], condition))
-     return result
+-    return result
++    [.unsafeFlags(["-enable-library-evolution", "-emit-module-interface"], condition)]
    }
+ 
+   /// Create a Swift setting which specifies the module ABI name to use when
+@@ -479,7 +474,7 @@ extension Array where Element == PackageDescription.SwiftSetting {
+     // Workaround: Disable module ABI name customization, since it has regressed
+     // building DocC documentation (see rdar://171555540).
+ //    [.unsafeFlags(["-module-abi-name", "\(targetName)_package"])]
+-    []
++    [.unsafeFlags(["-emit-module-interface-path", "\(targetName).swiftinterface"])]
+   }
+ }
  
 -- 
 2.43.0
