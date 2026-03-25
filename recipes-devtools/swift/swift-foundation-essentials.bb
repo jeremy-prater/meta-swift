@@ -12,7 +12,7 @@ SRCREV_FORMAT = "foundation_icu_syntax_collections"
 SRC_URI = "git://github.com/swiftlang/swift-foundation.git;protocol=https;name=foundation;tag=${SWIFT_TAG};nobranch=1;"
 SRC_URI += "git://github.com/swiftlang/swift-foundation-icu.git;protocol=https;name=icu;tag=${SWIFT_TAG};nobranch=1;destsuffix=swift-foundation-icu;"
 SRC_URI += "git://github.com/swiftlang/swift-syntax.git;protocol=https;name=syntax;tag=${SWIFT_TAG};nobranch=1;destsuffix=swift-foundation-icu;"
-SRC_URI += "git://github.com/apple/swift-collections.git;protocol=https;nobranch=1;name=collections;tag=1.1.4;destsuffix=swift-collections;"
+SRC_URI += "git://github.com/apple/swift-collections.git;protocol=https;nobranch=1;name=collections;tag=1.1.6;destsuffix=swift-collections;"
 SRC_URI += "file://0001-build-with-64-bit-fsblkcnt_t-on-32-bit-glibc-platfor.patch;striplevel=1;"
 SRC_URI += "file://0002-build-with-64-bit-time_t-on-32-bit-platforms.patch;striplevel=1;"
 
@@ -31,6 +31,7 @@ EXTRA_OECMAKE += "-DBUILD_SHARED_LIBS=YES"
 EXTRA_OECMAKE += "-D_SwiftFoundationICU_SourceDIR=${UNPACKDIR}/swift-foundation-icu"
 EXTRA_OECMAKE += "-D_SwiftCollections_SourceDIR=${UNPACKDIR}/swift-collections"
 EXTRA_OECMAKE += "-DSwiftFoundation_MODULE_TRIPLE=${SWIFT_TARGET_NAME}"
+EXTRA_OECMAKE += "-DSwiftCollections_MODULE_TRIPLE=${SWIFT_TARGET_NAME}"
 EXTRA_OECMAKE += "-DSwiftSyntax_DIR=${UNPACKDIR}/swift-syntax/cmake/modules"
 
 # Ensure the right CPU is targeted
