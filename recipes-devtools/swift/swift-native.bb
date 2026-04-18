@@ -19,8 +19,8 @@ def swift_host_arch(d):
 
 def swift_native_arch_checksum(d):
     sha256 = {
-      "x86_64": "6b3558cb78f7b176fd586223aad62a4703cb82f9d5aee94c5d4a41e58d8bf4a1",
-      "aarch64": "b88b65fac38228e57f3bd73d74b543e9d0f6990443d75491e1cb2c1533d3c0e5"
+      "x86_64": "1dfa4a000d7cd5565cae340be8feeb342f5c3caa735a0dec67391c2d2e1370c9",
+      "aarch64": "c6847f4eb89cb6f4faae1695f7b63b276b26aae5fd57dc22ebf968b48c797857"
     }
 
     host_arch = d.getVar('HOST_ARCH')
