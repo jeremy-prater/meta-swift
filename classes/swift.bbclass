@@ -131,10 +131,10 @@ python swift_do_configure() {
             "-fPIC",
             "-Wno-invalid-constexpr",
             "-I${STAGING_INCDIR}",
-            "-I${STAGING_DIR_TARGET}/usr/include/c++/${SWIFT_GCC_VERSION}",
-            "-I${STAGING_DIR_TARGET}/usr/include/c++/${SWIFT_GCC_VERSION}/${TARGET_SYS}",
             "-I${STAGING_DIR_NATIVE}/usr/lib/clang/${SWIFT_CLANG_VERSION}/include",
-            "-I${STAGING_DIR_NATIVE}/usr/lib/clang/${SWIFT_CLANG_VERSION}/include-fixed"
+            "-I${STAGING_DIR_NATIVE}/usr/lib/clang/${SWIFT_CLANG_VERSION}/include-fixed",
+            "-I${STAGING_DIR_TARGET}/usr/include/c++/${SWIFT_GCC_VERSION}",
+            "-I${STAGING_DIR_TARGET}/usr/include/c++/${SWIFT_GCC_VERSION}/${TARGET_SYS}"
         ],
         "extra-swiftc-flags":[
             "-target", "${SWIFT_TARGET_NAME}",

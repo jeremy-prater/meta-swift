@@ -20,10 +20,17 @@ python () {
     d.setVar("SWIFT_EXTRA_SWIFTC_CC_FLAGS", concat_flags(expand_swiftc_cc_flags(target_cc_arch)))
 }
 
+# Keep EXTRA_INCLUDE_FLAGS C-safe. The GCC libstdc++ "stdatomic.h" shim under
+# usr/include/c++/<ver> is a C++-only header that expands to nothing for C,
+# and clang's own stdatomic.h falls through to it via #include_next. Exposing
+# those paths on the C command line therefore breaks libdispatch's C11 atomics.
 EXTRA_INCLUDE_FLAGS ?= "\
-    -I${STAGING_DIR_TARGET}/usr/include/c++/${SWIFT_GCC_VERSION}/${TARGET_SYS} \
-    -I${STAGING_DIR_TARGET}/usr/include/c++/${SWIFT_GCC_VERSION} \
+    -I${STAGING_DIR_NATIVE}/usr/lib/clang/${SWIFT_CLANG_VERSION}/include \
     -I${STAGING_DIR_TARGET}"
+
+EXTRA_CXX_INCLUDE_FLAGS ?= "\
+    -I${STAGING_DIR_TARGET}/usr/include/c++/${SWIFT_GCC_VERSION}/${TARGET_SYS} \
+    -I${STAGING_DIR_TARGET}/usr/include/c++/${SWIFT_GCC_VERSION}"
 
 # not supported by clang
 DEBUG_PREFIX_MAP:remove = "-fcanon-prefix-map"
@@ -59,7 +66,7 @@ TARGET_LDFLAGS:remove = "-Wl,--as-needed"
 DEBUG_PREFIX_MAP = ""
 
 OECMAKE_C_FLAGS:append = " ${RUNTIME_FLAGS} ${EXTRA_INCLUDE_FLAGS}"
-OECMAKE_CXX_FLAGS:append = " ${RUNTIME_FLAGS} ${EXTRA_INCLUDE_FLAGS} -Wno-invalid-constexpr"
+OECMAKE_CXX_FLAGS:append = " ${RUNTIME_FLAGS} ${EXTRA_INCLUDE_FLAGS} ${EXTRA_CXX_INCLUDE_FLAGS} -Wno-invalid-constexpr"
 OECMAKE_ASM_FLAGS:append = " ${RUNTIME_FLAGS} ${EXTRA_INCLUDE_FLAGS}"
 
 SWIFTC_BIN = "${STAGING_DIR_NATIVE}/usr/bin/swiftc"
