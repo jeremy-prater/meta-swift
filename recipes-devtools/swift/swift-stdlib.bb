@@ -264,4 +264,4 @@ FILES:${PN}-embedded = "\
 INSANE_SKIP:${PN} = "file-rdeps buildpaths"
 INSANE_SKIP:${PN}-dbg = "buildpaths"
 INSANE_SKIP:${PN}-dev = "buildpaths staticdev"
-INSANE_SKIP:${PN}-embedded = "staticdev"
+INSANE_SKIP:${PN}-embedded = "buildpaths staticdev"
