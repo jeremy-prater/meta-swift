@@ -26,7 +26,7 @@ The local [CI workflows](.github/workflows/build.yml) also provide some examples
 
 ## Usage
 
-First, add the meta-swift layer to your project, by checking out the appropriate branch for your Yocto version (e.g. scarthgap) and using `bitbake-layers add-layer`. (You may also modify `bblayers.conf` directly.)
+First, add the meta-swift layer to your project, by checking out the appropriate branch for your Yocto version (e.g. wrynose) and using `bitbake-layers add-layer`. (You may also modify `bblayers.conf` directly.)
 
 Create a new Swift package and include it in your BitBake recipe as follows:
 
