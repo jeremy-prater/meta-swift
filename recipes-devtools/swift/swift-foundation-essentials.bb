@@ -16,8 +16,6 @@ SRC_URI += "git://github.com/apple/swift-collections.git;protocol=https;nobranch
 SRC_URI += "file://0001-build-with-64-bit-fsblkcnt_t-on-32-bit-glibc-platfor.patch;striplevel=1;"
 SRC_URI += "file://0002-build-with-64-bit-time_t-on-32-bit-platforms.patch;striplevel=1;"
 
-S = "${UNPACKDIR}/git"
-
 DEPENDS = "icu swift-stdlib swift-native swift-foundation-icu"
 RDEPENDS:${PN} += "icu swift-stdlib swift-foundation-icu"
 
