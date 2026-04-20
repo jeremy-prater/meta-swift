@@ -161,9 +161,13 @@ python swift_do_configure() {
         # target-side rpath is added explicitly below.
         "-no-toolchain-stdlib-rpath",
 
+        # Keep libstdc++ C++ headers off swiftc's bare -I, which would otherwise
+        # put them on Clang's header search when the Swift Clang importer
+        # parses a C module -- causing <math.h> to resolve to the libstdc++
+        # C++ wrapper and fail C-mode parsing with "redefinition of 'cosh'".
+        # C++ interop, if ever enabled, can add these back via EXTRA_OESWIFT
+        # (or cxxCompiler in the toolset).
         "-I" + staging_incdir,
-        "-I" + gcc_cxx_include,
-        "-I" + gcc_cxx_include_target,
         "-I" + clang_resource_include,
         "-I" + clang_resource_include_fixed,
 
