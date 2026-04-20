@@ -1,0 +1,91 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Luke Howard <lukeh@padl.com>
+Date: Mon, 21 Apr 2026 00:00:00 +0000
+Subject: [PATCH] _CStdlib.h: skip libstdc++-trap headers under Swift C++
+ importer
+
+When Swift's Clang importer parses _FoundationCShims in C++ interop mode
+(-cxx-interoperability-mode=default / swift-6, or a target using
+.interoperabilityMode(.Cxx)), <math.h>, <tgmath.h> and <complex.h> resolve
+to libstdc++'s C++ wrappers at usr/include/c++/<ver>/{math,tgmath,complex}.h.
+Those wrappers include <cmath>/<ccomplex>/<ctgmath>, which reference headers
+in libstdc++'s bits/ tree that are members of the `std` Clang module
+(see swift's libstdcxx.modulemap at usr/lib/swift/linux/). Clang then
+transitively builds the `std` module, whose header list includes <random>,
+<bits/random.tcc> fails to compile ("call to 'abs' is ambiguous" between
+the C stdlib.h abs(int) and libstdc++'s std_abs.h abs(long) -- no
+abs(double) overload is in scope when __CORRECT_ISO_CPP_MATH_H_PROTO
+isn't set, which glibc >= 2.38 no longer defines).
+
+Gate the three math-family C headers off when __swift__ && __cplusplus.
+The Swift-visible surface is unaffected: on Linux the math entry points
+are already imported via Glibc, and the C++ interop importer pass does
+not need to re-import them from _FoundationCShims -- it only needs the
+rest of the shim (filemanager/string/io/bplist/CFUniChar/target
+conditionals). Ordinary C compiles of _CStdlib.h (including Swift
+imports without C++ interop) are unaffected, so the C-mode Swift view
+of _FoundationCShims keeps its math symbols.
+
+__swift__ is defined by Swift's Clang importer only (see
+swift/lib/ClangImporter/ClangImporter.cpp, which calls
+languageVersion.preprocessorDefinition("__swift__", ...)), so no
+non-Swift consumer of this header sees the skip.
+
+Upstream-Status: Inappropriate [OE/Yocto-specific workaround until Swift
+upstream teaches the Clang importer's C++ mode to not transitively build
+the libstdcxx `std` module for C-shim imports, or until libstdc++'s
+math wrappers stop tripping on glibc 2.38+'s removal of
+__CORRECT_ISO_CPP_MATH_H_PROTO.]
+
+Signed-off-by: Luke Howard <lukeh@padl.com>
+---
+ Sources/_FoundationCShims/include/_CStdlib.h | 14 ++++++++++++++
+ 1 file changed, 14 insertions(+)
+
+diff --git a/Sources/_FoundationCShims/include/_CStdlib.h b/Sources/_FoundationCShims/include/_CStdlib.h
+--- a/Sources/_FoundationCShims/include/_CStdlib.h
++++ b/Sources/_FoundationCShims/include/_CStdlib.h
+@@ -51,9 +51,16 @@
+ #include <locale.h>
+ #endif
+
++// Swift's Clang importer in C++ interop mode resolves <math.h>, <tgmath.h>
++// and <complex.h> to libstdc++'s C++ wrappers, which transitively force
++// Clang to build the `std` module (libstdcxx.modulemap) and fail in
++// <bits/random.tcc>. Skip these headers only in that pass. Pure-C compiles
++// and C-mode Swift imports are unaffected.
++#if !(defined(__swift__) && defined(__cplusplus))
+ #if __has_include(<math.h>)
+ #include <math.h>
+ #endif
++#endif
+
+ #if __has_include(<signal.h>)
+ /// Guard against including `signal.h` on WASI. The `signal.h` header file
+@@ -106,10 +113,12 @@
+ #endif
+
+ #if !defined(_WIN32)
++#if !(defined(__swift__) && defined(__cplusplus))
+ #if __has_include(<tgmath.h>)
+ #include <tgmath.h>
+ #endif
+ #endif
++#endif
+
+ #if __has_include(<time.h>)
+ #include <time.h>
+@@ -124,9 +133,11 @@
+ #endif
+
+
++#if !(defined(__swift__) && defined(__cplusplus))
+ #if __has_include(<complex.h>)
+ #include <complex.h>
+ #endif
++#endif
+
+ #if __has_include(<threads.h>)
+ #include <threads.h>
+--
+2.43.0
