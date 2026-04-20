@@ -38,7 +38,7 @@ SRC_URI[sha256sum] = "${@swift_native_arch_checksum(d)}"
 DEPENDS = "curl-native"
 RDEPENDS:${PN} = "ncurses-native"
 
-S = "${WORKDIR}/${SRC_DIR}"
+S = "${UNPACKDIR}/${SRC_DIR}"
 
 inherit native
 

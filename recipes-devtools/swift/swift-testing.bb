@@ -16,7 +16,6 @@ EXTRA_OESWIFT = "-Xswiftc -enable-testing"
 SRC_URI = "git://github.com/swiftlang/swift-testing.git;protocol=https;tag=${SWIFT_TAG};nobranch=1"
 SRC_URI += "file://0001-build-as-dynamic-library.patch;striplevel=1;"
 
-S = "${UNPACKDIR}/git"
 B = "${WORKDIR}/build"
 
 inherit swift

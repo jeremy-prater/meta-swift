@@ -12,7 +12,6 @@ DEPENDS = "swift-stdlib"
 
 SRC_URI = "git://github.com/swiftlang/swift-corelibs-libdispatch.git;protocol=https;tag=${SWIFT_TAG};nobranch=1"
 
-S = "${UNPACKDIR}/git"
 LIBDISPATCH_BUILDDIR = "${UNPACKDIR}/build"
 
 inherit swift-cmake-base
