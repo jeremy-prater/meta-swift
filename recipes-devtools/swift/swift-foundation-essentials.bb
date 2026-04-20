@@ -63,3 +63,4 @@ FILES:${PN}-staticdev = "\
 
 INSANE_SKIP:${PN} = "file-rdeps buildpaths"
 INSANE_SKIP:${PN}-dbg = "buildpaths"
+INSANE_SKIP:${PN}-staticdev = "buildpaths"
