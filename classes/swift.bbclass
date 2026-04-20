@@ -129,6 +129,7 @@ python swift_do_configure() {
         "extra-cc-flags":[
             ${SWIFT_EXTRA_CC_FLAGS},
             "-fPIC",
+            "-Wno-invalid-constexpr",
             "-I${STAGING_INCDIR}",
             "-I${STAGING_DIR_TARGET}/usr/include/c++/${SWIFT_GCC_VERSION}",
             "-I${STAGING_DIR_TARGET}/usr/include/c++/${SWIFT_GCC_VERSION}/${TARGET_SYS}",
