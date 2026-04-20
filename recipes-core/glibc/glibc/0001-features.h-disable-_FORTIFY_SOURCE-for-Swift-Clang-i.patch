@@ -1,0 +1,60 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Luke Howard <lukeh@padl.com>
+Date: Sun, 20 Apr 2026 00:00:00 +0000
+Subject: [PATCH] features.h: disable _FORTIFY_SOURCE for Swift Clang importer
+
+When Glibc is configured with _FORTIFY_SOURCE>=1, bits/unistd.h,
+bits/string_fortified.h, bits/stdio2.h, bits/socket2.h and friends declare
+__fortify_function __attribute_overloadable__ variants of common libc entry
+points (read, write, close, memcpy, memmove, memset, strcpy, snprintf, fgets,
+open, pread, recv, readlink, ...). Swift's Clang importer surfaces both the
+plain declarations and these overloaded variants into the Swift-visible module
+and cannot disambiguate bare function references such as
+
+    let (platform_read, platform_write, platform_close) = (read, write, close)
+
+or first-class references like `map(read)` / storing `read` in a variable of
+function type, producing "ambiguous use of 'read'" errors. This affects any
+Swift-on-Linux package that imports Glibc (or a C-shim module that pulls in
+these headers) when Glibc was built with _FORTIFY_SOURCE enabled -- which is
+the OpenEmbedded/Yocto default. Swift upstream CI does not exercise this
+because the sysroots it uses do not default _FORTIFY_SOURCE.
+
+Gate _FORTIFY_SOURCE off inside features.h when __swift__ is defined. The
+__swift__ macro is defined by Swift's Clang importer only (see
+swift/lib/ClangImporter/ClangImporter.cpp, which calls
+languageVersion.preprocessorDefinition("__swift__", ...)), so this has no
+effect on ordinary C/C++/Objective-C compiles of the same headers -- fortify
+remains in place at runtime for every non-Swift consumer. Only the Clang
+importer pass, which is a pure type-import step and generates no executable
+code, sees the plain declarations.
+
+Upstream-Status: Inappropriate [OE/Yocto-specific; the proper upstream fix
+would be a coordinated change in Swift's Clang importer to handle
+__attribute_overloadable__ fortified overloads, or an opt-in glibc feature
+macro. This patch is the pragmatic route for building Swift against a
+distribution-default fortified Glibc.]
+
+Signed-off-by: Luke Howard <lukeh@padl.com>
+---
+ include/features.h | 7 +++++++
+ 1 file changed, 7 insertions(+)
+
+--- a/include/features.h
++++ b/include/features.h
+@@ -446,6 +446,13 @@
+ # define __USE_GNU	1
+ #endif
+
++/* Swift's Clang importer cannot disambiguate __fortify_function
++   __attribute_overloadable__ declarations from their plain counterparts.
++   Suppress _FORTIFY_SOURCE while the importer is parsing these headers. */
++#if defined __swift__ && defined _FORTIFY_SOURCE
++# undef _FORTIFY_SOURCE
++#endif
++
+ #if defined _FORTIFY_SOURCE && _FORTIFY_SOURCE > 0
+ # if !defined __OPTIMIZE__ || __OPTIMIZE__ <= 0
+ #  warning _FORTIFY_SOURCE requires compiling with optimization (-O)
+--
+2.43.0
