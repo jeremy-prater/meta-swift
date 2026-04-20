@@ -156,6 +156,11 @@ python swift_do_configure() {
         "-module-cache-path", build_dir + "/" + build_mode + "/ModuleCache",
         "-sdk", staging_dir_target,
 
+        # Suppress swiftc's automatic -rpath <resource-dir>/linux injection,
+        # which would otherwise bake the sysroot path into RUNPATH. The
+        # target-side rpath is added explicitly below.
+        "-no-toolchain-stdlib-rpath",
+
         "-I" + staging_incdir,
         "-I" + gcc_cxx_include,
         "-I" + gcc_cxx_include_target,
