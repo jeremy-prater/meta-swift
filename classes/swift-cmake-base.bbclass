@@ -8,6 +8,17 @@ python () {
         flags = [['-Xcc', flag] for flag in flags]
         return sum(flags, [])
 
+    def expand_swiftc_ld_flags(flags):
+        # swiftc does not parse -Wl,a,b,c; rewrite to -Xlinker a -Xlinker b ...
+        out = []
+        for flag in flags:
+            if flag.startswith("-Wl,"):
+                for part in flag[4:].split(","):
+                    out += ["-Xlinker", part]
+            else:
+                out.append(flag)
+        return out
+
     def concat_flags(flags):
         return " ".join(flags)
 
@@ -18,6 +29,11 @@ python () {
     target_cc_arch = shlex.split(d.getVar("TARGET_CC_ARCH"))
 
     d.setVar("SWIFT_EXTRA_SWIFTC_CC_FLAGS", concat_flags(expand_swiftc_cc_flags(target_cc_arch)))
+
+    # Rewrite any -Wl, comma-form tokens in TARGET_LDFLAGS (e.g. from
+    # SECURITY_LDFLAGS) into -Xlinker form so swiftc passes them through to ld.
+    target_ldflags = shlex.split(d.getVar("TARGET_LDFLAGS") or "")
+    d.setVar("TARGET_LDFLAGS", concat_flags(expand_swiftc_ld_flags(target_ldflags)))
 }
 
 # Keep EXTRA_INCLUDE_FLAGS C-safe. The GCC libstdc++ "stdatomic.h" shim under

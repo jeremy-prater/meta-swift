@@ -86,10 +86,12 @@ python do_swift_package_resolve() {
 
 addtask swift_package_resolve after do_unpack before do_compile
 
+SWIFT_SDK_ID ?= "wrynose-${SWIFT_TARGET_ARCH}"
+SWIFT_SDK_BUNDLE_DIR = "${WORKDIR}/swift-sdks"
+
 python swift_do_configure() {
+    import json
     import os
-    import os.path
-    import shutil
     import shlex
 
     workdir = d.getVar("WORKDIR", True)
@@ -103,85 +105,128 @@ python swift_do_configure() {
     socket_header = recipe_sysroot + "/usr/include/asm-generic/socket.h"
     fix_socket_header(socket_header)
 
-    def expand_swiftc_cc_flags(flags):
-        flags = [['-Xcc', flag] for flag in flags]
-        return sum(flags, [])
-
-    def concat_flags(flags):
-        flags = [f'"{flag}"' for flag in flags]
-        return ", ".join(flags)
-
-    # ensure target-specific tune CC flags are propagated to clang and swiftc.
-    # Note we are not doing this at present for LD flags, as there are none in
-    # the architectures we support (and it would make the string expansion more
-    # complicated).
     target_cc_arch = shlex.split(d.getVar("TARGET_CC_ARCH"))
+    target_triple = d.getVar("SWIFT_TARGET_NAME")
+    target_sys = d.getVar("TARGET_SYS")
+    staging_incdir = d.getVar("STAGING_INCDIR")
+    staging_dir_native = d.getVar("STAGING_DIR_NATIVE")
+    staging_dir_target = d.getVar("STAGING_DIR_TARGET")
+    swift_clang_version = d.getVar("SWIFT_CLANG_VERSION")
+    swift_gcc_version = d.getVar("SWIFT_GCC_VERSION")
+    build_dir = d.getVar("B")
+    build_mode = d.getVar("BUILD_MODE")
+    sdk_id = d.getVar("SWIFT_SDK_ID")
+    bundle_parent = d.getVar("SWIFT_SDK_BUNDLE_DIR")
 
-    d.setVar("SWIFT_EXTRA_CC_FLAGS", concat_flags(target_cc_arch))
-    d.setVar("SWIFT_EXTRA_SWIFTC_CC_FLAGS", concat_flags(expand_swiftc_cc_flags(target_cc_arch)))
+    gcc_cxx_include = staging_dir_target + "/usr/include/c++/" + swift_gcc_version
+    gcc_cxx_include_target = gcc_cxx_include + "/" + target_sys
+    clang_resource_include = staging_dir_native + "/usr/lib/clang/" + swift_clang_version + "/include"
+    clang_resource_include_fixed = staging_dir_native + "/usr/lib/clang/" + swift_clang_version + "/include-fixed"
 
-    swift_destination_template = """{
-        "version":1,
-        "sdk":"${STAGING_DIR_TARGET}/",
-        "toolchain-bin-dir":"${STAGING_DIR_NATIVE}/usr/bin",
-        "target":"${SWIFT_TARGET_NAME}",
-        "dynamic-library-extension":"so",
-        "extra-cc-flags":[
-            ${SWIFT_EXTRA_CC_FLAGS},
-            "-fPIC",
-            "-Wno-invalid-constexpr",
-            "-I${STAGING_INCDIR}",
-            "-I${STAGING_DIR_NATIVE}/usr/lib/clang/${SWIFT_CLANG_VERSION}/include",
-            "-I${STAGING_DIR_NATIVE}/usr/lib/clang/${SWIFT_CLANG_VERSION}/include-fixed",
-            "-I${STAGING_DIR_TARGET}/usr/include/c++/${SWIFT_GCC_VERSION}",
-            "-I${STAGING_DIR_TARGET}/usr/include/c++/${SWIFT_GCC_VERSION}/${TARGET_SYS}"
-        ],
-        "extra-swiftc-flags":[
-            "-target", "${SWIFT_TARGET_NAME}",
-            "-use-ld=lld",
-            "-tools-directory", "${STAGING_DIR_NATIVE}/usr/bin",
+    # Include paths safe on the C command line. GCC's libstdc++ ships a C++-only
+    # stdatomic.h shim that expands to nothing in C mode; clang's stdatomic.h
+    # #include_nexts into it, so adding the C++ header dirs to C flags breaks
+    # C11 atomics. Keep those paths on cxxCompiler only.
+    c_include_flags = [
+        "-I" + staging_incdir,
+        "-I" + clang_resource_include,
+        "-I" + clang_resource_include_fixed,
+    ]
+    cxx_only_include_flags = [
+        "-I" + gcc_cxx_include,
+        "-I" + gcc_cxx_include_target,
+    ]
 
-            "-enforce-exclusivity=unchecked",
-            "-resource-dir", "${STAGING_DIR_TARGET}/usr/lib/swift",
-            "-module-cache-path", "${B}/${BUILD_MODE}/ModuleCache",
-            "-sdk", "${STAGING_DIR_TARGET}",
+    c_cli_options = target_cc_arch + ["-fPIC"] + c_include_flags
+    cxx_cli_options = (
+        target_cc_arch
+        + ["-fPIC", "-Wno-invalid-constexpr"]
+        + c_include_flags
+        + cxx_only_include_flags
+        + ["-lstdc++"]
+    )
 
-            "-I${STAGING_INCDIR}",
-            "-I${STAGING_DIR_TARGET}/usr/include/c++/${SWIFT_GCC_VERSION}",
-            "-I${STAGING_DIR_TARGET}/usr/include/c++/${SWIFT_GCC_VERSION}/${TARGET_SYS}",
-            "-I${STAGING_DIR_NATIVE}/usr/lib/clang/${SWIFT_CLANG_VERSION}/include",
-            "-I${STAGING_DIR_NATIVE}/usr/lib/clang/${SWIFT_CLANG_VERSION}/include-fixed",
+    swiftc_cli_options = [
+        "-target", target_triple,
+        "-use-ld=lld",
+        "-tools-directory", staging_dir_native + "/usr/bin",
 
-            "-Xlinker", "-rpath", "-Xlinker", "/usr/lib/swift/linux",
+        "-enforce-exclusivity=unchecked",
+        "-resource-dir", staging_dir_target + "/usr/lib/swift",
+        "-module-cache-path", build_dir + "/" + build_mode + "/ModuleCache",
+        "-sdk", staging_dir_target,
 
-            "-Xlinker", "-L${STAGING_DIR_TARGET}",
-            "-Xlinker", "-L${STAGING_DIR_TARGET}/lib",
-            "-Xlinker", "-L${STAGING_DIR_TARGET}/usr/lib",
-            "-Xlinker", "-L${STAGING_DIR_TARGET}/usr/lib/swift/linux",
-            "-Xlinker", "-L${STAGING_DIR_TARGET}/usr/lib/${TARGET_SYS}/${SWIFT_GCC_VERSION}",
+        "-I" + staging_incdir,
+        "-I" + gcc_cxx_include,
+        "-I" + gcc_cxx_include_target,
+        "-I" + clang_resource_include,
+        "-I" + clang_resource_include_fixed,
 
-            "-Xlinker", "--build-id=sha1",
+        "-Xlinker", "-rpath", "-Xlinker", "/usr/lib/swift/linux",
 
-            "-Xclang-linker", "-B${STAGING_DIR_TARGET}/usr/lib",
-            "-Xclang-linker", "-B${STAGING_DIR_TARGET}/usr/lib/${TARGET_SYS}/${SWIFT_GCC_VERSION}",
+        "-Xlinker", "-L" + staging_dir_target,
+        "-Xlinker", "-L" + staging_dir_target + "/lib",
+        "-Xlinker", "-L" + staging_dir_target + "/usr/lib",
+        "-Xlinker", "-L" + staging_dir_target + "/usr/lib/swift/linux",
+        "-Xlinker", "-L" + staging_dir_target + "/usr/lib/" + target_sys + "/" + swift_gcc_version,
 
-            "-Xcc", "--gcc-install-dir=${STAGING_DIR_TARGET}/usr/lib/gcc/${TARGET_SYS}/${SWIFT_GCC_VERSION}",
+        "-Xlinker", "--build-id=sha1",
 
-            ${SWIFT_EXTRA_SWIFTC_CC_FLAGS}
-        ],
-        "extra-cpp-flags":[
-            "-lstdc++"
-        ]
-    }"""
+        "-Xclang-linker", "-B" + staging_dir_target + "/usr/lib",
+        "-Xclang-linker", "-B" + staging_dir_target + "/usr/lib/" + target_sys + "/" + swift_gcc_version,
 
-    swift_destination =  d.expand(swift_destination_template)
+        "-Xcc", "--gcc-install-dir=" + staging_dir_target + "/usr/lib/gcc/" + target_sys + "/" + swift_gcc_version,
+    ]
+    for flag in target_cc_arch:
+        swiftc_cli_options += ["-Xcc", flag]
 
-    d.delVar("SWIFT_EXTRA_CC_FLAGS")
-    d.delVar("SWIFT_EXTRA_SWIFTC_CC_FLAGS")
+    # v4 Swift SDK artifact bundle layout:
+    #   <bundle_parent>/<sdk_id>.artifactbundle/
+    #     info.json                          (ArtifactsArchiveMetadata, schema 1.0)
+    #     <sdk_id>/
+    #       swift-sdk.json                   (SwiftSDKMetadataV4, schema 4.0)
+    #       toolset.json                     (Toolset, schema 1.0)
+    # Passed to swift build via --swift-sdks-path <bundle_parent> --swift-sdk <sdk_id>.
+    bundle_root = os.path.join(bundle_parent, sdk_id + ".artifactbundle")
+    artifact_dir = os.path.join(bundle_root, sdk_id)
+    os.makedirs(artifact_dir, exist_ok=True)
 
-    configJSON = open(workdir + "/destination.json", "w")
-    configJSON.write(swift_destination)
-    configJSON.close()
+    info_json = {
+        "schemaVersion": "1.0",
+        "artifacts": {
+            sdk_id: {
+                "type": "swiftSDK",
+                "version": "0.0.1",
+                "variants": [
+                    {"path": sdk_id},
+                ],
+            },
+        },
+    }
+
+    toolset_json = {
+        "schemaVersion": "1.0",
+        "swiftCompiler": {"extraCLIOptions": swiftc_cli_options},
+        "cCompiler": {"extraCLIOptions": c_cli_options},
+        "cxxCompiler": {"extraCLIOptions": cxx_cli_options},
+    }
+
+    swift_sdk_json = {
+        "schemaVersion": "4.0",
+        "targetTriples": {
+            target_triple: {
+                "sdkRootPath": staging_dir_target,
+                "toolsetPaths": ["toolset.json"],
+            },
+        },
+    }
+
+    with open(os.path.join(bundle_root, "info.json"), "w") as f:
+        json.dump(info_json, f, indent=2)
+    with open(os.path.join(artifact_dir, "toolset.json"), "w") as f:
+        json.dump(toolset_json, f, indent=2)
+    with open(os.path.join(artifact_dir, "swift-sdk.json"), "w") as f:
+        json.dump(swift_sdk_json, f, indent=2)
 }
 
 # ideally this should be handled by do_swift_package_resolve but doesn't always appear to be the case
@@ -196,8 +241,8 @@ python swift_do_compile() {
     s = d.getVar('S')
     b = d.getVar('B')
     build_mode = d.getVar('BUILD_MODE')
-    workdir = d.getVar("WORKDIR", True)
-    destination_json = workdir + '/destination.json'
+    sdk_id = d.getVar('SWIFT_SDK_ID')
+    sdks_path = d.getVar('SWIFT_SDK_BUNDLE_DIR')
     extra_oeswift = shlex.split(d.getVar('EXTRA_OESWIFT'))
     ssh_auth_sock = d.getVar('BB_ORIGENV').get('SSH_AUTH_SOCK')
     recipe_sysroot = d.getVar("STAGING_DIR_TARGET", True)
@@ -208,7 +253,7 @@ python swift_do_compile() {
         env['SSH_AUTH_SOCK'] = ssh_auth_sock
     env['SYSROOT'] = recipe_sysroot
 
-    args = [f'{recipe_sysroot_native}/usr/bin/swift', 'build', '--package-path', s, '--build-path', b, '-c', build_mode, '--destination', destination_json] + extra_oeswift
+    args = [f'{recipe_sysroot_native}/usr/bin/swift', 'build', '--package-path', s, '--build-path', b, '-c', build_mode, '--swift-sdks-path', sdks_path, '--swift-sdk', sdk_id] + extra_oeswift
 
     ret = subprocess.call(args, env=env, cwd=s)
     if ret != 0:
