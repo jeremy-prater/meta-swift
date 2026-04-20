@@ -34,8 +34,8 @@ SWIFT_CMAKE_TOOLCHAIN_FILE = "${WORKDIR}/linux-${SWIFT_TARGET_ARCH}-toolchain.cm
 SWIFT_C_FLAGS = "${TARGET_CC_ARCH} -w -fuse-ld=lld -target ${SWIFT_TARGET_NAME} --sysroot ${STAGING_DIR_TARGET} -B${STAGING_DIR_TARGET}/usr/lib/${TARGET_SYS}/${SWIFT_GCC_VERSION} -L${STAGING_DIR_TARGET}/usr/lib/${TARGET_SYS}/${SWIFT_GCC_VERSION} -I${STAGING_DIR_TARGET}/usr/include ${EXTRA_INCLUDE_FLAGS}"
 SWIFT_C_LINK_FLAGS = "${TARGET_LD_ARCH} -target ${SWIFT_TARGET_NAME} --sysroot ${STAGING_DIR_TARGET} ${EXTRA_INCLUDE_FLAGS}"
 
-SWIFT_CXX_FLAGS = "${SWIFT_C_FLAGS} -Wno-invalid-constexpr"
-SWIFT_CXX_LINK_FLAGS = "${SWIFT_C_LINK_FLAGS}"
+SWIFT_CXX_FLAGS = "${SWIFT_C_FLAGS} ${EXTRA_CXX_INCLUDE_FLAGS} -Wno-invalid-constexpr"
+SWIFT_CXX_LINK_FLAGS = "${SWIFT_C_LINK_FLAGS} ${EXTRA_CXX_INCLUDE_FLAGS}"
 
 do_fix_gcc_install_dir() {
     # symbolic links do not work, will not be found by Swift clang driver
