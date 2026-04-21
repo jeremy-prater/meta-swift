@@ -122,6 +122,34 @@ python swift_do_configure() {
     clang_resource_include = staging_dir_native + "/usr/lib/clang/" + swift_clang_version + "/include"
     clang_resource_include_fixed = staging_dir_native + "/usr/lib/clang/" + swift_clang_version + "/include-fixed"
 
+    # Remap build-host paths out of debug info, __FILE__, and coverage records
+    # so the resulting binaries don't embed strings like
+    # /home/.../build/tmp/work/<pn>/<pv>/sources/... -- those trip OE's
+    # `buildpaths` QA and are useless to anyone debugging on-device. Mirrors
+    # the standard DEBUG_PREFIX_MAP convention oe-core uses for non-Swift
+    # recipes (see base.bbclass); swift-cmake-base.bbclass clears the stock
+    # DEBUG_PREFIX_MAP for reasons unrelated to SwiftPM, so we thread the
+    # equivalent through the toolset.json ourselves.
+    #   workdir      -> /usr/src/debug/<pn>/<pv>-<pr>
+    #   sysroot host -> "" (remove entirely; sysroot paths are build artifacts)
+    #   sysroot nat  -> ""
+    extendpe = d.getVar("EXTENDPE") or ""
+    debug_src_dir = "/usr/src/debug/" + d.getVar("PN") + "/" + extendpe + d.getVar("PV") + "-" + d.getVar("PR")
+    prefix_maps = [
+        (workdir, debug_src_dir),
+        (staging_dir_target, ""),
+        (staging_dir_native, ""),
+    ]
+    clang_prefix_map_flags = ["-ffile-prefix-map=" + src + "=" + dst for src, dst in prefix_maps]
+    # Swift does not accept the umbrella -file-prefix-map, and its
+    # -debug-prefix-map wants the flag and value as two tokens (the
+    # -ffile-prefix-map=K=V single-token form works for Clang but not swiftc).
+    # Add the -ffile-prefix-map variant via -Xcc further down so the Clang
+    # importer remaps too.
+    swift_prefix_map_flags = []
+    for src, dst in prefix_maps:
+        swift_prefix_map_flags += ["-debug-prefix-map", src + "=" + dst]
+
     # Include paths safe on the C command line. GCC's libstdc++ ships a C++-only
     # stdatomic.h shim that expands to nothing in C mode; clang's stdatomic.h
     # #include_nexts into it, so adding the C++ header dirs to C flags breaks
@@ -169,6 +197,9 @@ python swift_do_configure() {
         + ordered_cxx_include_flags
         + cxx_link_flags
     )
+
+    c_cli_options += clang_prefix_map_flags
+    cxx_cli_options += clang_prefix_map_flags
 
     swiftc_cli_options = [
         "-target", target_triple,
@@ -221,6 +252,13 @@ python swift_do_configure() {
             "-Xclang-linker", "-stdlib=libc++",
         ]
     for flag in target_cc_arch:
+        swiftc_cli_options += ["-Xcc", flag]
+
+    # Swift frontend handles -file-prefix-map directly (Swift 5.7+); also feed
+    # the equivalent -ffile-prefix-map to Clang via -Xcc so the Clang importer
+    # remaps C/ObjC/C++ headers pulled in for interop.
+    swiftc_cli_options += swift_prefix_map_flags
+    for flag in clang_prefix_map_flags:
         swiftc_cli_options += ["-Xcc", flag]
 
     # v4 Swift SDK artifact bundle layout:
