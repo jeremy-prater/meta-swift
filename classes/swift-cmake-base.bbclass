@@ -44,9 +44,11 @@ EXTRA_INCLUDE_FLAGS ?= "\
     -I${STAGING_DIR_NATIVE}/usr/lib/clang/${SWIFT_CLANG_VERSION}/include \
     -I${STAGING_DIR_TARGET}"
 
-EXTRA_CXX_INCLUDE_FLAGS ?= "\
-    -I${STAGING_DIR_TARGET}/usr/include/c++/${SWIFT_GCC_VERSION}/${TARGET_SYS} \
-    -I${STAGING_DIR_TARGET}/usr/include/c++/${SWIFT_GCC_VERSION}"
+# SWIFT_CXX_RUNTIME=="llvm" selects the system libc++ (OE-core's libcxx recipe)
+# instead of GCC's libstdc++. libc++ headers live under usr/include/c++/v1.
+EXTRA_CXX_INCLUDE_FLAGS ?= "${@bb.utils.contains('SWIFT_CXX_RUNTIME', 'llvm', \
+    '-stdlib=libc++ -I${STAGING_DIR_TARGET}/usr/include/c++/v1', \
+    '-I${STAGING_DIR_TARGET}/usr/include/c++/${SWIFT_GCC_VERSION}/${TARGET_SYS} -I${STAGING_DIR_TARGET}/usr/include/c++/${SWIFT_GCC_VERSION}', d)}"
 
 # not supported by clang
 DEBUG_PREFIX_MAP:remove = "-fcanon-prefix-map"
@@ -82,7 +84,14 @@ TARGET_LDFLAGS:remove = "-Wl,--as-needed"
 DEBUG_PREFIX_MAP = ""
 
 OECMAKE_C_FLAGS:append = " ${RUNTIME_FLAGS} ${EXTRA_INCLUDE_FLAGS}"
-OECMAKE_CXX_FLAGS:append = " ${RUNTIME_FLAGS} ${EXTRA_INCLUDE_FLAGS} ${EXTRA_CXX_INCLUDE_FLAGS} -Wno-invalid-constexpr"
+# Under libc++, EXTRA_CXX_INCLUDE_FLAGS must precede EXTRA_INCLUDE_FLAGS so
+# libc++'s header wrappers (c++/v1/{cstddef,cfloat,...}) win on search order.
+# Under libstdc++, keep the original order (EXTRA_INCLUDE_FLAGS first) to avoid
+# reopening the libstdcxx `std` module chain that the libstdc++-trap patches fix.
+OECMAKE_CXX_ORDERED_INCLUDE_FLAGS = "${@bb.utils.contains('SWIFT_CXX_RUNTIME', 'llvm', \
+    '${EXTRA_CXX_INCLUDE_FLAGS} ${EXTRA_INCLUDE_FLAGS}', \
+    '${EXTRA_INCLUDE_FLAGS} ${EXTRA_CXX_INCLUDE_FLAGS}', d)}"
+OECMAKE_CXX_FLAGS:append = " ${RUNTIME_FLAGS} ${OECMAKE_CXX_ORDERED_INCLUDE_FLAGS} -Wno-invalid-constexpr"
 OECMAKE_ASM_FLAGS:append = " ${RUNTIME_FLAGS} ${EXTRA_INCLUDE_FLAGS}"
 
 SWIFTC_BIN = "${STAGING_DIR_NATIVE}/usr/bin/swiftc"

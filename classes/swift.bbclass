@@ -118,8 +118,7 @@ python swift_do_configure() {
     sdk_id = d.getVar("SWIFT_SDK_ID")
     bundle_parent = d.getVar("SWIFT_SDK_BUNDLE_DIR")
 
-    gcc_cxx_include = staging_dir_target + "/usr/include/c++/" + swift_gcc_version
-    gcc_cxx_include_target = gcc_cxx_include + "/" + target_sys
+    use_libcxx = bb.utils.contains("SWIFT_CXX_RUNTIME", "llvm", True, False, d)
     clang_resource_include = staging_dir_native + "/usr/lib/clang/" + swift_clang_version + "/include"
     clang_resource_include_fixed = staging_dir_native + "/usr/lib/clang/" + swift_clang_version + "/include-fixed"
 
@@ -132,18 +131,43 @@ python swift_do_configure() {
         "-I" + clang_resource_include,
         "-I" + clang_resource_include_fixed,
     ]
-    cxx_only_include_flags = [
-        "-I" + gcc_cxx_include,
-        "-I" + gcc_cxx_include_target,
-    ]
+    if use_libcxx:
+        # SWIFT_CXX_RUNTIME=llvm: point Clang at the system libc++ (OE-core's libcxx
+        # recipe) via -stdlib=libc++ and the c++/v1 header dir; -stdlib also makes
+        # the driver auto-link -lc++ -lc++abi, so no explicit -l is needed.
+        cxx_only_include_flags = [
+            "-stdlib=libc++",
+            "-I" + staging_dir_target + "/usr/include/c++/v1",
+        ]
+        cxx_link_flags = []
+    else:
+        gcc_cxx_include = staging_dir_target + "/usr/include/c++/" + swift_gcc_version
+        gcc_cxx_include_target = gcc_cxx_include + "/" + target_sys
+        cxx_only_include_flags = [
+            "-I" + gcc_cxx_include,
+            "-I" + gcc_cxx_include_target,
+        ]
+        cxx_link_flags = ["-lstdc++"]
 
     c_cli_options = target_cc_arch + ["-fPIC"] + c_include_flags
+    if use_libcxx:
+        # Under libc++, cxx_only_include_flags (-stdlib=libc++ and /c++/v1) must
+        # precede c_include_flags so libc++'s own wrappers (c++/v1/{cstddef,cfloat,...})
+        # win over the matching C headers. Otherwise libc++'s <cstddef>/<cfloat>
+        # abort with "didn't find libc++'s <X> header".
+        ordered_cxx_include_flags = cxx_only_include_flags + c_include_flags
+    else:
+        # Under libstdc++, keep c_include_flags first: GCC's C++ header dir ships
+        # its own <math.h>/<complex.h> wrappers that (via <cmath>) transitively
+        # build libstdcxx.modulemap's `std` module and fail on glibc >= 2.38 --
+        # the same path that the libstdc++-trap patches work around. Putting
+        # cxx_only_include_flags first would undo those fixes.
+        ordered_cxx_include_flags = c_include_flags + cxx_only_include_flags
     cxx_cli_options = (
         target_cc_arch
         + ["-fPIC", "-Wno-invalid-constexpr"]
-        + c_include_flags
-        + cxx_only_include_flags
-        + ["-lstdc++"]
+        + ordered_cxx_include_flags
+        + cxx_link_flags
     )
 
     swiftc_cli_options = [
@@ -186,6 +210,16 @@ python swift_do_configure() {
 
         "-Xcc", "--gcc-install-dir=" + staging_dir_target + "/usr/lib/gcc/" + target_sys + "/" + swift_gcc_version,
     ]
+    if use_libcxx:
+        # -Xcc -stdlib=libc++: Swift's Clang importer parses C++ with libc++,
+        # so `import CxxStdlib` resolves via libcxxshim.modulemap rather than
+        # libstdcxx.modulemap.
+        # -Xclang-linker -stdlib=libc++: the Clang driver Swift invokes as the
+        # linker auto-links libc++/libc++abi instead of libstdc++.
+        swiftc_cli_options += [
+            "-Xcc", "-stdlib=libc++",
+            "-Xclang-linker", "-stdlib=libc++",
+        ]
     for flag in target_cc_arch:
         swiftc_cli_options += ["-Xcc", flag]
 
