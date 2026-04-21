@@ -20,6 +20,13 @@ SRC_URI = "\
     file://0003-add-fix-for-metadataaccessor-abi-mismatch.patch;striplevel=1; \
     "
 
+# 0004 rewrites std.compat.{cstdlib,cassert} as textual headers to break a
+# libstdc++ modulemap cycle that only manifests on x86_64 (see the patch
+# commit message). libc++ doesn't use libstdcxx.modulemap, and non-x86
+# targets never include <pmmintrin.h> through opt_random.h, so the patch
+# is only wired in for TARGET_ARCH=x86_64 under SWIFT_CXX_RUNTIME=gnu.
+SRC_URI:append:x86-64 = " ${@bb.utils.contains('SWIFT_CXX_RUNTIME', 'llvm', '', 'file://0004-libstdcxx-modulemap-avoid-std-Builtin_intrinsics-cyc.patch;striplevel=1', d)}"
+
 S = "${UNPACKDIR}/swift"
 
 SWIFT_BUILDDIR = "${S}/build"

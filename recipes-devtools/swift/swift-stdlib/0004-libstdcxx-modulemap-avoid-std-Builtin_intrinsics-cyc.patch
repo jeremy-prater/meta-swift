@@ -1,0 +1,80 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Luke Howard <lukeh@padl.com>
+Date: Tue, 22 Apr 2026 12:00:00 +1000
+Subject: [PATCH] libstdcxx.modulemap: break std -> _Builtin_intrinsics cycle
+
+When Clang builds the 'std' module (injected by Swift's Clang importer
+at the libstdc++ include dir), on x86_64 with -march>=x86-64-v3 the
+following include chain forms a cycle:
+
+  std
+   -> random
+   -> bits/random.h
+   -> bits/opt_random.h      (libstdc++)
+   -> <pmmintrin.h>          (requires __SSE3__)
+      -> _Builtin_intrinsics.sse
+         -> xmmintrin.h
+         -> mm_malloc.h      (Clang builtin)
+         -> #include <stdlib.h>
+            (resolved to libstdc++'s stdlib.h wrapper, which lives
+             in the same directory as the injected modulemap)
+            -> #include <cstdlib>
+               (modular header, submodule std.compat.cstdlib)
+               -> @import std  <-- currently being built
+
+Clang rejects this with:
+
+  stdlib.h:36:11: error: cyclic dependency in module 'std':
+    std -> _Builtin_intrinsics -> std
+
+aarch64 and armv7 don't hit this because <pmmintrin.h> is never
+included by opt_random.h on non-x86 targets.
+
+Mark cstdlib (and cassert, defensively) as textual rather than
+modular. Per Clang's modules specification, including a textual
+header does not trigger an import of the module that owns it; the
+header's contents are expanded inline at the include site. So the
+libstdc++ wrapper's #include <cstdlib> -- reached via mm_malloc ->
+stdlib.h during the _Builtin_intrinsics build -- no longer re-enters
+the currently-building std module.
+
+The std.compat.{cstdlib,cassert} submodules are removed; a grep
+across swift/stdlib, swift/lib/ClangImporter, and swift/test finds
+no references to these qualified names, so nothing in-tree depends
+on them being modular.
+
+Upstream-Status: Submitted
+---
+ stdlib/public/Cxx/libstdcxx/libstdcxx.modulemap | 17 ++++-------------
+ 1 file changed, 4 insertions(+), 13 deletions(-)
+
+diff --git a/stdlib/public/Cxx/libstdcxx/libstdcxx.modulemap b/stdlib/public/Cxx/libstdcxx/libstdcxx.modulemap
+--- a/stdlib/public/Cxx/libstdcxx/libstdcxx.modulemap
++++ b/stdlib/public/Cxx/libstdcxx/libstdcxx.modulemap
+@@ -76,18 +76,9 @@ module std {
+   requires cplusplus
+   export *
+
+-  /// C compatibility headers.
+-  module compat {
+-    module cassert {
+-      header "cassert"
+-      requires cplusplus
+-      export *
+-    }
+-
+-    module cstdlib {
+-      header "cstdlib"
+-      requires cplusplus
+-      export *
+-    }
+-  }
++  /// C compatibility headers -- textual to break the
++  /// std -> _Builtin_intrinsics -> std cycle that fires on
++  /// x86_64 with -march>=x86-64-v3. See commit message.
++  textual header "cassert"
++  textual header "cstdlib"
+ }
+--
+2.43.0
+
