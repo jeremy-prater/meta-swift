@@ -23,7 +23,9 @@ SRC_URI = "\
 S = "${UNPACKDIR}/swift"
 
 SWIFT_BUILDDIR = "${S}/build"
-DEPENDS = "gcc-runtime python3-native icu ncurses swift-native libgcc gcc glibc libxml2 libxml2-native ninja-native"
+# SWIFT_CXX_RUNTIME=llvm → pull the system libc++ (OE-core's libcxx) into the
+# sysroot; default (gnu) keeps GCC's libstdc++ via gcc-runtime.
+DEPENDS = "${@bb.utils.contains('SWIFT_CXX_RUNTIME', 'llvm', 'libcxx', 'gcc-runtime', d)} python3-native icu ncurses swift-native libgcc gcc glibc libxml2 libxml2-native ninja-native"
 
 inherit swift-cmake-base
 
@@ -31,11 +33,26 @@ TARGET_LDFLAGS:append = " -w -fuse-ld=lld -L${STAGING_DIR_TARGET}/usr/lib/${TARG
 
 SWIFT_CMAKE_TOOLCHAIN_FILE = "${WORKDIR}/linux-${SWIFT_TARGET_ARCH}-toolchain.cmake"
 
-SWIFT_C_FLAGS = "${TARGET_CC_ARCH} -w -fuse-ld=lld -target ${SWIFT_TARGET_NAME} --sysroot ${STAGING_DIR_TARGET} -B${STAGING_DIR_TARGET}/usr/lib/${TARGET_SYS}/${SWIFT_GCC_VERSION} -L${STAGING_DIR_TARGET}/usr/lib/${TARGET_SYS}/${SWIFT_GCC_VERSION} -I${STAGING_DIR_TARGET}/usr/include ${EXTRA_INCLUDE_FLAGS}"
+SWIFT_TARGET_COMMON_FLAGS = "${TARGET_CC_ARCH} -w -fuse-ld=lld -target ${SWIFT_TARGET_NAME} --sysroot ${STAGING_DIR_TARGET} -B${STAGING_DIR_TARGET}/usr/lib/${TARGET_SYS}/${SWIFT_GCC_VERSION} -L${STAGING_DIR_TARGET}/usr/lib/${TARGET_SYS}/${SWIFT_GCC_VERSION}"
+
+SWIFT_C_FLAGS = "${SWIFT_TARGET_COMMON_FLAGS} -I${STAGING_DIR_TARGET}/usr/include ${EXTRA_INCLUDE_FLAGS}"
 SWIFT_C_LINK_FLAGS = "${TARGET_LD_ARCH} -target ${SWIFT_TARGET_NAME} --sysroot ${STAGING_DIR_TARGET} ${EXTRA_INCLUDE_FLAGS}"
 
-SWIFT_CXX_FLAGS = "${SWIFT_C_FLAGS} ${EXTRA_CXX_INCLUDE_FLAGS} -Wno-invalid-constexpr"
+# Under libc++, EXTRA_CXX_INCLUDE_FLAGS must precede the C sysroot -I so
+# libc++'s wrapper headers (c++/v1/{cstddef,cfloat,...}) win on search order;
+# otherwise libc++'s <cstddef>/<cfloat> abort with "didn't find libc++'s <X>
+# header" -- notably in the stdlib's embedded build that appends an empty
+# `--sysroot=` and defeats Clang's sysroot-based libc++ auto-discovery.
+# Under libstdc++, keep C sysroot first (original behavior).
+SWIFT_CXX_FLAGS = "${@bb.utils.contains('SWIFT_CXX_RUNTIME', 'llvm', \
+    '${SWIFT_TARGET_COMMON_FLAGS} ${EXTRA_CXX_INCLUDE_FLAGS} -I${STAGING_DIR_TARGET}/usr/include ${EXTRA_INCLUDE_FLAGS}', \
+    '${SWIFT_C_FLAGS} ${EXTRA_CXX_INCLUDE_FLAGS}', d)} -Wno-invalid-constexpr"
 SWIFT_CXX_LINK_FLAGS = "${SWIFT_C_LINK_FLAGS} ${EXTRA_CXX_INCLUDE_FLAGS}"
+
+# swiftc -Xcc flags for the Swift stdlib's own C++ header parsing.
+SWIFT_STDLIB_CXX_FLAGS = "${@bb.utils.contains('SWIFT_CXX_RUNTIME', 'llvm', \
+    '-Xcc -stdlib=libc++ -Xcc -I${STAGING_DIR_TARGET}/usr/include/c++/v1', \
+    '-I${STAGING_DIR_TARGET}/usr/include/c++/${SWIFT_GCC_VERSION} -I${STAGING_DIR_TARGET}/usr/include/c++/${SWIFT_GCC_VERSION}/${TARGET_SYS}', d)}"
 
 do_fix_gcc_install_dir() {
     # symbolic links do not work, will not be found by Swift clang driver
@@ -149,7 +166,7 @@ set(SWIFT_ENABLE_SYNCHRONIZATION ON)
 set(SWIFT_PATH_TO_STRING_PROCESSING_SOURCE ${UNPACKDIR}/swift-experimental-string-processing)
 set(SWIFT_SYNTAX_SOURCE_DIR ${UNPACKDIR}/swift-syntax)
 set(SWIFTSYNTAX_SOURCE_DIR ${UNPACKDIR}/swift-syntax)
-set(SWIFT_STANDARD_LIBRARY_SWIFT_FLAGS -Xcc --gcc-install-dir=${STAGING_DIR_TARGET}/usr/lib/gcc/${TARGET_SYS}/${SWIFT_GCC_VERSION} -I${STAGING_DIR_TARGET}/usr/include/c++/${SWIFT_GCC_VERSION} -I${STAGING_DIR_TARGET}/usr/include/c++/${SWIFT_GCC_VERSION}/${TARGET_SYS} -no-verify-emitted-module-interface ${SWIFT_EXTRA_SWIFTC_CC_FLAGS})
+set(SWIFT_STANDARD_LIBRARY_SWIFT_FLAGS -Xcc --gcc-install-dir=${STAGING_DIR_TARGET}/usr/lib/gcc/${TARGET_SYS}/${SWIFT_GCC_VERSION} ${SWIFT_STDLIB_CXX_FLAGS} -no-verify-emitted-module-interface ${SWIFT_EXTRA_SWIFTC_CC_FLAGS})
 set(SWIFT_SDK_LINUX_CXX_OVERLAY_SWIFT_COMPILE_FLAGS "")
 
 set(ICU_I18N_LIBRARIES ${STAGING_DIR_TARGET}/usr/lib/libicui18n.so)
