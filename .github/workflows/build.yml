@@ -18,25 +18,28 @@ jobs:
           sudo apt-get update
           sudo apt install -y build-essential chrpath cpio debianutils diffstat file gawk gcc git iputils-ping libacl1 liblz4-tool locales python3 python3-git python3-jinja2 python3-pexpect python3-pip python3-subunit socat texinfo unzip wget xz-utils zstd qemu-user
           echo 0 | sudo tee /proc/sys/kernel/apparmor_restrict_unprivileged_userns
-      - name: Checkout Poky
-        uses: actions/checkout@v4
-        with:
-          repository: yoctoproject/poky
-          path: poky
-          ref: scarthgap
+      - name: Checkout BitBake
+        run: git clone --depth 1 --branch master https://git.openembedded.org/bitbake $GITHUB_WORKSPACE/bitbake
+      - name: Checkout OpenEmbedded Core
+        run: git clone --depth 1 --branch master https://git.openembedded.org/openembedded-core $GITHUB_WORKSPACE/openembedded-core
       - name: Checkout Swift layer
         uses: actions/checkout@v4
         with:
-          path: poky/meta-swift
+          path: meta-swift
       - name: Build
         run: |
-          cd $GITHUB_WORKSPACE/poky
-          source oe-init-build-env
+          cd $GITHUB_WORKSPACE
+          source openembedded-core/oe-init-build-env build
           bitbake-layers add-layer ../meta-swift
           rm -f conf/local.conf
-          echo 'MACHINE = "qemuarm64"' > conf/local.conf
+          cat > conf/local.conf <<'EOF'
+          MACHINE = "qemuarm64"
+          DISTRO = "nodistro"
+          INIT_MANAGER = "mdev-busybox"
+          EOF
           bitbake swift-hello-world
           WORKDIR=$(bitbake -e swift-hello-world | grep '^WORKDIR=' | cut -d'"' -f2)
+          export LD_LIBRARY_PATH="$WORKDIR/recipe-sysroot/usr/lib/swift/linux:$WORKDIR/recipe-sysroot/usr/lib:$WORKDIR/recipe-sysroot/lib"
           qemu-arm64 -L $WORKDIR/recipe-sysroot $WORKDIR/build/release/hello-world
           qemu-arm64 -L $WORKDIR/recipe-sysroot $WORKDIR/build/release/hello-worldPackageTests.xctest --testing-library swift-testing
 
@@ -49,25 +52,28 @@ jobs:
           sudo apt-get update
           sudo apt install -y build-essential chrpath cpio debianutils diffstat file gawk gcc git iputils-ping libacl1 liblz4-tool locales python3 python3-git python3-jinja2 python3-pexpect python3-pip python3-subunit socat texinfo unzip wget xz-utils zstd qemu-user
           echo 0 | sudo tee /proc/sys/kernel/apparmor_restrict_unprivileged_userns
-      - name: Checkout Poky
-        uses: actions/checkout@v4
-        with:
-          repository: yoctoproject/poky
-          path: poky
-          ref: scarthgap
+      - name: Checkout BitBake
+        run: git clone --depth 1 --branch master https://git.openembedded.org/bitbake $GITHUB_WORKSPACE/bitbake
+      - name: Checkout OpenEmbedded Core
+        run: git clone --depth 1 --branch master https://git.openembedded.org/openembedded-core $GITHUB_WORKSPACE/openembedded-core
       - name: Checkout Swift layer
         uses: actions/checkout@v4
         with:
-          path: poky/meta-swift
+          path: meta-swift
       - name: Build
         run: |
-          cd $GITHUB_WORKSPACE/poky
-          source oe-init-build-env
+          cd $GITHUB_WORKSPACE
+          source openembedded-core/oe-init-build-env build
           bitbake-layers add-layer ../meta-swift
           rm -f conf/local.conf
-          echo 'MACHINE = "qemuarm"' > conf/local.conf
+          cat > conf/local.conf <<'EOF'
+          MACHINE = "qemuarm"
+          DISTRO = "nodistro"
+          INIT_MANAGER = "mdev-busybox"
+          EOF
           bitbake swift-hello-world
           WORKDIR=$(bitbake -e swift-hello-world | grep '^WORKDIR=' | cut -d'"' -f2)
+          export LD_LIBRARY_PATH="$WORKDIR/recipe-sysroot/usr/lib/swift/linux:$WORKDIR/recipe-sysroot/usr/lib:$WORKDIR/recipe-sysroot/lib"
           qemu-arm -L $WORKDIR/recipe-sysroot $WORKDIR/build/release/hello-world
           qemu-arm -L $WORKDIR/recipe-sysroot $WORKDIR/build/release/hello-worldPackageTests.xctest --testing-library swift-testing
 
@@ -80,24 +86,27 @@ jobs:
           sudo apt-get update
           sudo apt install -y build-essential chrpath cpio debianutils diffstat file gawk gcc git iputils-ping libacl1 liblz4-tool locales python3 python3-git python3-jinja2 python3-pexpect python3-pip python3-subunit socat texinfo unzip wget xz-utils zstd qemu-user
           echo 0 | sudo tee /proc/sys/kernel/apparmor_restrict_unprivileged_userns
-      - name: Checkout Poky
-        uses: actions/checkout@v4
-        with:
-          repository: yoctoproject/poky
-          path: poky
-          ref: scarthgap
+      - name: Checkout BitBake
+        run: git clone --depth 1 --branch master https://git.openembedded.org/bitbake $GITHUB_WORKSPACE/bitbake
+      - name: Checkout OpenEmbedded Core
+        run: git clone --depth 1 --branch master https://git.openembedded.org/openembedded-core $GITHUB_WORKSPACE/openembedded-core
       - name: Checkout Swift layer
         uses: actions/checkout@v4
         with:
-          path: poky/meta-swift
+          path: meta-swift
       - name: Build
         run: |
-          cd $GITHUB_WORKSPACE/poky
-          source oe-init-build-env
+          cd $GITHUB_WORKSPACE
+          source openembedded-core/oe-init-build-env build
           bitbake-layers add-layer ../meta-swift
           rm -f conf/local.conf
-          echo 'MACHINE = "qemux86-64"' > conf/local.conf
+          cat > conf/local.conf <<'EOF'
+          MACHINE = "qemux86-64"
+          DISTRO = "nodistro"
+          INIT_MANAGER = "mdev-busybox"
+          EOF
           bitbake swift-hello-world
           WORKDIR=$(bitbake -e swift-hello-world | grep '^WORKDIR=' | cut -d'"' -f2)
+          export LD_LIBRARY_PATH="$WORKDIR/recipe-sysroot/usr/lib/swift/linux:$WORKDIR/recipe-sysroot/usr/lib:$WORKDIR/recipe-sysroot/lib"
           qemu-x86_64 -L $WORKDIR/recipe-sysroot $WORKDIR/build/release/hello-world
           qemu-x86_64 -L $WORKDIR/recipe-sysroot $WORKDIR/build/release/hello-worldPackageTests.xctest --testing-library swift-testing
