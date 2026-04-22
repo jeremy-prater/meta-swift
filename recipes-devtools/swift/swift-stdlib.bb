@@ -20,13 +20,6 @@ SRC_URI = "\
     file://0003-add-fix-for-metadataaccessor-abi-mismatch.patch;striplevel=1; \
     "
 
-# 0004 rewrites std.compat.{cstdlib,cassert} as textual headers to break a
-# libstdc++ modulemap cycle that only manifests on x86_64 (see the patch
-# commit message). libc++ doesn't use libstdcxx.modulemap, and non-x86
-# targets never include <pmmintrin.h> through opt_random.h, so the patch
-# is only wired in for TARGET_ARCH=x86_64 under SWIFT_CXX_RUNTIME=gnu.
-SRC_URI:append:x86-64 = " ${@bb.utils.contains('SWIFT_CXX_RUNTIME', 'llvm', '', 'file://0004-libstdcxx-modulemap-avoid-std-Builtin_intrinsics-cyc.patch;striplevel=1', d)}"
-
 S = "${UNPACKDIR}/swift"
 
 SWIFT_BUILDDIR = "${S}/build"
@@ -39,6 +32,21 @@ inherit swift-cmake-base
 TARGET_LDFLAGS:append = " -w -fuse-ld=lld -L${STAGING_DIR_TARGET}/usr/lib/${TARGET_SYS}/${SWIFT_GCC_VERSION}"
 
 SWIFT_CMAKE_TOOLCHAIN_FILE = "${WORKDIR}/linux-${SWIFT_TARGET_ARCH}-toolchain.cmake"
+
+# x86_64 + libstdc++: ClangImporter's std module build hits a
+# std -> _Builtin_intrinsics -> std cycle when bits/opt_random.h pulls
+# in <pmmintrin.h> (under __SSE3__) which then re-enters std via
+# mm_malloc.h -> stdlib.h -> cstdlib -> bits/std_abs.h. The cycle's
+# load-bearing edge is bits/std_abs.h, which the prebuilt swiftc's
+# ClangImporter injects as a modular `header` into module std at
+# runtime via getLibStdCxxFileMapping() -- so we cannot break the
+# cycle in the source modulemap (Clang rejects header + textual header
+# coexisting). Skipping pmmintrin.h via -mno-sse3 only for the
+# CxxStdlib swiftmodule build sidesteps the cycle. This affects only
+# Swift's C++ header parsing for that target; it does not change the
+# swiftmodule's ABI or any code's target architecture.
+SWIFT_CXX_OVERLAY_EXTRA_FLAGS = ""
+SWIFT_CXX_OVERLAY_EXTRA_FLAGS:x86-64 = "${@bb.utils.contains('SWIFT_CXX_RUNTIME', 'llvm', '', '-Xcc -mno-sse3', d)}"
 
 SWIFT_TARGET_COMMON_FLAGS = "${TARGET_CC_ARCH} -w -fuse-ld=lld -target ${SWIFT_TARGET_NAME} --sysroot ${STAGING_DIR_TARGET} -B${STAGING_DIR_TARGET}/usr/lib/${TARGET_SYS}/${SWIFT_GCC_VERSION} -L${STAGING_DIR_TARGET}/usr/lib/${TARGET_SYS}/${SWIFT_GCC_VERSION}"
 
@@ -174,7 +182,7 @@ set(SWIFT_PATH_TO_STRING_PROCESSING_SOURCE ${UNPACKDIR}/swift-experimental-strin
 set(SWIFT_SYNTAX_SOURCE_DIR ${UNPACKDIR}/swift-syntax)
 set(SWIFTSYNTAX_SOURCE_DIR ${UNPACKDIR}/swift-syntax)
 set(SWIFT_STANDARD_LIBRARY_SWIFT_FLAGS -Xcc --gcc-install-dir=${STAGING_DIR_TARGET}/usr/lib/gcc/${TARGET_SYS}/${SWIFT_GCC_VERSION} ${SWIFT_STDLIB_CXX_FLAGS} -no-verify-emitted-module-interface ${SWIFT_EXTRA_SWIFTC_CC_FLAGS})
-set(SWIFT_SDK_LINUX_CXX_OVERLAY_SWIFT_COMPILE_FLAGS "")
+set(SWIFT_SDK_LINUX_CXX_OVERLAY_SWIFT_COMPILE_FLAGS "${SWIFT_CXX_OVERLAY_EXTRA_FLAGS}")
 
 set(ICU_I18N_LIBRARIES ${STAGING_DIR_TARGET}/usr/lib/libicui18n.so)
 set(ICU_I18N_INCLUDE_DIRS ${STAGING_DIR_TARGET}/usr/include)
