@@ -106,6 +106,7 @@ python swift_do_configure() {
     fix_socket_header(socket_header)
 
     target_cc_arch = shlex.split(d.getVar("TARGET_CC_ARCH"))
+    target_arch = d.getVar("TARGET_ARCH")
     target_triple = d.getVar("SWIFT_TARGET_NAME")
     target_sys = d.getVar("TARGET_SYS")
     staging_incdir = d.getVar("STAGING_INCDIR")
@@ -253,6 +254,17 @@ python swift_do_configure() {
         ]
     for flag in target_cc_arch:
         swiftc_cli_options += ["-Xcc", flag]
+
+    # x86_64 + libstdc++: -march=x86-64-v3 (and anything implying SSE3)
+    # re-triggers the std <-> _Builtin_intrinsics cycle in downstream Swift
+    # compiles that import SwiftGlibc -- complex.h pulls in <complex> which
+    # pulls in <random> which pulls in opt_random.h -> <pmmintrin.h> ->
+    # _Builtin_intrinsics -> mm_malloc.h -> stdlib.h -> cstdlib. Undefine
+    # __SSE3__ for all Clang-importer parses on x86_64+gnu, matching the
+    # sidestep applied to swift-stdlib's own CxxStdlib overlay build. libc++
+    # consumers use libcxxshim and don't hit this path.
+    if target_arch == "x86_64" and not use_libcxx:
+        swiftc_cli_options += ["-Xcc", "-mno-sse3"]
 
     # Swift frontend handles -file-prefix-map directly (Swift 5.7+); also feed
     # the equivalent -ffile-prefix-map to Clang via -Xcc so the Clang importer

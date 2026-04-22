@@ -33,6 +33,33 @@ TARGET_LDFLAGS:append = " -w -fuse-ld=lld -L${STAGING_DIR_TARGET}/usr/lib/${TARG
 
 SWIFT_CMAKE_TOOLCHAIN_FILE = "${WORKDIR}/linux-${SWIFT_TARGET_ARCH}-toolchain.cmake"
 
+# x86_64 + libstdc++: ClangImporter's std module build hits a
+# std -> _Builtin_intrinsics -> std cycle when bits/opt_random.h pulls
+# in <pmmintrin.h> (under __SSE3__) which then re-enters std via
+# mm_malloc.h -> stdlib.h -> cstdlib -> bits/std_abs.h. The cycle's
+# load-bearing edge is bits/std_abs.h, which the prebuilt swiftc's
+# ClangImporter injects as a modular `header` into module std at
+# runtime via getLibStdCxxFileMapping() -- so we cannot break the
+# cycle in the source modulemap (Clang rejects header + textual header
+# coexisting). Skipping pmmintrin.h via -mno-sse3 only for the
+# CxxStdlib swiftmodule build sidesteps the cycle. This affects only
+# Swift's C++ header parsing for that target; it does not change the
+# swiftmodule's ABI or any code's target architecture.
+#
+# SwiftConfigureSDK.cmake seeds SWIFT_SDK_LINUX_CXX_OVERLAY_SWIFT_COMPILE_FLAGS
+# with `set(... CACHE STRING)` (no FORCE), which removes any pre-existing
+# normal variable -- so the value must be pre-seeded as a cache entry on the
+# outer cmake command line to win. Value is a CMake list (semicolon-separated)
+# and must preserve the upstream default `-Xcc --gcc-toolchain=/usr` so the
+# GCC toolchain lookup still works on non-x86_64 targets.
+#
+# Key on TARGET_ARCH rather than a :x86-64 override: TUNE_PKGARCH for
+# non-baseline tunes is "x86-64-v3" etc., and the plain tune sets it
+# to "x86_64" (underscore) -- so no hyphen-form "x86-64" ever lands in
+# OVERRIDES. TARGET_ARCH resolves to "x86_64" for every x86 ELF64/ILP32
+# tune, which is the set that has the x86 intrinsic headers in scope.
+SWIFT_CXX_OVERLAY_SWIFT_COMPILE_FLAGS = "-Xcc;--gcc-toolchain=/usr${@';-Xcc;-mno-sse3' if d.getVar('TARGET_ARCH') == 'x86_64' and d.getVar('SWIFT_CXX_RUNTIME') == 'gnu' else ''}"
+
 SWIFT_TARGET_COMMON_FLAGS = "${TARGET_CC_ARCH} -w -fuse-ld=lld -target ${SWIFT_TARGET_NAME} --sysroot ${STAGING_DIR_TARGET} -B${STAGING_DIR_TARGET}/usr/lib/${TARGET_SYS}/${SWIFT_GCC_VERSION} -L${STAGING_DIR_TARGET}/usr/lib/${TARGET_SYS}/${SWIFT_GCC_VERSION}"
 
 SWIFT_C_FLAGS = "${SWIFT_TARGET_COMMON_FLAGS} -I${STAGING_DIR_TARGET}/usr/include ${EXTRA_INCLUDE_FLAGS}"
@@ -167,7 +194,6 @@ set(SWIFT_PATH_TO_STRING_PROCESSING_SOURCE ${UNPACKDIR}/swift-experimental-strin
 set(SWIFT_SYNTAX_SOURCE_DIR ${UNPACKDIR}/swift-syntax)
 set(SWIFTSYNTAX_SOURCE_DIR ${UNPACKDIR}/swift-syntax)
 set(SWIFT_STANDARD_LIBRARY_SWIFT_FLAGS -Xcc --gcc-install-dir=${STAGING_DIR_TARGET}/usr/lib/gcc/${TARGET_SYS}/${SWIFT_GCC_VERSION} ${SWIFT_STDLIB_CXX_FLAGS} -no-verify-emitted-module-interface ${SWIFT_EXTRA_SWIFTC_CC_FLAGS})
-set(SWIFT_SDK_LINUX_CXX_OVERLAY_SWIFT_COMPILE_FLAGS "")
 
 set(ICU_I18N_LIBRARIES ${STAGING_DIR_TARGET}/usr/lib/libicui18n.so)
 set(ICU_I18N_INCLUDE_DIRS ${STAGING_DIR_TARGET}/usr/include)
@@ -191,7 +217,8 @@ EOF
         -DSWIFT_NATIVE_SWIFT_TOOLS_PATH=${SWIFT_NATIVE_PATH} \
         -DSWIFT_SDK_LINUX_ARCH_${SWIFT_TARGET_ARCH}_PATH=${STAGING_DIR_TARGET}  \
         -DSWIFT_SDK_LINUX_ARCH_${SWIFT_TARGET_ARCH}_LIBC_INCLUDE_DIRECTORY=${STAGING_DIR_TARGET}/usr/include  \
-        -DSWIFT_SDK_LINUX_ARCH_${SWIFT_TARGET_ARCH}_LIBC_ARCHITECTURE_INCLUDE_DIRECTORY=${STAGING_DIR_TARGET}/usr/include
+        -DSWIFT_SDK_LINUX_ARCH_${SWIFT_TARGET_ARCH}_LIBC_ARCHITECTURE_INCLUDE_DIRECTORY=${STAGING_DIR_TARGET}/usr/include \
+        -DSWIFT_SDK_LINUX_CXX_OVERLAY_SWIFT_COMPILE_FLAGS="${SWIFT_CXX_OVERLAY_SWIFT_COMPILE_FLAGS}"
 }
 
 do_compile() {
