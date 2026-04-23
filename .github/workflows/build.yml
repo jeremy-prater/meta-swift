@@ -107,6 +107,14 @@ jobs:
           EOF
           bitbake swift-hello-world
           WORKDIR=$(bitbake -e swift-hello-world | grep '^WORKDIR=' | cut -d'"' -f2)
-          export LD_LIBRARY_PATH="$WORKDIR/recipe-sysroot/usr/lib/swift/linux:$WORKDIR/recipe-sysroot/usr/lib:$WORKDIR/recipe-sysroot/lib"
-          qemu-x86_64 -L $WORKDIR/recipe-sysroot $WORKDIR/build/release/hello-world
-          qemu-x86_64 -L $WORKDIR/recipe-sysroot $WORKDIR/build/release/hello-worldPackageTests.xctest --testing-library swift-testing
+          # qemu-user's -L sysroot does not fully isolate library resolution
+          # when the host arch matches the target: the runner's own
+          # /lib/x86_64-linux-gnu/libm.so.6 shadows the sysroot's, so
+          # libswiftCore.so's GLIBC_2.43 requirement fails and the binary
+          # segfaults. Invoke the target ld.so explicitly with --library-path
+          # so only the sysroot's libs are considered. Not needed on armv7 or
+          # aarch64 where the host has no matching-arch libs to shadow.
+          LDSO=$WORKDIR/recipe-sysroot/lib/ld-linux-x86-64.so.2
+          LIBS=$WORKDIR/recipe-sysroot/usr/lib/swift/linux:$WORKDIR/recipe-sysroot/usr/lib:$WORKDIR/recipe-sysroot/lib
+          qemu-x86_64 -L $WORKDIR/recipe-sysroot $LDSO --library-path $LIBS $WORKDIR/build/release/hello-world
+          qemu-x86_64 -L $WORKDIR/recipe-sysroot $LDSO --library-path $LIBS $WORKDIR/build/release/hello-worldPackageTests.xctest --testing-library swift-testing
