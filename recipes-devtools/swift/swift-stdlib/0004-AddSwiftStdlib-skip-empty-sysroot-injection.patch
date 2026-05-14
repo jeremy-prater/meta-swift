@@ -1,0 +1,40 @@
+From a54014662b6e950f8cafb34fdf9826516daefe0c Mon Sep 17 00:00:00 2001
+From: Luke Howard <lukeh@padl.com>
+Date: Thu, 14 May 2026 10:48:48 +1000
+Subject: [PATCH] AddSwiftStdlib: skip empty --sysroot= injection
+
+When SWIFT_SDK_<sdk>_ARCH_<arch>_PATH is unset (as happens for some
+embedded stdlib targets), _sysroot resolves to the empty string and
+the resulting '--sysroot=' on the command line overrides any earlier
+--sysroot, leaving clang to fall back to host include paths. On a
+cross-build that includes a host libc++ in /usr/include/c++/v1, the
+host libc++'s <stddef.h> wrapper gets pulled into the #include_next
+chain after the target libc++ has already set _LIBCPP_STDDEF_H, so
+the chain bails before reaching the clang resource-dir <stddef.h>
+and max_align_t is never defined globally -- causing
+<__cstddef/max_align_t.h>'s using_if_exists to be unresolved.
+
+Treat the empty case the same way '/' is already treated and skip
+the injection entirely.
+
+Upstream-Status: Pending
+---
+ stdlib/cmake/modules/AddSwiftStdlib.cmake | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/stdlib/cmake/modules/AddSwiftStdlib.cmake b/stdlib/cmake/modules/AddSwiftStdlib.cmake
+index a615adb4..1c112d26 100644
+--- a/stdlib/cmake/modules/AddSwiftStdlib.cmake
++++ b/stdlib/cmake/modules/AddSwiftStdlib.cmake
+@@ -149,7 +149,7 @@ function(_add_target_variant_c_compile_link_flags)
+   set(_sysroot "${SWIFT_SDK_${CFLAGS_SDK}_ARCH_${CFLAGS_ARCH}_PATH}")
+   if(SWIFT_SDK_${CFLAGS_SDK}_USE_ISYSROOT)
+     list(APPEND result "-isysroot" "${_sysroot}")
+-  elseif(NOT SWIFT_COMPILER_IS_MSVC_LIKE AND NOT "${_sysroot}" STREQUAL "/")
++  elseif(NOT SWIFT_COMPILER_IS_MSVC_LIKE AND NOT "${_sysroot}" STREQUAL "/" AND NOT "${_sysroot}" STREQUAL "")
+     list(APPEND result "--sysroot=${_sysroot}")
+   endif()
+
+--
+2.43.0
+
