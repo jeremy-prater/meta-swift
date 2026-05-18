@@ -65,8 +65,18 @@ python do_swift_package_resolve() {
     s = d.getVar('S')
     b = d.getVar('B')
     recipe_sysroot_native = d.getVar("STAGING_DIR_NATIVE", True)
+    recipe_sysroot_native_lib = d.getVar("STAGING_LIBDIR_NATIVE", True)
 
     env = os.environ.copy()
+
+    # Prefer curl-native over the host's libcurl: the prebuilt swift-native's
+    # libFoundationNetworking (e.g. from amazonlinux2) is linked against a
+    # specific libcurl.so.4 and aborts loading an incompatible host libcurl
+    # (issue #42).
+    ld_path = recipe_sysroot_native_lib
+    if env.get('LD_LIBRARY_PATH'):
+        ld_path += ':' + env['LD_LIBRARY_PATH']
+    env['LD_LIBRARY_PATH'] = ld_path
 
     ssh_auth_sock = d.getVar('BB_ORIGENV').get('SSH_AUTH_SOCK')
     if ssh_auth_sock:
@@ -340,8 +350,19 @@ python swift_do_compile() {
     ssh_auth_sock = d.getVar('BB_ORIGENV').get('SSH_AUTH_SOCK')
     recipe_sysroot = d.getVar("STAGING_DIR_TARGET", True)
     recipe_sysroot_native = d.getVar("STAGING_DIR_NATIVE", True)
+    recipe_sysroot_native_lib = d.getVar("STAGING_LIBDIR_NATIVE", True)
 
     env = os.environ.copy()
+
+    # Prefer curl-native over the host's libcurl: the prebuilt swift-native's
+    # libFoundationNetworking (e.g. from amazonlinux2) is linked against a
+    # specific libcurl.so.4 and aborts loading an incompatible host libcurl
+    # (issue #42).
+    ld_path = recipe_sysroot_native_lib
+    if env.get('LD_LIBRARY_PATH'):
+        ld_path += ':' + env['LD_LIBRARY_PATH']
+    env['LD_LIBRARY_PATH'] = ld_path
+
     if ssh_auth_sock:
         env['SSH_AUTH_SOCK'] = ssh_auth_sock
     env['SYSROOT'] = recipe_sysroot
