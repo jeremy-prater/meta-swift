@@ -18,7 +18,7 @@ SRC_URI += "file://0002-build-with-64-bit-time_t-on-32-bit-platforms.patch;strip
 
 S = "${UNPACKDIR}/git"
 
-DEPENDS = "icu swift-stdlib swift-native swift-foundation-icu"
+DEPENDS = "icu swift-stdlib virtual/swift-native swift-foundation-icu"
 RDEPENDS:${PN} += "icu swift-stdlib swift-foundation-icu"
 
 inherit swift-cmake-base

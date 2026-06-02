@@ -31,7 +31,10 @@ jobs:
           source oe-init-build-env
           bitbake-layers add-layer ../meta-swift
           rm -f conf/local.conf
-          echo 'MACHINE = "qemuarm64"' > conf/local.conf
+          cat > conf/local.conf <<'EOF'
+          MACHINE = "qemuarm64"
+          PREFERRED_PROVIDER_virtual/swift-native = "swift-binary-native"
+          EOF
           bitbake swift-hello-world
           WORKDIR=$(bitbake -e swift-hello-world | grep '^WORKDIR=' | cut -d'"' -f2)
           qemu-arm64 -L $WORKDIR/recipe-sysroot $WORKDIR/build/release/hello-world
@@ -62,7 +65,10 @@ jobs:
           source oe-init-build-env
           bitbake-layers add-layer ../meta-swift
           rm -f conf/local.conf
-          echo 'MACHINE = "qemuarm"' > conf/local.conf
+          cat > conf/local.conf <<'EOF'
+          MACHINE = "qemuarm"
+          PREFERRED_PROVIDER_virtual/swift-native = "swift-binary-native"
+          EOF
           bitbake swift-hello-world
           WORKDIR=$(bitbake -e swift-hello-world | grep '^WORKDIR=' | cut -d'"' -f2)
           qemu-arm -L $WORKDIR/recipe-sysroot $WORKDIR/build/release/hello-world
@@ -93,7 +99,10 @@ jobs:
           source oe-init-build-env
           bitbake-layers add-layer ../meta-swift
           rm -f conf/local.conf
-          echo 'MACHINE = "qemux86-64"' > conf/local.conf
+          cat > conf/local.conf <<'EOF'
+          MACHINE = "qemux86-64"
+          PREFERRED_PROVIDER_virtual/swift-native = "swift-binary-native"
+          EOF
           bitbake swift-hello-world
           WORKDIR=$(bitbake -e swift-hello-world | grep '^WORKDIR=' | cut -d'"' -f2)
           qemu-x86_64 -L $WORKDIR/recipe-sysroot $WORKDIR/build/release/hello-world
