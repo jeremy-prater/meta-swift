@@ -1,0 +1,41 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: William Page <williamtpage@gmail.com>
+Date: Mon, 1 Jun 2026 00:00:00 +0000
+Subject: [PATCH 3/3] use local swift-syntax source for Foundation macros
+
+Allow offline/Yocto builds to supply a pre-fetched swift-syntax checkout
+instead of relying on FetchContent to clone from GitHub.
+
+Upstream-Status: Submitted
+---
+ Sources/FoundationMacros/CMakeLists.txt | 14 +++++++++-----
+ 1 file changed, 9 insertions(+), 5 deletions(-)
+
+diff --git a/Sources/FoundationMacros/CMakeLists.txt b/Sources/FoundationMacros/CMakeLists.txt
+index 1111111..2222222 100644
+--- a/Sources/FoundationMacros/CMakeLists.txt
++++ b/Sources/FoundationMacros/CMakeLists.txt
+@@ -37,13 +37,18 @@ endif()
+ # SwiftSyntax Dependency
+ find_package(SwiftSyntax QUIET)
+ if(NOT SwiftSyntax_FOUND)
+-  message(STATUS "SwiftSyntax_DIR not provided, checking out local copy of swift-syntax")
+     include(FetchContent)
+ 
+-    # If building at desk, check out and link against the SwiftSyntax repo's targets
+-    FetchContent_Declare(SwiftSyntax
+-        GIT_REPOSITORY https://github.com/swiftlang/swift-syntax.git
+-        GIT_TAG main)
++    if(_SwiftSyntax_SourceDIR)
++        message(STATUS "_SwiftSyntax_SourceDIR provided, using swift-syntax checkout at ${_SwiftSyntax_SourceDIR}")
++        FetchContent_Declare(SwiftSyntax
++            SOURCE_DIR ${_SwiftSyntax_SourceDIR})
++    else()
++        message(STATUS "SwiftSyntax_DIR not provided, checking out local copy of swift-syntax")
++        FetchContent_Declare(SwiftSyntax
++            GIT_REPOSITORY https://github.com/swiftlang/swift-syntax.git
++            GIT_TAG main)
++    endif()
+     FetchContent_MakeAvailable(SwiftSyntax)
+ else()
+   message(STATUS "SwiftSyntax_DIR provided, using swift-syntax from ${SwiftSyntax_DIR}")
