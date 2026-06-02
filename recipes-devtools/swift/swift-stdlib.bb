@@ -27,11 +27,11 @@ DEPENDS = "gcc-runtime python3-native icu ncurses swift-native libgcc gcc glibc 
 
 inherit swift-cmake-base
 
-TARGET_LDFLAGS:append = " -w -fuse-ld=lld -L${STAGING_DIR_TARGET}/usr/lib/${TARGET_SYS}/${SWIFT_GCC_VERSION}"
+TARGET_LDFLAGS:append = " -w -fuse-ld=lld -L${STAGING_DIR_TARGET}/${libdir}/${TARGET_SYS}/${SWIFT_GCC_VERSION}"
 
 SWIFT_CMAKE_TOOLCHAIN_FILE = "${WORKDIR}/linux-${SWIFT_TARGET_ARCH}-toolchain.cmake"
 
-SWIFT_C_FLAGS = "${TARGET_CC_ARCH} -w -fuse-ld=lld -target ${SWIFT_TARGET_NAME} --sysroot ${STAGING_DIR_TARGET} -B${STAGING_DIR_TARGET}/usr/lib/${TARGET_SYS}/${SWIFT_GCC_VERSION} -L${STAGING_DIR_TARGET}/usr/lib/${TARGET_SYS}/${SWIFT_GCC_VERSION} -I${STAGING_DIR_TARGET}/usr/include ${EXTRA_INCLUDE_FLAGS}"
+SWIFT_C_FLAGS = "${TARGET_CC_ARCH} -w -fuse-ld=lld -target ${SWIFT_TARGET_NAME} --sysroot ${STAGING_DIR_TARGET} -B${STAGING_DIR_TARGET}/${libdir}/${TARGET_SYS}/${SWIFT_GCC_VERSION} -L${STAGING_DIR_TARGET}/${libdir}/${TARGET_SYS}/${SWIFT_GCC_VERSION} -I${STAGING_DIR_TARGET}/usr/include ${EXTRA_INCLUDE_FLAGS}"
 SWIFT_C_LINK_FLAGS = "${TARGET_LD_ARCH} -target ${SWIFT_TARGET_NAME} --sysroot ${STAGING_DIR_TARGET} ${EXTRA_INCLUDE_FLAGS}"
 
 SWIFT_CXX_FLAGS = "${SWIFT_C_FLAGS}"
@@ -41,8 +41,8 @@ SWIFT_CXX_LINK_FLAGS = "${SWIFT_C_LINK_FLAGS}"
 # one place, but Yocto splits them across usr/lib/<sys> and usr/lib/gcc/<sys>.
 # Copy the missing crt entries in additively (symlinks aren't followed here).
 do_fix_gcc_install_dir() {
-    src=${STAGING_DIR_TARGET}/usr/lib/${TARGET_SYS}/${SWIFT_GCC_VERSION}
-    dst=${STAGING_DIR_TARGET}/usr/lib/gcc/${TARGET_SYS}/${SWIFT_GCC_VERSION}
+    src=${STAGING_DIR_TARGET}/${libdir}/${TARGET_SYS}/${SWIFT_GCC_VERSION}
+    dst=${STAGING_DIR_TARGET}/${libdir}/gcc/${TARGET_SYS}/${SWIFT_GCC_VERSION}
     [ -d "${src}" ] || return 0
     mkdir -p "${dst}"
     for f in "${src}"/*; do
@@ -71,7 +71,7 @@ do_configure() {
     # Configure the llvm project to get the cmake files generated, so we can point
     # LLVM_DIR to this folder
     cmake -S ${LLVM_SRCDIR}/llvm -B ${LLVM_BUILDDIR} -G Ninja \
-       -DCMAKE_INSTALL_PREFIX=${STAGING_DIR_NATIVE}/usr/lib \
+       -DCMAKE_INSTALL_PREFIX=${STAGING_DIR_NATIVE}/${libdir_native} \
        -DCMAKE_C_COMPILER=${SWIFT_NATIVE_PATH}/clang \
        -DCMAKE_CXX_COMPILER=${SWIFT_NATIVE_PATH}/clang++ \
        -DLLVM_TARGETS_TO_BUILD="X86;ARM;AArch64" \
@@ -143,8 +143,8 @@ set(SWIFT_SDKS LINUX)
 set(SWIFT_SDK_LINUX_ARCH_${SWIFT_TARGET_ARCH}_PATH ${STAGING_DIR_TARGET})
 set(SWIFT_SDK_LINUX_ARCH_${SWIFT_TARGET_ARCH}_LIBC_INCLUDE_DIRECTORY ${STAGING_DIR_TARGET}/usr/include)
 set(SWIFT_SDK_LINUX_ARCH_${SWIFT_TARGET_ARCH}_LIBC_ARCHITECTURE_INCLUDE_DIRECTORY ${STAGING_DIR_TARGET}/usr/include)
-set(SWIFT_LINUX_${SWIFT_TARGET_ARCH}_ICU_I18N ${STAGING_DIR_TARGET}/usr/lib/libicui18n.so)
-set(SWIFT_LINUX_${SWIFT_TARGET_ARCH}_ICU_UC ${STAGING_DIR_TARGET}/usr/lib/libicuuc.so)
+set(SWIFT_LINUX_${SWIFT_TARGET_ARCH}_ICU_I18N ${STAGING_DIR_TARGET}/${libdir}/libicui18n.so)
+set(SWIFT_LINUX_${SWIFT_TARGET_ARCH}_ICU_UC ${STAGING_DIR_TARGET}/${libdir}/libicuuc.so)
 set(SWIFT_PATH_TO_LIBDISPATCH_SOURCE ${UNPACKDIR}/libdispatch)
 set(SWIFT_ENABLE_EXPERIMENTAL_CONCURRENCY ON)
 set(SWIFT_ENABLE_EXPERIMENTAL_CXX_INTEROP ON)
@@ -157,15 +157,15 @@ set(SWIFT_ENABLE_SYNCHRONIZATION ON)
 set(SWIFT_PATH_TO_STRING_PROCESSING_SOURCE ${UNPACKDIR}/swift-experimental-string-processing)
 set(SWIFT_SYNTAX_SOURCE_DIR ${UNPACKDIR}/swift-syntax)
 set(SWIFTSYNTAX_SOURCE_DIR ${UNPACKDIR}/swift-syntax)
-set(SWIFT_STANDARD_LIBRARY_SWIFT_FLAGS -Xcc --gcc-install-dir=${STAGING_DIR_TARGET}/usr/lib/gcc/${TARGET_SYS}/${SWIFT_GCC_VERSION} -I${STAGING_DIR_TARGET}/usr/include/c++/${SWIFT_GCC_VERSION} -I${STAGING_DIR_TARGET}/usr/include/c++/${SWIFT_GCC_VERSION}/${TARGET_SYS} -no-verify-emitted-module-interface ${SWIFT_EXTRA_SWIFTC_CC_FLAGS})
+set(SWIFT_STANDARD_LIBRARY_SWIFT_FLAGS -Xcc --gcc-install-dir=${STAGING_DIR_TARGET}/${libdir}/gcc/${TARGET_SYS}/${SWIFT_GCC_VERSION} -I${STAGING_DIR_TARGET}/usr/include/c++/${SWIFT_GCC_VERSION} -I${STAGING_DIR_TARGET}/usr/include/c++/${SWIFT_GCC_VERSION}/${TARGET_SYS} -no-verify-emitted-module-interface ${SWIFT_EXTRA_SWIFTC_CC_FLAGS})
 set(SWIFT_SDK_LINUX_CXX_OVERLAY_SWIFT_COMPILE_FLAGS "")
 
-set(ICU_I18N_LIBRARIES ${STAGING_DIR_TARGET}/usr/lib/libicui18n.so)
+set(ICU_I18N_LIBRARIES ${STAGING_DIR_TARGET}/${libdir}/libicui18n.so)
 set(ICU_I18N_INCLUDE_DIRS ${STAGING_DIR_TARGET}/usr/include)
-set(ICU_UC_LIBRARIES ${STAGING_DIR_TARGET}/usr/lib/libicuuc.so)
+set(ICU_UC_LIBRARIES ${STAGING_DIR_TARGET}/${libdir}/libicuuc.so)
 set(ICU_UC_INCLUDE_DIRS ${STAGING_DIR_TARGET}/usr/include)
-set(LibRT_LIBRARIES ${STAGING_DIR_TARGET}/usr/lib/librt.a)
-set(ZLIB_LIBRARY ${STAGING_DIR_TARGET}/usr/lib/libz.so)
+set(LibRT_LIBRARIES ${STAGING_DIR_TARGET}/${libdir}/librt.a)
+set(ZLIB_LIBRARY ${STAGING_DIR_TARGET}/${libdir}/libz.so)
 EOF
 
     # pthreads does not work with armv7, so use c11 threading package in lieu

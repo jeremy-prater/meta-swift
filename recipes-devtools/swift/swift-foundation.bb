@@ -23,9 +23,9 @@ RDEPENDS:${PN} += "swift-foundation-essentials swift-stdlib libdispatch"
 
 inherit swift-cmake-base
 
-TARGET_LDFLAGS += "-L${STAGING_DIR_TARGET}${libdir}/swift/linux"
+TARGET_LDFLAGS += "-L${STAGING_DIR_TARGET}/${libdir}/swift/linux"
 
-OECMAKE_C_FLAGS += "-I${STAGING_DIR_TARGET}${libdir}/swift"
+OECMAKE_C_FLAGS += "-I${STAGING_DIR_TARGET}/${libdir}/swift"
 
 EXTRA_OECMAKE += "-DENABLE_SWIFT=YES"
 EXTRA_OECMAKE += "-DCMAKE_VERBOSE_MAKEFILE=ON"
@@ -37,8 +37,8 @@ EXTRA_OECMAKE += "-DSwiftFoundation_MODULE_TRIPLE=${SWIFT_TARGET_NAME}"
 
 EXTRA_OECMAKE += "-DCMAKE_FIND_ROOT_PATH:PATH=${CROSS_COMPILE_DEPS_PATH}"
 
-EXTRA_OECMAKE += "-Ddispatch_DIR=${STAGING_DIR_TARGET}${libdir}/cmake/dispatch"
-EXTRA_OECMAKE += "-DSwiftSyntax_DIR=${STAGING_DIR_TARGET}${libdir}/cmake/dispatch"
+EXTRA_OECMAKE += "-Ddispatch_DIR=${STAGING_DIR_TARGET}/${libdir}/cmake/dispatch"
+EXTRA_OECMAKE += "-DSwiftSyntax_DIR=${STAGING_DIR_TARGET}/${libdir}/cmake/dispatch"
 EXTRA_OECMAKE += "-DENABLE_TESTING=0"
 EXTRA_OECMAKE += "-DBUILD_SHARED_LIBS=YES"
 EXTRA_OECMAKE += "-DDISPATCH_INCLUDE_PATH=${STAGING_DIR_TARGET}/${includedir}"
