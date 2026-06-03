@@ -1,0 +1,4 @@
+CLANG_NATIVE_DIR = "${STAGING_BINDIR_NATIVE}/clang-native"
+EXTRA_OECMAKE:append:class-native = " -DCMAKE_INSTALL_PREFIX=${CLANG_NATIVE_DIR}"
+SYSROOT_DIRS:append:class-native = " ${CLANG_NATIVE_DIR}"
+

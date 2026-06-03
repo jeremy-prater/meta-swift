@@ -2,10 +2,11 @@ SUMMARY = "Swift native toolchain for Linux"
 HOMEPAGE = "https://swift.org/install/"
 
 LICENSE = "Apache-2.0"
-LIC_FILES_CHKSUM = "file://${S}/usr/share/swift/LICENSE.txt;md5=f6c482a0548ea60d6c2e015776534035"
+LIC_FILES_CHKSUM = "file://LICENSE.txt;md5=f6c482a0548ea60d6c2e015776534035"
+
+PROVIDES += "virtual/swift-native"
 
 require swift-version.inc
-PV = "${SWIFT_VERSION}"
 
 def swift_native_arch_suffix(d):
     host_arch = d.getVar('HOST_ARCH')
@@ -17,30 +18,124 @@ def swift_native_arch_suffix(d):
 def swift_host_arch(d):
     return swift_native_arch_suffix(d).lstrip('-')
 
-def swift_native_arch_checksum(d):
-    sha256 = {
-      "x86_64": "648daccc9062045cb42431f6c7d620858b729abccb6bb9075a6b990e6259e897",
-      "aarch64": "8b85ce9e2a13802654e2a097d8720f0726d0900adc3579af1649190cc6cd49be"
-    }
-
-    host_arch = d.getVar('HOST_ARCH')
-    return sha256[host_arch]
-
 SWIFT_ARCH_SUFFIX = "${@swift_native_arch_suffix(d)}"
 SWIFT_HOST_ARCH = "${@swift_host_arch(d)}"
 
-SWIFT_LINUX_DISTRO = "amazonlinux2"
+SWIFT_USE_CHECKOUT_CONFIG ?= "0"
 
-SRC_DIR = "${SWIFT_TAG}-${SWIFT_LINUX_DISTRO}${SWIFT_ARCH_SUFFIX}"
-SRC_URI = "https://download.swift.org/swift-${SWIFT_VERSION}-release/${SWIFT_LINUX_DISTRO}${SWIFT_ARCH_SUFFIX}/${SWIFT_TAG}/${SWIFT_TAG}-${SWIFT_LINUX_DISTRO}${SWIFT_ARCH_SUFFIX}.tar.gz"
-SRC_URI[sha256sum] = "${@swift_native_arch_checksum(d)}"
+SRC_DIR = "swift-project"
+SRC_URI = "git://github.com/swiftlang/swift.git;tag=${SWIFT_TAG};nobranch=1;protocol=https;destsuffix=git/swift-project/swift"
+SRC_URI += "${@bb.utils.contains('SWIFT_USE_CHECKOUT_CONFIG', '1', 'file://checkout-config.json', '', d)}"
 
-DEPENDS = "curl-native"
-RDEPENDS:${PN} = "ncurses-native"
+DEPENDS += "\
+    cmake-native \
+    ninja-native \
+    python3-native \
+    libxml2-native \
+    zlib-native \
+    curl-native \
+    icu-native \
+    ncurses-native \
+    clang-native \
+    sqlite3-native \
+"
 
-S = "${WORKDIR}/${SRC_DIR}"
+S = "${WORKDIR}/git/swift-project/swift"
+B = "${WORKDIR}/build"
 
 inherit native
+
+python __anonymous() {
+    import os
+
+    use_checkout_config = d.getVar("SWIFT_USE_CHECKOUT_CONFIG") == "1"
+    swift_version = d.getVar("SWIFT_VERSION")
+
+    if use_checkout_config:
+        d.setVar("PV", "repro")
+    else:
+        d.setVar("PV", swift_version)
+}
+
+do_swift_checkout[network] = "1"
+do_swift_checkout() {
+    cd ${S}
+    git fetch
+
+    if [ "${SWIFT_USE_CHECKOUT_CONFIG}" = "1" ]; then
+        CHECKOUT_CONFIG="${WORKDIR}/checkout-config.json"
+        ./utils/update-checkout --clone --scheme repro --config "${CHECKOUT_CONFIG}" || true
+    else
+        ./utils/update-checkout --clone --scheme "release/${SWIFT_VERSION}"
+    fi
+}
+
+addtask swift_checkout after do_unpack before do_patch
+
+BUILD_LDFLAGS:remove = "-Wl,-O1"
+BUILD_LDFLAGS:remove = "-Wl,--hash-style=gnu"
+BUILD_LDFLAGS:remove = "-Wl,--as-needed"
+BUILD_LDFLAGS:remove = "-Wl,--enable-new-dtags"
+BUILD_LDFLAGS:remove = "-Wl,-rpath-link,${STAGING_LIBDIR_NATIVE}"
+BUILD_LDFLAGS:remove = "-Wl,-rpath-link,${STAGING_DIR_NATIVE}/lib"
+BUILD_LDFLAGS:remove = "-Wl,-rpath,${STAGING_LIBDIR_NATIVE}"
+BUILD_LDFLAGS:remove = "-Wl,-rpath,${STAGING_DIR_NATIVE}/lib"
+
+EXTRA_OECMAKE:append = " -DSWIFT_USE_LINKER=lld -DLLVM_USE_LINKER=lld"
+
+# Add this to ensure BitBake knows we need the lld tool available in the environment
+HOSTTOOLS_NONFATAL += "ld.lld"
+
+
+do_compile() {
+
+    export CPATH="${STAGING_INCDIR_NATIVE}:${CPATH}"
+    SYSROOT_FLAGS="-I${STAGING_INCDIR_NATIVE} -L${STAGING_LIBDIR_NATIVE}"
+
+    export LD_LIBRARY_PATH="${STAGING_BINDIR_NATIVE}/clang-native/lib:${LD_LIBRARY_PATH}"
+
+    CLANG_LLD_DIR=$(find ${TMPDIR}/work -type d -path "*/clang-native/*/build/bin" | head -n 1)
+
+    echo "CLANG_LLD_DIR=$CLANG_LLD_DIR"
+
+    find "$CLANG_LLD_DIR" -name "ld.lld"
+
+    export LD="${CLANG_LLD_DIR}/ld.lld"
+
+    export PATH="${STAGING_BINDIR_NATIVE}/clang-native/bin:$PATH"
+    export CC="${STAGING_BINDIR_NATIVE}/clang-native/bin/clang"
+    export CXX="${STAGING_BINDIR_NATIVE}/clang-native/bin/clang++"
+
+# Path Interception: Hijack any call to 'ld'
+    mkdir -p ${B}/linker-shim
+    ln -sf ${CLANG_LLD_DIR}/ld.lld ${B}/linker-shim/ld
+ln -sf ${CLANG_LLD_DIR}/ld.lld ${B}/linker-shim/ld.gold
+    export PATH="${B}/linker-shim:$PATH"
+
+    # Define the Force-Flags
+    EXTRA_SWIFT_ARGS="-Xlinker -fuse-ld=lld -Xcc -fPIC -Xcc -I${STAGING_INCDIR_NATIVE}"
+
+    # Match the CMake logic from meta-swift but for native
+    EXTRA_CM_ARGS="-DCMAKE_SKIP_RPATH=TRUE \
+                   -DCMAKE_LINKER=${CLANG_LLD_DIR}/ld.lld \
+                   -DSWIFT_USE_LINKER=lld \
+                   -DLLVM_USE_LINKER=lld \
+                   -DCMAKE_C_FLAGS='-fPIC ${SYSROOT_FLAGS}' \
+                   -DCMAKE_CXX_FLAGS='-fPIC ${SYSROOT_FLAGS}'"
+
+    cd ${S}
+    ./utils/build-script --preset bootstrap_stage0 \
+        build_subdir=bootstrap_stage0 \
+        install_destdir=${B}/stage0 \
+        --extra-cmake-options="${EXTRA_CM_ARGS}" \
+        --extra-swift-args="${EXTRA_SWIFT_ARGS}" && \
+    PATH="${B}/stage0/usr/bin:$PATH" ./utils/build-script \
+        --preset bootstrap_stage2 \
+        build_subdir=bootstrap_stage2 \
+        install_destdir=${B}/stage2 \
+        --extra-cmake-options="${EXTRA_CM_ARGS}" \
+        --extra-swift-args="${EXTRA_SWIFT_ARGS}"
+}
 
 ########################################################################
 # This informs bitbake that we want to install a non-default directory #
@@ -70,18 +165,19 @@ PACKAGES = "\
     ${PN}-xctest-dev \
 "
 
-do_install:append () {
+do_install() {
     install -d ${D}${bindir}
-    cp -r ${S}/usr/bin/* ${D}${bindir}
+    cp -r ${B}/stage2/usr/bin/* ${D}${bindir}
 
     install -d ${D}${libdir}
-    cp -rd ${S}/usr/lib/* ${D}${libdir}
+    cp -rd ${B}/stage2/usr/lib/* ${D}${libdir}
+    cp ${S}/../build/bootstrap_stage2/llvm-linux-x86_64/lib/libIndexStore.so ${D}${libdir}
 
     install -d ${D}${includedir}
-    cp -rd ${S}/usr/include/* ${D}${includedir}
+    cp -rd ${B}/stage2/usr/include/* ${D}${includedir}
 
     install -d ${D}${datadir}
-    cp -rd ${S}/usr/share/* ${D}${datadir}
+    cp -rd ${B}/stage2/usr/share/* ${D}${datadir}
 }
 
 FILES:${PN} = "\

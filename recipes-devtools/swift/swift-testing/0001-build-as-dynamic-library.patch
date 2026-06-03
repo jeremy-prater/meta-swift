@@ -1,0 +1,85 @@
+From 79312a8cba76dc923d755543f73c65f659effdc5 Mon Sep 17 00:00:00 2001
+From: Luke Howard <lukeh@padl.com>
+Date: Wed, 25 Mar 2026 13:52:46 +1100
+Subject: [PATCH] build as dynamic library
+
+Upstream-Status: Inappropriate [oe specific]
+---
+ Package.swift | 30 +++++++++++-------------------
+ 1 file changed, 11 insertions(+), 19 deletions(-)
+
+diff --git a/Package.swift b/Package.swift
+index 246a3561..fa3d4e01 100644
+--- a/Package.swift
++++ b/Package.swift
+@@ -79,6 +79,7 @@ let package = Package(
+     result.append(
+       .library(
+         name: "Testing",
++        type: .dynamic,
+         targets: ["Testing"]
+       )
+     )
+@@ -105,16 +106,13 @@ let package = Package(
+       )
+     )
+ 
+-#if DEBUG
+-    // Build _TestingInterop for debugging/testing purposes only. It is
+-    // important that clients do not link to this product/target.
+     result += [
+       .library(
+-        name: "_TestingInterop_DO_NOT_USE",
+-        targets: ["_TestingInterop_DO_NOT_USE"]
++        name: "_TestingInterop",
++        type: .dynamic,
++        targets: ["_TestingInterop"]
+       )
+     ]
+-#endif
+ 
+     return result
+   }(),
+@@ -224,14 +222,12 @@ let package = Package(
+       swiftSettings: .packageSettings + .enableLibraryEvolution() + .moduleABIName("_TestDiscovery")
+     ),
+     .target(
+-      // Build _TestingInterop for debugging/testing purposes only. It is
+-      // important that clients do not link to this product/target.
+-      name: "_TestingInterop_DO_NOT_USE",
++      name: "_TestingInterop",
+       dependencies: ["_TestingInternals",],
+       path: "Sources/_TestingInterop",
+       exclude: ["CMakeLists.txt"],
+       cxxSettings: .packageSettings,
+-      swiftSettings: .packageSettings + .moduleABIName("_TestingInterop")
++      swiftSettings: .packageSettings
+     ),
+ 
+     // Cross-import overlays (not supported by Swift Package Manager)
+@@ -446,13 +442,7 @@ extension Array where Element == PackageDescription.SwiftSetting {
+   ///
+   /// - Returns: A Swift setting that enables Library Evolution.
+   static func enableLibraryEvolution(_ condition: BuildSettingCondition? = nil) -> Self {
+-    var result = [PackageDescription.SwiftSetting]()
+-
+-    if buildingForDevelopment {
+-      result.append(.unsafeFlags(["-enable-library-evolution"], condition))
+-    }
+-
+-    return result
++    [.unsafeFlags(["-enable-library-evolution", "-emit-module-interface"], condition)]
+   }
+ 
+   /// Create a Swift setting which specifies the module ABI name to use when
+@@ -479,7 +469,7 @@ extension Array where Element == PackageDescription.SwiftSetting {
+     // Workaround: Disable module ABI name customization, since it has regressed
+     // building DocC documentation (see rdar://171555540).
+ //    [.unsafeFlags(["-module-abi-name", "\(targetName)_package"])]
+-    []
++    [.unsafeFlags(["-emit-module-interface-path", "\(targetName).swiftinterface"])]
+   }
+ }
+ 
+-- 
+2.43.0
