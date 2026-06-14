@@ -19,8 +19,8 @@ def swift_host_arch(d):
 
 def swift_native_arch_checksum(d):
     sha256 = {
-      "x86_64": "648daccc9062045cb42431f6c7d620858b729abccb6bb9075a6b990e6259e897",
-      "aarch64": "8b85ce9e2a13802654e2a097d8720f0726d0900adc3579af1649190cc6cd49be"
+      "x86_64": "a900331cf0f07f3bfc74f17d6b9d6a84fd02f8e2d66387061158f4b44c21f148",
+      "aarch64": "bc2546727d8f01cae2cf0d419f2ea4209898e55f419bd630ed38c4031ca0801c"
     }
 
     host_arch = d.getVar('HOST_ARCH')
@@ -32,7 +32,7 @@ SWIFT_HOST_ARCH = "${@swift_host_arch(d)}"
 SWIFT_LINUX_DISTRO = "amazonlinux2"
 
 SRC_DIR = "${SWIFT_TAG}-${SWIFT_LINUX_DISTRO}${SWIFT_ARCH_SUFFIX}"
-SRC_URI = "https://download.swift.org/swift-${SWIFT_VERSION}-release/${SWIFT_LINUX_DISTRO}${SWIFT_ARCH_SUFFIX}/${SWIFT_TAG}/${SWIFT_TAG}-${SWIFT_LINUX_DISTRO}${SWIFT_ARCH_SUFFIX}.tar.gz"
+SRC_URI = "https://download.swift.org/${SWIFT_DOWNLOAD_DIR}/${SWIFT_LINUX_DISTRO}${SWIFT_ARCH_SUFFIX}/${SWIFT_TAG}/${SWIFT_TAG}-${SWIFT_LINUX_DISTRO}${SWIFT_ARCH_SUFFIX}.tar.gz"
 SRC_URI[sha256sum] = "${@swift_native_arch_checksum(d)}"
 
 DEPENDS = "curl-native"
