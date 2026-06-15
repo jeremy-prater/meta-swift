@@ -82,10 +82,18 @@ SWIFT_STDLIB_CXX_FLAGS = "${@bb.utils.contains('SWIFT_CXX_RUNTIME', 'llvm', \
     '-Xcc -stdlib=libc++ -Xcc -I${STAGING_DIR_TARGET}/usr/include/c++/v1', \
     '-I${STAGING_DIR_TARGET}/usr/include/c++/${SWIFT_GCC_VERSION} -I${STAGING_DIR_TARGET}/usr/include/c++/${SWIFT_GCC_VERSION}/${TARGET_SYS}', d)}"
 
+# clang's libstdc++ heuristic wants crt*.o and the gcc-internal include dirs in
+# one place, but Yocto splits them across usr/lib/<sys> and usr/lib/gcc/<sys>.
+# Copy the missing crt entries in additively (symlinks aren't followed here).
 do_fix_gcc_install_dir() {
-    # symbolic links do not work, will not be found by Swift clang driver
-    # this is necessary to make the libstdc++ location heuristic work, necessary for C++ interop
-    (cd ${STAGING_DIR_TARGET}/usr/lib && rm -rf gcc && mkdir -p gcc && cp -rp ${TARGET_ARCH}${TARGET_VENDOR}-${TARGET_OS} gcc)
+    src=${STAGING_DIR_TARGET}/usr/lib/${TARGET_SYS}/${SWIFT_GCC_VERSION}
+    dst=${STAGING_DIR_TARGET}/usr/lib/gcc/${TARGET_SYS}/${SWIFT_GCC_VERSION}
+    [ -d "${src}" ] || return 0
+    mkdir -p "${dst}"
+    for f in "${src}"/*; do
+        bn=$(basename "${f}")
+        [ -e "${dst}/${bn}" ] || cp -rp "${f}" "${dst}/${bn}"
+    done
 }
 
 addtask fix_gcc_install_dir before do_configure after do_prepare_recipe_sysroot
