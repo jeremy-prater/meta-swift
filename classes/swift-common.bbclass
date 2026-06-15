@@ -28,7 +28,9 @@ SWIFT_CLANG_VERSION = "21"
 # switch that also rebuilds compiler-rt/libunwind/libgcc).
 SWIFT_CXX_RUNTIME ?= "gnu"
 
-SWIFT_TARGET_NAME = "${@oe.utils.conditional('TARGET_ARCH', 'arm', 'armv7-unknown-linux-gnueabihf', '${TARGET_ARCH}-unknown-linux-gnu', d)}"
+# Use Yocto's TARGET_SYS instead of the upstream Swift triple, so swiftc -target,
+# .swiftinterface module names and clang's per-triple header lookup all agree.
+SWIFT_TARGET_NAME = "${TARGET_SYS}"
 SWIFT_TARGET_ARCH = "${@oe.utils.conditional('TARGET_ARCH', 'arm', 'armv7', '${TARGET_ARCH}', d)}"
 TARGET_CPU_NAME = "${@oe.utils.conditional('TARGET_ARCH', 'arm', 'armv7-a', '${TARGET_ARCH}', d)}"
 
