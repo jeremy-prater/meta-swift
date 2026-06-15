@@ -19,6 +19,7 @@ SRC_URI = "\
     git://github.com/swiftlang/swift-syntax.git;protocol=https;name=syntax;tag=${SWIFT_TAG};nobranch=1;destsuffix=swift-syntax; \
     file://0003-add-fix-for-metadataaccessor-abi-mismatch.patch;striplevel=1; \
     file://0004-AddSwiftStdlib-skip-empty-sysroot-injection.patch;striplevel=1; \
+    file://0005-allow-overriding-SWIFT_SDK_LINUX_ARCH_TRIPLE.patch;striplevel=1; \
     "
 
 S = "${UNPACKDIR}/swift"
@@ -178,6 +179,7 @@ set(SWIFT_RUNTIME_OS_VERSIONING OFF)
 set(SWIFT_HOST_VARIANT_ARCH ${SWIFT_TARGET_ARCH})
 set(SWIFT_SDKS LINUX)
 set(SWIFT_SDK_LINUX_ARCH_${SWIFT_TARGET_ARCH}_PATH ${STAGING_DIR_TARGET})
+set(SWIFT_SDK_LINUX_ARCH_${SWIFT_TARGET_ARCH}_TRIPLE ${SWIFT_TARGET_NAME})
 set(SWIFT_SDK_LINUX_ARCH_${SWIFT_TARGET_ARCH}_LIBC_INCLUDE_DIRECTORY ${STAGING_DIR_TARGET}/usr/include)
 set(SWIFT_SDK_LINUX_ARCH_${SWIFT_TARGET_ARCH}_LIBC_ARCHITECTURE_INCLUDE_DIRECTORY ${STAGING_DIR_TARGET}/usr/include)
 set(SWIFT_LINUX_${SWIFT_TARGET_ARCH}_ICU_I18N ${STAGING_DIR_TARGET}/usr/lib/libicui18n.so)
