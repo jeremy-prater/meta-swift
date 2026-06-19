@@ -22,6 +22,13 @@ BUILD_DIR = "${B}/${BUILD_MODE}"
 # Additional parameters to pass to SPM
 EXTRA_OESWIFT ?= ""
 
+# We prepend the native sysroot lib dir to LD_LIBRARY_PATH so swiftpm picks up
+# the native libcurl (issue #42), but that leaks into the host ssh binary that
+# git uses for ssh:// dependencies, which then loads the native libcrypto and
+# aborts with an OpenSSL ABI mismatch (issue #71). Run that ssh child with a
+# clean LD_LIBRARY_PATH so it uses the host's own libcrypto.
+SWIFT_GIT_SSH_COMMAND ?= "env -u LD_LIBRARY_PATH ssh"
+
 do_fix_gcc_install_dir() {
     # symbolic links do not work, will not be found by Swift clang driver
     # this is necessary to make the libstdc++ location heuristic work, necessary for C++ interop
@@ -77,6 +84,9 @@ python do_swift_package_resolve() {
     if env.get('LD_LIBRARY_PATH'):
         ld_path += ':' + env['LD_LIBRARY_PATH']
     env['LD_LIBRARY_PATH'] = ld_path
+
+    # Don't leak the native libcrypto above into git's ssh transport (issue #71).
+    env.setdefault('GIT_SSH_COMMAND', d.getVar('SWIFT_GIT_SSH_COMMAND'))
 
     ssh_auth_sock = d.getVar('BB_ORIGENV').get('SSH_AUTH_SOCK')
     if ssh_auth_sock:
@@ -223,6 +233,9 @@ python swift_do_compile() {
     if env.get('LD_LIBRARY_PATH'):
         ld_path += ':' + env['LD_LIBRARY_PATH']
     env['LD_LIBRARY_PATH'] = ld_path
+
+    # Don't leak the native libcrypto above into git's ssh transport (issue #71).
+    env.setdefault('GIT_SSH_COMMAND', d.getVar('SWIFT_GIT_SSH_COMMAND'))
 
     if ssh_auth_sock:
         env['SSH_AUTH_SOCK'] = ssh_auth_sock
