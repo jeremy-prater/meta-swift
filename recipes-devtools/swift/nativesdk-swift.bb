@@ -6,6 +6,7 @@ LIC_FILES_CHKSUM = "file://${S}/usr/share/swift/LICENSE.txt;md5=f6c482a0548ea60d
 # Pin the bundle version to whatever swift-native (meta-swift) is using so
 # the SDK's host swiftc/clang match the target stdlib's build provenance.
 require swift-version.inc
+require swift-bundle-checksums.inc
 PV = "${SWIFT_VERSION}"
 
 # swift.org publishes per-host-arch tarballs (x86_64 unsuffixed, aarch64
@@ -13,16 +14,6 @@ PV = "${SWIFT_VERSION}"
 def swift_sdk_arch_suffix(d):
     sdk_arch = d.getVar('SDK_ARCH')
     return '' if sdk_arch == 'x86_64' else '-{}'.format(sdk_arch)
-
-def swift_sdk_arch_checksum(d):
-    sha256 = {
-        "x86_64":  "648daccc9062045cb42431f6c7d620858b729abccb6bb9075a6b990e6259e897",
-        "aarch64": "8b85ce9e2a13802654e2a097d8720f0726d0900adc3579af1649190cc6cd49be",
-    }
-    sdk_arch = d.getVar('SDK_ARCH')
-    if sdk_arch not in sha256:
-        bb.fatal('Unsupported SDK_ARCH for nativesdk-swift: {}'.format(sdk_arch))
-    return sha256[sdk_arch]
 
 # The bundle's ELF interpreter is the host loader (arch-specific); pick it by
 # SDK_ARCH so the .interp padding below targets the right one.
@@ -40,14 +31,14 @@ SWIFT_LINUX_DISTRO = "amazonlinux2"
 
 SRC_DIR = "${SWIFT_TAG}-${SWIFT_LINUX_DISTRO}${SWIFT_ARCH_SUFFIX}"
 SRC_URI = "https://download.swift.org/swift-${SWIFT_VERSION}-release/${SWIFT_LINUX_DISTRO}${SWIFT_ARCH_SUFFIX}/${SWIFT_TAG}/${SWIFT_TAG}-${SWIFT_LINUX_DISTRO}${SWIFT_ARCH_SUFFIX}.tar.gz"
-SRC_URI[sha256sum] = "${@swift_sdk_arch_checksum(d)}"
+SRC_URI[sha256sum] = "${@swift_bundle_checksum(d, d.getVar('SDK_ARCH'))}"
 
 S = "${UNPACKDIR}/${SRC_DIR}"
 
 DEPENDS = "patchelf-native"
 
-# swift.org only publishes x86_64 and aarch64 host bundles; the checksum/
-# interpreter maps above only know those two. Restrict the recipe accordingly.
+# swift.org only publishes x86_64 and aarch64 host bundles; the shared checksum
+# map and the interpreter map above only know those two. Restrict accordingly.
 COMPATIBLE_HOST = "(x86_64|aarch64).*-linux*"
 
 inherit nativesdk
