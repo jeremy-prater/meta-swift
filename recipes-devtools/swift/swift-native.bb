@@ -5,6 +5,7 @@ LICENSE = "Apache-2.0"
 LIC_FILES_CHKSUM = "file://${S}/usr/share/swift/LICENSE.txt;md5=f6c482a0548ea60d6c2e015776534035"
 
 require swift-version.inc
+require swift-bundle-checksums.inc
 PV = "${SWIFT_VERSION}"
 
 def swift_native_arch_suffix(d):
@@ -17,15 +18,6 @@ def swift_native_arch_suffix(d):
 def swift_host_arch(d):
     return swift_native_arch_suffix(d).lstrip('-')
 
-def swift_native_arch_checksum(d):
-    sha256 = {
-      "x86_64": "648daccc9062045cb42431f6c7d620858b729abccb6bb9075a6b990e6259e897",
-      "aarch64": "8b85ce9e2a13802654e2a097d8720f0726d0900adc3579af1649190cc6cd49be"
-    }
-
-    host_arch = d.getVar('HOST_ARCH')
-    return sha256[host_arch]
-
 SWIFT_ARCH_SUFFIX = "${@swift_native_arch_suffix(d)}"
 SWIFT_HOST_ARCH = "${@swift_host_arch(d)}"
 
@@ -33,7 +25,7 @@ SWIFT_LINUX_DISTRO = "amazonlinux2"
 
 SRC_DIR = "${SWIFT_TAG}-${SWIFT_LINUX_DISTRO}${SWIFT_ARCH_SUFFIX}"
 SRC_URI = "https://download.swift.org/swift-${SWIFT_VERSION}-release/${SWIFT_LINUX_DISTRO}${SWIFT_ARCH_SUFFIX}/${SWIFT_TAG}/${SWIFT_TAG}-${SWIFT_LINUX_DISTRO}${SWIFT_ARCH_SUFFIX}.tar.gz"
-SRC_URI[sha256sum] = "${@swift_native_arch_checksum(d)}"
+SRC_URI[sha256sum] = "${@swift_bundle_checksum(d, d.getVar('HOST_ARCH'))}"
 
 DEPENDS = "curl-native"
 RDEPENDS:${PN} = "ncurses-native"
