@@ -32,7 +32,7 @@ SWIFT_GIT_SSH_COMMAND ?= "env -u LD_LIBRARY_PATH ssh"
 do_fix_gcc_install_dir() {
     # symbolic links do not work, will not be found by Swift clang driver
     # this is necessary to make the libstdc++ location heuristic work, necessary for C++ interop
-    (cd ${STAGING_DIR_TARGET}/usr/lib && rm -rf gcc && mkdir -p gcc && cp -rp ${TARGET_ARCH}${TARGET_VENDOR}-${TARGET_OS} gcc)
+    (cd ${STAGING_DIR_TARGET}/${libdir} && rm -rf gcc && mkdir -p gcc && cp -rp ${TARGET_ARCH}${TARGET_VENDOR}-${TARGET_OS} gcc)
 }
 
 addtask fix_gcc_install_dir before do_configure after do_prepare_recipe_sysroot
@@ -417,5 +417,13 @@ do_package_update() {
 }
 do_package_update[network] = "1"
 addtask do_package_update after do_configure
+
+python do_compile:prepend() {
+    bb.build.exec_func('swift_multilib_prepare_sysroot', d)
+}
+
+do_install:append() {
+    swift_multilib_install_fixup
+}
 
 EXPORT_FUNCTIONS do_configure do_compile do_package_update

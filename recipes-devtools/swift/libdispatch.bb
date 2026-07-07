@@ -16,7 +16,7 @@ LIBDISPATCH_BUILDDIR = "${UNPACKDIR}/build"
 
 inherit swift-cmake-base
 
-TARGET_LDFLAGS += "-L${STAGING_DIR_TARGET}/usr/lib/swift/linux"
+TARGET_LDFLAGS += "-L${STAGING_DIR_TARGET}/${libdir}/swift/linux"
 
 # Enable Swift parts
 EXTRA_OECMAKE += "-DENABLE_SWIFT=YES"
