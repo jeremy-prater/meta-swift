@@ -14,7 +14,7 @@
 #     in the release: swift-stdlib 0003 (MetadataAccessor ABI) and
 #     swift-foundation-essentials 0001 (64-bit fsblkcnt_t).
 SWIFT_VERSION = "6.4"
-SWIFT_SNAPSHOT = "2026-06-11-a"
+SWIFT_SNAPSHOT = "2026-06-15-a"
 SWIFT_TAG = "swift-6.4.x-DEVELOPMENT-SNAPSHOT-${SWIFT_SNAPSHOT}"
 
 # download.swift.org sub-directory for the prebuilt native toolchain. Releases
