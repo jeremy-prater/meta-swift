@@ -7,8 +7,8 @@
 # swift.org only publishes x86_64 and aarch64 host bundles.
 def swift_bundle_checksum(d, arch):
     sha256 = {
-        "x86_64":  "a900331cf0f07f3bfc74f17d6b9d6a84fd02f8e2d66387061158f4b44c21f148",
-        "aarch64": "bc2546727d8f01cae2cf0d419f2ea4209898e55f419bd630ed38c4031ca0801c",
+        "x86_64":  "096e301d306d26d18fd2599e51b1875b46614243e38186c0d7ef37318d0f6f0a",
+        "aarch64": "4acd67da1b8039bad01080a9fa85ec1150fb070b56cf53e6ea431bf0c552709c",
     }
     if arch not in sha256:
         bb.fatal('swift.org bundle: no checksum for arch {}'.format(arch))
