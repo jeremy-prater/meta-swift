@@ -27,10 +27,11 @@ def swift_sdk_arch_interpreter(d):
 
 SWIFT_ARCH_SUFFIX = "${@swift_sdk_arch_suffix(d)}"
 SWIFT_SDK_INTERPRETER = "${@swift_sdk_arch_interpreter(d)}"
-SWIFT_LINUX_DISTRO = "amazonlinux2"
+SWIFT_LINUX_DISTRO = "ubuntu22.04"
+SWIFT_LINUX_DISTRO_DIR = "${@d.getVar('SWIFT_LINUX_DISTRO').replace('.', '')}"
 
 SRC_DIR = "${SWIFT_TAG}-${SWIFT_LINUX_DISTRO}${SWIFT_ARCH_SUFFIX}"
-SRC_URI = "https://download.swift.org/swift-${SWIFT_VERSION}-release/${SWIFT_LINUX_DISTRO}${SWIFT_ARCH_SUFFIX}/${SWIFT_TAG}/${SWIFT_TAG}-${SWIFT_LINUX_DISTRO}${SWIFT_ARCH_SUFFIX}.tar.gz"
+SRC_URI = "https://download.swift.org/${SWIFT_DOWNLOAD_DIR}/${SWIFT_LINUX_DISTRO_DIR}${SWIFT_ARCH_SUFFIX}/${SWIFT_TAG}/${SWIFT_TAG}-${SWIFT_LINUX_DISTRO}${SWIFT_ARCH_SUFFIX}.tar.gz"
 SRC_URI[sha256sum] = "${@swift_bundle_checksum(d, d.getVar('SDK_ARCH'))}"
 
 S = "${UNPACKDIR}/${SRC_DIR}"
