@@ -21,7 +21,7 @@ jobs:
       - name: Checkout BitBake
         run: git clone --depth 1 --branch master https://git.openembedded.org/bitbake $GITHUB_WORKSPACE/bitbake
       - name: Checkout OpenEmbedded Core
-        run: git clone --depth 1 --branch master https://git.openembedded.org/openembedded-core $GITHUB_WORKSPACE/openembedded-core
+        run: git clone --depth 1 --branch wrynose https://git.openembedded.org/openembedded-core $GITHUB_WORKSPACE/openembedded-core
       - name: Checkout Swift layer
         uses: actions/checkout@v4
         with:
@@ -55,7 +55,7 @@ jobs:
       - name: Checkout BitBake
         run: git clone --depth 1 --branch master https://git.openembedded.org/bitbake $GITHUB_WORKSPACE/bitbake
       - name: Checkout OpenEmbedded Core
-        run: git clone --depth 1 --branch master https://git.openembedded.org/openembedded-core $GITHUB_WORKSPACE/openembedded-core
+        run: git clone --depth 1 --branch wrynose https://git.openembedded.org/openembedded-core $GITHUB_WORKSPACE/openembedded-core
       - name: Checkout Swift layer
         uses: actions/checkout@v4
         with:
@@ -89,7 +89,7 @@ jobs:
       - name: Checkout BitBake
         run: git clone --depth 1 --branch master https://git.openembedded.org/bitbake $GITHUB_WORKSPACE/bitbake
       - name: Checkout OpenEmbedded Core
-        run: git clone --depth 1 --branch master https://git.openembedded.org/openembedded-core $GITHUB_WORKSPACE/openembedded-core
+        run: git clone --depth 1 --branch wrynose https://git.openembedded.org/openembedded-core $GITHUB_WORKSPACE/openembedded-core
       - name: Checkout Swift layer
         uses: actions/checkout@v4
         with:
