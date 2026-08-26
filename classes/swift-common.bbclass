@@ -42,9 +42,32 @@ SWIFT_CXX_RUNTIME ?= "gnu"
 # swiftc's own codegen takes the float ABI from the triple, so a gnueabi triple
 # is soft-float against a hard-float (cortexa15t2hf) sysroot. Promote the arch
 # token to armv7 and append the "hf" environment suffix, keeping Yocto's
-# vendor/os so .swiftinterface module names still agree. aarch64 and x86_64 have
-# no such ambiguity and use TARGET_SYS verbatim.
-SWIFT_TARGET_NAME = "${@oe.utils.conditional('TARGET_ARCH', 'arm', d.getVar('TARGET_SYS').replace('arm-', 'armv7-', 1) + 'hf', '${TARGET_SYS}', d)}"
+# vendor/os so .swiftinterface module names still agree.
+#
+# Non-arm triples additionally gain an explicit "-gnu" environment when Yocto's
+# TARGET_OS is bare "linux" (i.e. glibc): Swift Build's platform registry
+# refuses environment-less Linux triples outright --
+#     unable to find a single platform name for triple 'aarch64-oe-linux'
+# -- while accepting aarch64-oe-linux-gnu (the "oe" vendor is fine; only the
+# missing environment matters). llbuild doesn't care either way, and clang and
+# swiftc treat the two spellings identically, so this is harmless under the
+# native build system and a hard prerequisite for ever adopting swiftbuild.
+# armv7 already carries "hf" (gnueabihf) via the branch above, and musl
+# targets already have "-musl" in TARGET_SYS, so only bare-"linux" needs it.
+#
+# NB SWIFT_TARGET_NAME is also the *_MODULE_TRIPLE for every runtime recipe:
+# changing it renames the staged swiftmodule dirs (aarch64-oe-linux.swiftmodule
+# -> aarch64-oe-linux-gnu.swiftmodule), so the Swift runtime rebuilds once on
+# upgrade past this commit.
+def swift_target_name(d):
+    ts = d.getVar('TARGET_SYS')
+    if d.getVar('TARGET_ARCH') == 'arm':
+        return ts.replace('arm-', 'armv7-', 1) + 'hf'
+    if d.getVar('TARGET_OS') == 'linux':
+        return ts + '-gnu'
+    return ts
+
+SWIFT_TARGET_NAME = "${@swift_target_name(d)}"
 SWIFT_TARGET_ARCH = "${@oe.utils.conditional('TARGET_ARCH', 'arm', 'armv7', '${TARGET_ARCH}', d)}"
 TARGET_CPU_NAME = "${@oe.utils.conditional('TARGET_ARCH', 'arm', 'armv7-a', '${TARGET_ARCH}', d)}"
 
