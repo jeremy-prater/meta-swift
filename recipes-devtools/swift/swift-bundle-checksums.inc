@@ -1,5 +1,5 @@
 # SHA256 checksums for the swift.org prebuilt host toolchain bundles
-# (download.swift.org, amazonlinux2). Shared by swift-native.bb (keyed on
+# (download.swift.org, amazonlinux2). Shared by swift-native-tarball.inc (keyed on
 # HOST_ARCH) and nativesdk-swift.bb (keyed on SDK_ARCH): both pull the same
 # per-arch tarball, so the hashes live in one place. Update these together
 # with SWIFT_VERSION in swift-version.inc whenever the pinned release changes.

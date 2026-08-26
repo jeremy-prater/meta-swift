@@ -1,2 +1,18 @@
 SWIFT_VERSION = "6.3.3"
 SWIFT_TAG = "swift-${SWIFT_VERSION}-RELEASE"
+
+# Semver-tagged dependencies that Swift's utils/update_checkout pins per
+# release. Sourced from swiftlang/swift's release/6.3 branch
+# update-checkout-config.json. Bump alongside SWIFT_VERSION.
+SWIFT_ARGUMENT_PARSER_VERSION = "1.6.1"
+SWIFT_COLLECTIONS_VERSION = "1.1.6"
+SWIFT_SYSTEM_VERSION = "1.5.0"
+SWIFT_TOOLCHAIN_SQLITE_VERSION = "1.0.7"
+SWIFT_TOOLS_PROTOCOLS_VERSION = "0.0.9"
+SWIFT_ASN1_VERSION = "1.3.2"
+SWIFT_CERTIFICATES_VERSION = "1.10.1"
+SWIFT_CRYPTO_VERSION = "3.12.5"
+SWIFT_ATOMICS_VERSION = "1.2.0"
+SWIFT_LOG_VERSION = "1.5.4"
+SWIFT_NUMERICS_VERSION = "1.0.2"
+SWIFT_SUBPROCESS_VERSION = "0.2.1"

@@ -17,7 +17,7 @@ SRC_URI += "file://0001-build-with-64-bit-fsblkcnt_t-on-32-bit-glibc-platfor.pat
 SRC_URI += "file://0002-build-with-64-bit-time_t-on-32-bit-platforms.patch;striplevel=1;"
 SRC_URI += "file://0003-_CStdlib.h-skip-libstdc-trap-headers-under-Swift-C-i.patch;striplevel=1;"
 
-DEPENDS = "icu swift-stdlib swift-native swift-foundation-icu"
+DEPENDS = "icu swift-stdlib swift-foundation-icu"
 RDEPENDS:${PN} += "icu swift-stdlib swift-foundation-icu"
 
 inherit swift-cmake-base
