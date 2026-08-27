@@ -22,6 +22,27 @@ SRC_URI = "\
     file://yocto-native.preset.ini \
 ${SWIFT_SRC_URI}"
 
+# swift-bootstrap defaults to the swiftbuild engine from 6.4 on, and it
+# deadlocks while planning SwiftPM's own rebuild -- CoreFoundation cannot
+# create its runloop wakeup socket pair, so child-exit notifications never
+# arrive and the process sits in sigsuspend() forever with zombie clang
+# children. Force the legacy "native" engine, which is what meta-swift
+# already uses for cross-compiling target Swift packages. patchdir is
+# required: S is the swift repo, and this patches swiftpm.
+SRC_URI += "file://0001-bootstrap-build-swiftpm-with-the-native-build-system.patch;patchdir=${UNPACKDIR}/swiftpm"
+
+# Consequence of the above: with the native engine, SwiftPM 6.4 writes
+# swiftmodules to a Modules/ subdirectory of the bin path while leaving the
+# dynamic libraries flat, and Utilities/bootstrap's install step looks for
+# both flat. Upstream evidently only exercises the bootstrap with swiftbuild.
+SRC_URI += "file://0002-bootstrap-find-swiftmodules-in-the-native-engine-Modules-dir.patch;patchdir=${UNPACKDIR}/swiftpm"
+
+# swift-driver is a second, independent entry point into the same swiftbuild
+# deadlock: its build-script-helper.py drives the freshly built swift-build
+# with no --build-system flag. SwiftPM exposes no environment variable for
+# the engine, so every caller has to be fixed separately. These two are the
+# only callers in the tree.
+SRC_URI += "file://0003-swift-driver-build-with-the-native-build-system.patch;patchdir=${UNPACKDIR}/swift-driver"
 
 SWIFT_PRESET_FILE = "${UNPACKDIR}/yocto-native.preset.ini"
 
