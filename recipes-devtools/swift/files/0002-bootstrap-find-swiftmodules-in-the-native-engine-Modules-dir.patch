@@ -1,0 +1,61 @@
+From: Luke Howard <lukeh@padl.com>
+Subject: [PATCH] bootstrap: install directory-form swiftmodules under the native engine
+
+With --build-system native, SwiftPM 6.4 writes swiftmodule/swiftdoc files as
+FLAT FILES in a Modules/ subdirectory of the bin path, while shared libraries
+stay flat in the bin path itself:
+
+    <bin_dir>/libPackageDescription.so
+    <bin_dir>/Modules/PackageDescription.swiftmodule
+
+Utilities/bootstrap's install_dylib() looks for the swiftmodule flat in
+bin_dir, so `bootstrap install` dies with FileNotFoundError -- and installing
+the flat file as-is is not enough either: the swiftbuild engine and the
+swift.org toolchain bundles both ship DIRECTORY-form modules
+(Foo.swiftmodule/<module-triple>.swiftmodule). A toolchain whose module shape
+differs from the prebuilt bundles breaks OpenEmbedded sysroot staging when a
+build switches between the two toolchain providers: the departing component's
+file removal leaves an empty Foo.swiftmodule/ directory behind, and staging
+the incoming flat file onto that path fails with FileExistsError.
+
+Normalise on install: pick the flat files up from Modules/ and install them
+directory-form, named by the module triple Utilities/bootstrap already has in
+args.target_info. Layouts without a flat Modules/ copy (swiftbuild) install
+unchanged.
+
+Upstream-Status: Inappropriate [workaround for an upstream bug, not yet reported]
+---
+--- a/Utilities/bootstrap
++++ b/Utilities/bootstrap
+@@ -521,9 +521,30 @@
+     # Install the dynamic library itself.
+     install_binary(args, g_shared_lib_prefix + library_name + g_shared_lib_suffix, install_dir, bin_dir)
+ 
++    # The native build system emits swiftmodules as flat files in a Modules/
++    # subdirectory of the bin path, while the swiftbuild engine (and the
++    # swift.org toolchain bundles) use directory-form modules
++    # (Foo.swiftmodule/<module-triple>.swiftmodule). Normalise to
++    # directory-form on install so a toolchain built with either engine has
++    # the same on-disk shape -- consumers (and OE's sysroot staging, which
++    # cannot swap a directory for a file in place) depend on it.
++    module_bin_dir = os.path.join(bin_dir, "Modules")
++    module_triple = args.target_info["target"]["moduleTriple"]
++
+     # Install the swiftmodule/swiftinterface and swiftdoc files for all the modules.
+     for module in module_names:
+-        install_binary(args, module + ".swiftmodule", install_dir, bin_dir, ignored_patterns=['Project'])
++        flat = os.path.join(module_bin_dir, module + ".swiftmodule")
++        if not os.path.exists(flat):
++            # Not a flat-module layout: install whatever bin_dir has, as-is.
++            install_binary(args, module + ".swiftmodule", install_dir, bin_dir, ignored_patterns=['Project'])
++            continue
++        dest = os.path.join(install_dir, module + ".swiftmodule")
++        mkdir_p(dest)
++        for ext in [".swiftmodule", ".swiftdoc", ".swiftinterface"]:
++            src = os.path.join(module_bin_dir, module + ext)
++            if os.path.exists(src):
++                logging.info("Installing %s into %s", src, dest)
++                shutil.copy2(src, os.path.join(dest, module_triple + ext))
+ 
+ # Helper function that installs a single built artifact to a particular directory. The source may be either a file or a directory.
+ @log_entry_exit
