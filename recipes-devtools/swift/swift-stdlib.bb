@@ -17,7 +17,6 @@ SRC_URI = "\
     git://github.com/swiftlang/swift-corelibs-libdispatch.git;protocol=https;name=libdispatch;tag=${SWIFT_TAG};nobranch=1;destsuffix=libdispatch; \
     git://github.com/swiftlang/swift-experimental-string-processing.git;protocol=https;name=stringproc;tag=${SWIFT_TAG};nobranch=1;destsuffix=swift-experimental-string-processing; \
     git://github.com/swiftlang/swift-syntax.git;protocol=https;name=syntax;tag=${SWIFT_TAG};nobranch=1;destsuffix=swift-syntax; \
-    file://0003-add-fix-for-metadataaccessor-abi-mismatch.patch;striplevel=1; \
     file://0004-AddSwiftStdlib-skip-empty-sysroot-injection.patch;striplevel=1; \
     file://0005-allow-overriding-SWIFT_SDK_LINUX_ARCH_TRIPLE.patch;striplevel=1; \
     "
@@ -27,7 +26,7 @@ S = "${UNPACKDIR}/swift"
 SWIFT_BUILDDIR = "${S}/build"
 # SWIFT_CXX_RUNTIME=llvm → pull the system libc++ (OE-core's libcxx) into the
 # sysroot; default (gnu) keeps GCC's libstdc++ via gcc-runtime.
-DEPENDS = "${@bb.utils.contains('SWIFT_CXX_RUNTIME', 'llvm', 'libcxx', 'gcc-runtime', d)} python3-native icu ncurses swift-native libgcc gcc glibc libxml2 libxml2-native ninja-native"
+DEPENDS = "${@bb.utils.contains('SWIFT_CXX_RUNTIME', 'llvm', 'libcxx', 'gcc-runtime', d)} python3-native icu ncurses libgcc gcc glibc libxml2 libxml2-native ninja-native"
 
 inherit swift-cmake-base
 

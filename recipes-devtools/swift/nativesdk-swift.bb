@@ -1,19 +1,13 @@
 SUMMARY = "Swift toolchain bundle for the populate_sdk host (swift.org prebuilt)"
 HOMEPAGE = "https://swift.org/install/"
-LICENSE = "Apache-2.0"
-LIC_FILES_CHKSUM = "file://${S}/usr/share/swift/LICENSE.txt;md5=f6c482a0548ea60d6c2e015776534035"
 
-# Pin the bundle version to whatever swift-native (meta-swift) is using so
-# the SDK's host swiftc/clang match the target stdlib's build provenance.
-require swift-version.inc
-require swift-bundle-checksums.inc
-PV = "${SWIFT_VERSION}"
-
-# swift.org publishes per-host-arch tarballs (x86_64 unsuffixed, aarch64
-# "-aarch64"). Use SDK_ARCH so we pick the binary for the SDK host machine.
-def swift_sdk_arch_suffix(d):
-    sdk_arch = d.getVar('SDK_ARCH')
-    return '' if sdk_arch == 'x86_64' else '-{}'.format(sdk_arch)
+# The bundle must run on the SDK host machine, not the build host: pick the
+# per-arch tarball by SDK_ARCH. Everything else about the bundle (URL scheme,
+# suffix rules, version pin, checksums, S, licence) comes from the shared
+# tarball .inc so the SDK's host swiftc/clang always match the exact bundle
+# the native toolchain recipes use.
+SWIFT_BUNDLE_ARCH = "${SDK_ARCH}"
+require swift-native-tarball.inc
 
 # The bundle's ELF interpreter is the host loader (arch-specific); pick it by
 # SDK_ARCH so the .interp padding below targets the right one.
@@ -25,15 +19,7 @@ def swift_sdk_arch_interpreter(d):
         return 'ld-linux-aarch64.so.1'
     bb.fatal('Unsupported SDK_ARCH for nativesdk-swift: {}'.format(sdk_arch))
 
-SWIFT_ARCH_SUFFIX = "${@swift_sdk_arch_suffix(d)}"
 SWIFT_SDK_INTERPRETER = "${@swift_sdk_arch_interpreter(d)}"
-SWIFT_LINUX_DISTRO = "amazonlinux2"
-
-SRC_DIR = "${SWIFT_TAG}-${SWIFT_LINUX_DISTRO}${SWIFT_ARCH_SUFFIX}"
-SRC_URI = "https://download.swift.org/swift-${SWIFT_VERSION}-release/${SWIFT_LINUX_DISTRO}${SWIFT_ARCH_SUFFIX}/${SWIFT_TAG}/${SWIFT_TAG}-${SWIFT_LINUX_DISTRO}${SWIFT_ARCH_SUFFIX}.tar.gz"
-SRC_URI[sha256sum] = "${@swift_bundle_checksum(d, d.getVar('SDK_ARCH'))}"
-
-S = "${UNPACKDIR}/${SRC_DIR}"
 
 DEPENDS = "patchelf-native"
 

@@ -61,7 +61,7 @@ def fix_socket_header(filename):
         f.write(line)
 
 # Support for SwiftPM fetching packages and their GitHub submodules
-do_swift_package_resolve[depends] += "unzip-native:do_populate_sysroot swift-native:do_populate_sysroot"
+do_swift_package_resolve[depends] += "unzip-native:do_populate_sysroot virtual/swift-native:do_populate_sysroot"
 do_swift_package_resolve[network] = "1"
 do_swift_package_resolve[vardepsexclude] = "BB_ORIGENV"
 
@@ -380,7 +380,14 @@ python swift_do_compile() {
         env['SSH_AUTH_SOCK'] = ssh_auth_sock
     env['SYSROOT'] = recipe_sysroot
 
-    args = [f'{recipe_sysroot_native}/usr/bin/swift', 'build', '--package-path', s, '--build-path', b, '-c', build_mode, '--swift-sdks-path', sdks_path, '--swift-sdk', sdk_id] + extra_oeswift
+    args = [f'{recipe_sysroot_native}/usr/bin/swift', 'build', 
+        '--package-path', s,
+        '--build-path', b, 
+        '-c', build_mode,
+        '--swift-sdks-path', sdks_path,
+        '--swift-sdk', sdk_id,
+        '--build-system', 'native'
+    ] + extra_oeswift
 
     ret = subprocess.call(args, env=env, cwd=s)
     if ret != 0:
