@@ -10,7 +10,7 @@ PV = "${SWIFT_VERSION}+git${SRCPV}"
 
 SRC_URI = "git://github.com/swiftlang/swift-corelibs-xctest.git;protocol=https;tag=${SWIFT_TAG};nobranch=1"
 
-DEPENDS = "swift-stdlib swift-native libdispatch swift-foundation"
+DEPENDS = "swift-stdlib libdispatch swift-foundation"
 RDEPENDS:${PN} += "swift-stdlib libdispatch swift-foundation"
 
 inherit swift-cmake-base
