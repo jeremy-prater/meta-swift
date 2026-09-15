@@ -89,7 +89,7 @@ def swift_tool_env(d):
     return env
 
 # Support for SwiftPM fetching packages and their GitHub submodules
-do_swift_package_resolve[depends] += "unzip-native:do_populate_sysroot swift-native:do_populate_sysroot"
+do_swift_package_resolve[depends] += "unzip-native:do_populate_sysroot virtual/swift-native:do_populate_sysroot"
 do_swift_package_resolve[network] = "1"
 do_swift_package_resolve[vardepsexclude] = "BB_ORIGENV"
 

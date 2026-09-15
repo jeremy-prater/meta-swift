@@ -1,6 +1,16 @@
 inherit cmake
 inherit swift-common
 
+# Source-built Swift tools load libraries such as ncurses from the native
+# sysroot. Their RUNPATH only covers the Swift runtime directory.
+do_configure:prepend() {
+    export LD_LIBRARY_PATH="${STAGING_LIBDIR_NATIVE}${LD_LIBRARY_PATH:+:$LD_LIBRARY_PATH}"
+}
+
+do_compile:prepend() {
+    export LD_LIBRARY_PATH="${STAGING_LIBDIR_NATIVE}${LD_LIBRARY_PATH:+:$LD_LIBRARY_PATH}"
+}
+
 python () {
     import shlex
 
@@ -67,7 +77,7 @@ HOST_CC_ARCH:prepend = "-target ${SWIFT_TARGET_NAME} "
 TARGET_LDFLAGS:append = " -Xlinker --build-id=sha1"
 
 # Use Apple's provided clang (it understands Apple's custom compiler flags)
-# Made available via swift-native package.
+# Made available via the virtual/swift-native provider.
 OECMAKE_C_COMPILER = "clang"
 OECMAKE_CXX_COMPILER = "clang++"
 

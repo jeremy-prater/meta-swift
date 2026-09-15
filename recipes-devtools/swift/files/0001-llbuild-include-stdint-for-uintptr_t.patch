@@ -1,0 +1,19 @@
+From: Yocto Swift layer
+Subject: [PATCH] Include stdint.h for uintptr_t in bundled GoogleTest
+
+The bundled GoogleTest death-test implementation uses uintptr_t but does
+not include the header that defines it. Newer Clang/libc combinations do
+not expose it transitively, causing llbuild's test support to fail to
+compile even when the tests themselves are not run.
+
+--- a/utils/unittest/googletest/src/gtest-death-test.cc
++++ b/utils/unittest/googletest/src/gtest-death-test.cc
+@@ -29,6 +29,7 @@
+ // This file implements death tests.
+ 
+ #include "gtest/gtest-death-test.h"
+ 
++#include <stdint.h>
+ #include <utility>
+ 
+ #include "gtest/internal/gtest-port.h"
