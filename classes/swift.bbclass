@@ -106,6 +106,17 @@ python do_swift_package_resolve() {
 
 addtask swift_package_resolve after do_unpack before do_compile
 
+# SwiftPM SBOM (SE-0509, Swift 6.4+). When the build produces OpenEmbedded
+# SPDX 3.0 documents, do_compile has SwiftPM describe the package graph it
+# resolved as CycloneDX, and do_create_spdx folds that into the recipe's SPDX:
+# the SwiftPM dependencies are fetched by SwiftPM rather than via SRC_URI, so
+# OE's own SPDX would otherwise not know about them. See lib/metaswift/spdx.py.
+SWIFT_SPDX ?= "${@'1' if bb.data.inherits_class('create-spdx-3.0', d) else '0'}"
+SWIFT_SPDX_SBOM_DIR = "${WORKDIR}/swiftpm-sbom"
+# Runtime packages recorded as statically linking the SwiftPM products that
+# the root package uses.
+SWIFT_SPDX_STATIC_LINK_PACKAGES ?= "${PN}"
+
 SWIFT_SDK_ID ?= "wrynose-${SWIFT_TARGET_ARCH}"
 SWIFT_SDK_BUNDLE_DIR = "${WORKDIR}/swift-sdks"
 
@@ -389,7 +400,17 @@ python swift_do_compile() {
         '--build-system', 'native'
     ] + extra_oeswift
 
-    ret = subprocess.call(args, env=env, cwd=s)
+    sbom_args = []
+    if d.getVar('SWIFT_SPDX') == '1':
+        # SwiftPM timestamps SBOM file names instead of overwriting them, so
+        # start each build from an empty directory. --sbom-warning-only keeps
+        # an SBOM failure from failing the build; do_create_spdx warns instead.
+        sbom_dir = d.getVar('SWIFT_SPDX_SBOM_DIR')
+        bb.utils.remove(sbom_dir, recurse=True)
+        bb.utils.mkdirhier(sbom_dir)
+        sbom_args = ['--sbom-spec', 'cyclonedx', '--sbom-output-dir', sbom_dir, '--sbom-warning-only']
+
+    ret = subprocess.call(args + sbom_args, env=env, cwd=s)
     if ret != 0:
         bb.fatal('swift build failed')
 
@@ -403,6 +424,15 @@ python swift_do_compile() {
         if ret != 0:
             bb.fatal('swift build --build-tests failed')
 }
+
+python swift_spdx_add_swiftpm() {
+    import metaswift.spdx
+    metaswift.spdx.add_swiftpm_sbom(d)
+}
+
+do_create_spdx[postfuncs] += "swift_spdx_add_swiftpm"
+do_create_spdx[vardeps] += "SWIFT_SPDX SWIFT_SPDX_STATIC_LINK_PACKAGES"
+do_create_spdx[file-checksums] += "${@bb.utils.which(d.getVar('BBPATH'), 'lib/metaswift/spdx.py')}:True"
 
 do_package_update() {
     cd ${S}

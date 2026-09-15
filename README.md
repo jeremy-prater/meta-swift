@@ -61,6 +61,15 @@ to your recipe.
 
 Note that Yocto will automatically detect and add runtime dependencies for the Swift runtime, so it is not necessary to add them explicitly in your package.
 
+## Software Bill of Materials (SPDX)
+
+When the build generates SPDX 3.0 documents (OE-core's default `create-spdx` class), the `swift` class also records the Swift packages that SwiftPM resolves for a recipe, which SwiftPM fetches itself rather than through `SRC_URI`. During `do_compile`, SwiftPM writes a CycloneDX SBOM of the package graph; `do_create_spdx` then adds each SwiftPM package and product to the recipe's SPDX, with its version, package URL and git commit, as inputs of the build, and records the recipe's main package as statically linking the products it uses. Image and SDK SBOMs include them automatically.
+
+- `SWIFT_SPDX`: set to `"0"` to turn this off. Defaults to `"1"` when `create-spdx-3.0` is inherited.
+- `SWIFT_SPDX_STATIC_LINK_PACKAGES`: the runtime packages recorded as statically linking the SwiftPM products (default `${PN}`).
+
+Because packages are built with SwiftPM's native build system, the dependency graph does not take build-time conditionals into account: it can include dependencies that are not built for the target, and macro-only dependencies such as swift-syntax are listed too.
+
 ## Deployment
 
 The user of this layer must provide their own `do_install` function for swift packages. An example of this is available in `swift-hello-world.bb`:
