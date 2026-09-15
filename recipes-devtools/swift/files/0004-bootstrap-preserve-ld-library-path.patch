@@ -1,0 +1,28 @@
+Subject: [PATCH] bootstrap: preserve the inherited LD_LIBRARY_PATH
+
+The freshly built compiler and linker can depend on libraries outside the
+Swift toolchain. In Yocto, ld.lld needs libxml2 from the recipe's native
+sysroot, which the recipe exposes through LD_LIBRARY_PATH. Keep that
+search path after the bootstrap's own directories.
+
+Upstream-Status: Pending
+---
+ Utilities/bootstrap | 6 +++++-
+ 1 file changed, 5 insertions(+), 1 deletion(-)
+
+--- a/Utilities/bootstrap
++++ b/Utilities/bootstrap
+@@ -877,8 +877,12 @@
+         if platform.system() == 'Darwin':
+             env_cmd.append("DYLD_LIBRARY_PATH=%s" % ":".join(libs))
+         else:
+-            libs_joined = ":".join(libs + args.target_info["paths"]["runtimeLibraryPaths"])
++            runtime_libs = libs + args.target_info["paths"]["runtimeLibraryPaths"]
++            inherited_libs = os.environ.get("LD_LIBRARY_PATH")
++            if inherited_libs:
++                runtime_libs.append(inherited_libs)
++            libs_joined = ":".join(runtime_libs)
+             env_cmd.append("LD_LIBRARY_PATH=%s" % libs_joined)
+ 
+     if '-macosx' in args.build_target:
+         env_cmd.append("SWIFTCI_DISABLE_SDK_DEPENDENT_TESTS=YES")

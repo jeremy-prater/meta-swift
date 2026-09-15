@@ -1,0 +1,29 @@
+Subject: [PATCH] swift-driver: use the toolchain Clang for Linux CMake builds
+
+The CMake build of swift-tools-support-core can fall back to the host GCC
+and GNU ld even when swiftc is from the freshly built toolchain. Use the
+matching Clang drivers on Linux, so the C and C++ link steps also use the
+toolchain's linker.
+
+Upstream-Status: Pending
+---
+--- a/Utilities/build-script-helper.py
++++ b/Utilities/build-script-helper.py
+@@ -883,9 +883,16 @@ def cmake_build(
+         "-DCMAKE_BUILD_TYPE:=Release",
+         "-DCMAKE_Swift_FLAGS=" + " ".join(swift_flags),
+         "-DCMAKE_Swift_COMPILER:=%s" % (swiftc_exec),
+     ]
+-    cmd = cmd + cmake_args + [source_path]
++    cmd += cmake_args
++    if sys.platform.startswith("linux"):
++        toolchain_bin = os.path.dirname(swiftc_exec)
++        cmd += [
++            "-DCMAKE_C_COMPILER:FILEPATH=" + os.path.join(toolchain_bin, "clang"),
++            "-DCMAKE_CXX_COMPILER:FILEPATH=" + os.path.join(toolchain_bin, "clang++"),
++        ]
++    cmd.append(source_path)
+     if args.verbose:
+         print(" ".join(cmd))
+     mkdir_p(build_dir)
+     subprocess.check_output(cmd, cwd=build_dir)
