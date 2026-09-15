@@ -17,7 +17,6 @@ SRC_URI = "\
     git://github.com/swiftlang/swift-corelibs-libdispatch.git;protocol=https;name=libdispatch;tag=${SWIFT_TAG};nobranch=1;destsuffix=libdispatch; \
     git://github.com/swiftlang/swift-experimental-string-processing.git;protocol=https;name=stringproc;tag=${SWIFT_TAG};nobranch=1;destsuffix=swift-experimental-string-processing; \
     git://github.com/swiftlang/swift-syntax.git;protocol=https;name=syntax;tag=${SWIFT_TAG};nobranch=1;destsuffix=swift-syntax; \
-    file://0003-add-fix-for-metadataaccessor-abi-mismatch.patch;striplevel=1; \
     file://0004-AddSwiftStdlib-skip-empty-sysroot-injection.patch;striplevel=1; \
     file://0005-allow-overriding-SWIFT_SDK_LINUX_ARCH_TRIPLE.patch;striplevel=1; \
     "
