@@ -20,7 +20,7 @@ TARGET_LDFLAGS += "-L${STAGING_DIR_TARGET}${libdir}/swift/linux"
 
 EXTRA_OECMAKE += "-DBUILD_SHARED_LIBS=YES"
 EXTRA_OECMAKE += "-DSwiftTesting_MODULE_TRIPLE=${SWIFT_TARGET_NAME}"
-EXTRA_OECMAKE += "-DSwiftTesting_MACRO=${STAGING_DIR_NATIVE}/usr/lib/swift/host/plugins/libTestingMacros.so"
+EXTRA_OECMAKE += "-DSwiftTesting_MACRO=${STAGING_DIR_NATIVE}${libdir_native}/swift/host/plugins/libTestingMacros.so"
 EXTRA_OECMAKE += "-DCMAKE_FIND_ROOT_PATH:PATH=${CROSS_COMPILE_DEPS_PATH}"
 
 # Ensure the right CPU is targeted (same as swift-foundation.bb)
