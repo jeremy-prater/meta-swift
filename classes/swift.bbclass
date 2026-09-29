@@ -60,6 +60,34 @@ def fix_socket_header(filename):
       else:
         f.write(line)
 
+# Environment for running the native swift toolchain and the git/ssh it
+# spawns to fetch SwiftPM dependencies.
+swift_tool_env[vardepsexclude] = "BB_ORIGENV"
+def swift_tool_env(d):
+    import os
+
+    env = os.environ.copy()
+
+    # Prefer curl-native over the host's libcurl: the prebuilt swift-native's
+    # libFoundationNetworking (e.g. from amazonlinux2) is linked against a
+    # specific libcurl.so.4 and aborts loading an incompatible host libcurl
+    # (issue #42).
+    ld_path = d.getVar('STAGING_LIBDIR_NATIVE')
+    if env.get('LD_LIBRARY_PATH'):
+        ld_path += ':' + env['LD_LIBRARY_PATH']
+    env['LD_LIBRARY_PATH'] = ld_path
+
+    # Don't leak the native libcrypto above into git's ssh transport (issue #71).
+    env.setdefault('GIT_SSH_COMMAND', d.getVar('SWIFT_GIT_SSH_COMMAND'))
+
+    # Tasks run with a scrubbed environment; hand ssh the user's agent so
+    # dependencies on private git@ URLs can authenticate.
+    ssh_auth_sock = d.getVar('BB_ORIGENV').get('SSH_AUTH_SOCK')
+    if ssh_auth_sock:
+        env['SSH_AUTH_SOCK'] = ssh_auth_sock
+
+    return env
+
 # Support for SwiftPM fetching packages and their GitHub submodules
 do_swift_package_resolve[depends] += "unzip-native:do_populate_sysroot swift-native:do_populate_sysroot"
 do_swift_package_resolve[network] = "1"
@@ -72,25 +100,8 @@ python do_swift_package_resolve() {
     s = d.getVar('S')
     b = d.getVar('B')
     recipe_sysroot_native = d.getVar("STAGING_DIR_NATIVE", True)
-    recipe_sysroot_native_lib = d.getVar("STAGING_LIBDIR_NATIVE", True)
 
-    env = os.environ.copy()
-
-    # Prefer curl-native over the host's libcurl: the prebuilt swift-native's
-    # libFoundationNetworking (e.g. from amazonlinux2) is linked against a
-    # specific libcurl.so.4 and aborts loading an incompatible host libcurl
-    # (issue #42).
-    ld_path = recipe_sysroot_native_lib
-    if env.get('LD_LIBRARY_PATH'):
-        ld_path += ':' + env['LD_LIBRARY_PATH']
-    env['LD_LIBRARY_PATH'] = ld_path
-
-    # Don't leak the native libcrypto above into git's ssh transport (issue #71).
-    env.setdefault('GIT_SSH_COMMAND', d.getVar('SWIFT_GIT_SSH_COMMAND'))
-
-    ssh_auth_sock = d.getVar('BB_ORIGENV').get('SSH_AUTH_SOCK')
-    if ssh_auth_sock:
-        env['SSH_AUTH_SOCK'] = ssh_auth_sock
+    env = swift_tool_env(d)
 
     ret = subprocess.call([f'{recipe_sysroot_native}/usr/bin/swift', 'package', 'resolve', '--package-path', s, '--build-path', b], env=env)
     if ret != 0:
@@ -368,27 +379,10 @@ python swift_do_compile() {
     sdk_id = d.getVar('SWIFT_SDK_ID')
     sdks_path = d.getVar('SWIFT_SDK_BUNDLE_DIR')
     extra_oeswift = shlex.split(d.getVar('EXTRA_OESWIFT'))
-    ssh_auth_sock = d.getVar('BB_ORIGENV').get('SSH_AUTH_SOCK')
     recipe_sysroot = d.getVar("STAGING_DIR_TARGET", True)
     recipe_sysroot_native = d.getVar("STAGING_DIR_NATIVE", True)
-    recipe_sysroot_native_lib = d.getVar("STAGING_LIBDIR_NATIVE", True)
 
-    env = os.environ.copy()
-
-    # Prefer curl-native over the host's libcurl: the prebuilt swift-native's
-    # libFoundationNetworking (e.g. from amazonlinux2) is linked against a
-    # specific libcurl.so.4 and aborts loading an incompatible host libcurl
-    # (issue #42).
-    ld_path = recipe_sysroot_native_lib
-    if env.get('LD_LIBRARY_PATH'):
-        ld_path += ':' + env['LD_LIBRARY_PATH']
-    env['LD_LIBRARY_PATH'] = ld_path
-
-    # Don't leak the native libcrypto above into git's ssh transport (issue #71).
-    env.setdefault('GIT_SSH_COMMAND', d.getVar('SWIFT_GIT_SSH_COMMAND'))
-
-    if ssh_auth_sock:
-        env['SSH_AUTH_SOCK'] = ssh_auth_sock
+    env = swift_tool_env(d)
     env['SYSROOT'] = recipe_sysroot
 
     args = [f'{recipe_sysroot_native}/usr/bin/swift', 'build',
@@ -434,23 +428,27 @@ do_create_spdx[postfuncs] += "swift_spdx_add_swiftpm"
 do_create_spdx[vardeps] += "SWIFT_SPDX SWIFT_SPDX_STATIC_LINK_PACKAGES"
 do_create_spdx[file-checksums] += "${@bb.utils.which(d.getVar('BBPATH'), 'lib/metaswift/spdx.py')}:True"
 
-do_package_update() {
-    cd ${S}
-    swift package update
+python swift_do_package_update() {
+    import shutil
+    import subprocess
 
-    # Iterate over the search dirs for this recipes' files
-    # The first one that has a Package.resolved is the one bitbake got the file
-    # from in the first places
-    RESOLVED_PATH=""
-    for i in $(echo "${FILESPATH}" | tr ':' '\n'); do
-        if [ -r "${i}"/Package.resolved ]; then
-            RESOLVED_PATH="${i}/Package.resolved"
-            cp Package.resolved "${RESOLVED_PATH}"
-            bbwarn "Replaced ${RESOLVED_PATH} with updated Package.resolved."
+    s = d.getVar('S')
+    swift = os.path.join(d.getVar('STAGING_DIR_NATIVE'), 'usr/bin/swift')
+
+    ret = subprocess.call([swift, 'package', 'update', '--package-path', s], env=swift_tool_env(d), cwd=s)
+    if ret != 0:
+        bb.fatal('swift package update failed')
+
+    # The first FILESPATH entry with a Package.resolved is where bitbake took
+    # the recipe's copy from; write the update back there.
+    for path in d.getVar('FILESPATH').split(':'):
+        resolved = os.path.join(path, 'Package.resolved')
+        if os.access(resolved, os.R_OK):
+            shutil.copyfile(os.path.join(s, 'Package.resolved'), resolved)
+            bb.warn(f'Replaced {resolved} with updated Package.resolved.')
             break
-        fi
-    done
-    [ -z "${RESOLVED_PATH}" ] && bbwarn "Updated Package.resolved located at ${S}/Package.resolved" || :
+    else:
+        bb.warn(f'Updated Package.resolved located at {s}/Package.resolved')
 }
 do_package_update[network] = "1"
 addtask do_package_update after do_configure
