@@ -104,6 +104,12 @@ EXTRA_OECMAKE:append = " -DLLVM_USE_LINKER=lld"
 EXTRA_OECMAKE:append = " -DLLVM_DIR=${HOST_LLVM_PATH}/cmake/llvm"
 EXTRA_OECMAKE:append = " -DLLVM_BUILD_LIBRARY_DIR=${HOST_LLVM_PATH}"
 
+# CMake optimises Swift only by build type: -O comes from CMAKE_Swift_FLAGS_RELEASE.
+# OE's cmake class leaves the build type unset and optimises C through CFLAGS, which
+# swiftc does not read, so without this Swift is compiled at -Onone.
+SWIFT_CMAKE_BUILD_TYPE ?= "${@['Release', 'Debug'][d.getVar('DEBUG_BUILD') == '1']}"
+EXTRA_OECMAKE:append = " -DCMAKE_BUILD_TYPE=${SWIFT_CMAKE_BUILD_TYPE}"
+
 # Additional parameters to pass to swiftc
 EXTRA_SWIFTC_FLAGS ??= ""
 
