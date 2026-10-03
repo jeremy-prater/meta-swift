@@ -1,7 +1,7 @@
 # avoid conflicts with meta-clang
 TOOLCHAIN = "gcc"
 
-DEPENDS:append = " swift-native glibc gcc libgcc"
+DEPENDS:append = " virtual/swift-native glibc gcc libgcc"
 EXTRANATIVEPATH:append = " swift-tools"
 
 python() {

@@ -1,0 +1,48 @@
+From: Luke Howard <lukeh@padl.com>
+Subject: [PATCH] bootstrap: build SwiftPM with the native build system
+
+swift-bootstrap defaults to BuildSystemProvider.Kind.swiftbuild in 6.4
+(Sources/swift-bootstrap/main.swift). When Utilities/bootstrap uses the
+freshly built swift-bootstrap to rebuild SwiftPM, that engine deadlocks
+partway through planning:
+
+    [Pre-planning 1 / 4371]
+    [Planning 1 / 4371]
+    *** Could not create wakeup socket pair for CFSocket!!!
+    [Planning 3264 / 4371]
+    <hangs indefinitely, machine idle>
+
+CoreFoundation fails to create its runloop wakeup socket pair, so the
+notification that a child process exited never arrives. swift-bootstrap
+sits in sigsuspend() with clang children left as zombies and never makes
+further progress. It is not resource exhaustion -- the process had 31 open
+descriptors against a 1048576 limit.
+
+The legacy "native" engine does not exhibit this. It is deprecated in 6.4
+but still present and selectable, and is already what meta-swift uses for
+cross-compiling target Swift packages.
+
+There is no less invasive way to select it: swift-bootstrap reads no
+environment variable for this, Utilities/bootstrap does not pass
+--build-system in its bootstrap branch, and swift's swiftpm.py product
+only forwards additional_params to Utilities/bootstrap, which does not
+relay unknown arguments onward.
+
+Upstream-Status: Inappropriate [workaround for an upstream bug, not yet reported]
+---
+ Utilities/bootstrap | 4 ++++
+ 1 file changed, 4 insertions(+)
+
+--- a/Utilities/bootstrap
++++ b/Utilities/bootstrap
+@@ -728,6 +728,10 @@ def get_swiftpm_build_args(args):
+     if args.bootstrap:
+         swiftpm_args.append("SWIFTPM_CUSTOM_LIBS_DIR=" + os.path.join(args.bootstrap_dir, "pm"))
+         swiftpm_args.append(os.path.join(args.bootstrap_dir, "bin/swift-bootstrap"))
++        # swift-bootstrap defaults to the swiftbuild engine in 6.4, which
++        # deadlocks during planning (CFSocket wakeup socket pair failure ->
++        # child-exit notifications never arrive). Use the legacy engine.
++        swiftpm_args += ["--build-system", "native"]
+     else:
+         swiftpm_args.append(args.swift_build_path or os.path.join(os.path.split(args.swiftc_path)[0], "swift-build"))
+         swiftpm_args.append("--disable-sandbox")

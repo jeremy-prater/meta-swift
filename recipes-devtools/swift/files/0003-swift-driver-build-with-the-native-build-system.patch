@@ -1,0 +1,43 @@
+From: Luke Howard <lukeh@padl.com>
+Subject: [PATCH] build-script-helper: build swift-driver with the native build system
+
+swift-driver's Utilities/build-script-helper.py drives the freshly built
+`swift-build` with no --build-system flag, so it gets SwiftPM 6.4's default
+swiftbuild engine. That engine deadlocks when driven from the toolchain
+build: CoreFoundation fails to create its runloop wakeup socket pair, the
+notification that a child process exited never arrives, and swift-build sits
+in sigsuspend() indefinitely with zombie clang children while the machine
+goes completely idle. Nothing times out, so the build hangs rather than
+failing.
+
+Observed at `--- Installing swiftdriver ---`, 7+ hours with no output:
+
+    swift-build   state S   wchan sigsuspend
+      \_ [clang] <defunct>
+
+This is the same defect already worked around in swiftpm's
+Utilities/bootstrap; swift-driver is a second, independent entry point into
+it. SwiftPM exposes no environment variable for the engine -- --build-system
+is the only selector -- so each caller has to be fixed separately.
+
+Setting it in get_swiftpm_options() covers both swiftpm() and
+swiftpm_bin_path(), which share those arguments.
+
+Upstream-Status: Inappropriate [workaround for an upstream bug, not yet reported]
+---
+--- a/Utilities/build-script-helper.py
++++ b/Utilities/build-script-helper.py
+@@ -113,6 +113,13 @@
+ 
+ def get_swiftpm_options(args):
+     swiftpm_args = [
++        # SwiftPM defaults to the swiftbuild engine from 6.4 on, which
++        # deadlocks when driven from the toolchain build: CoreFoundation
++        # cannot create its runloop wakeup socket pair, child-exit
++        # notifications never arrive, and the process sits in sigsuspend()
++        # forever with zombie clang children. Use the legacy engine.
++        "--build-system",
++        "native",
+         "--package-path",
+         args.package_path,
+         "--scratch-path",
