@@ -67,7 +67,7 @@ HOST_CC_ARCH:prepend = "-target ${SWIFT_TARGET_NAME} "
 TARGET_LDFLAGS:append = " -Xlinker --build-id=sha1"
 
 # Use Apple's provided clang (it understands Apple's custom compiler flags)
-# Made available via swift-native package.
+# Made available via the virtual/swift-native provider.
 OECMAKE_C_COMPILER = "clang"
 OECMAKE_CXX_COMPILER = "clang++"
 
