@@ -21,7 +21,7 @@ def swift_host_arch(d):
 SWIFT_ARCH_SUFFIX = "${@swift_native_arch_suffix(d)}"
 SWIFT_HOST_ARCH = "${@swift_host_arch(d)}"
 
-SWIFT_LINUX_DISTRO = "ubuntu22.04"
+SWIFT_LINUX_DISTRO = "ubi9"
 SWIFT_LINUX_DISTRO_DIR = "${@d.getVar('SWIFT_LINUX_DISTRO').replace('.', '')}"
 
 SRC_DIR = "${SWIFT_TAG}-${SWIFT_LINUX_DISTRO}${SWIFT_ARCH_SUFFIX}"
