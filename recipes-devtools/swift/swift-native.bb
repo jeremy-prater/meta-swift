@@ -20,6 +20,7 @@ FILESEXTRAPATHS:prepend := "${THISDIR}/files:"
 
 SRC_URI = "\
     file://yocto-native.preset.ini \
+    file://0001-llbuild-include-stdint-for-uintptr_t.patch;apply=no \
 ${SWIFT_SRC_URI}"
 
 # swift-bootstrap defaults to the swiftbuild engine from 6.4 on, and it
@@ -60,6 +61,10 @@ do_configure[network] = "0"
 do_compile[network] = "0"
 
 do_configure() {
+    # llbuild is unpacked as a sibling of swift/, so apply this fix directly
+    # rather than through BitBake's normal patching of ${S}.
+    patch -d ${UNPACKDIR}/llbuild -p1 < ${UNPACKDIR}/0001-llbuild-include-stdint-for-uintptr_t.patch
+
     export PATH="${SWIFT_BOOTSTRAP_PATH}:${PATH}"
 
     # swift's cmake wraps its custom swiftc invocations in `cmake -E env
