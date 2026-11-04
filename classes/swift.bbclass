@@ -29,6 +29,14 @@ EXTRA_OESWIFT ?= ""
 # clean LD_LIBRARY_PATH so it uses the host's own libcrypto.
 SWIFT_GIT_SSH_COMMAND ?= "env -u LD_LIBRARY_PATH ssh"
 
+# SwiftPM links package manifests, plugins and macros for the build host. The
+# Swift driver uses gold by default for Linux hosts, but gold is deprecated and
+# left out of binutils since 2.44, so newer distros (e.g. Ubuntu 26.04) no
+# longer install it. Link them with the lld that swift-native ships instead:
+# -Xbuild-tools-swiftc reaches manifests and plugins, and -Xswiftc reaches
+# host products such as macros (the target already uses lld via the toolset).
+SWIFT_HOST_LINKER_FLAGS ?= "-Xbuild-tools-swiftc -use-ld=lld -Xswiftc -use-ld=lld"
+
 do_fix_gcc_install_dir() {
     # symbolic links do not work, will not be found by Swift clang driver
     # this is necessary to make the libstdc++ location heuristic work, necessary for C++ interop
@@ -96,6 +104,7 @@ do_swift_package_resolve[vardepsexclude] = "BB_ORIGENV"
 python do_swift_package_resolve() {
     import subprocess
     import os
+    import shlex
 
     s = d.getVar('S')
     b = d.getVar('B')
@@ -103,7 +112,9 @@ python do_swift_package_resolve() {
 
     env = swift_tool_env(d)
 
-    ret = subprocess.call([f'{recipe_sysroot_native}/usr/bin/swift', 'package', 'resolve', '--package-path', s, '--build-path', b], env=env)
+    host_linker_flags = shlex.split(d.getVar('SWIFT_HOST_LINKER_FLAGS'))
+
+    ret = subprocess.call([f'{recipe_sysroot_native}/usr/bin/swift', 'package', 'resolve', '--package-path', s, '--build-path', b] + host_linker_flags, env=env)
     if ret != 0:
         bb.fatal('swift package resolve failed')
 
@@ -392,7 +403,7 @@ python swift_do_compile() {
         '--swift-sdks-path', sdks_path,
         '--swift-sdk', sdk_id,
         '--build-system', 'native'
-    ] + extra_oeswift
+    ] + shlex.split(d.getVar('SWIFT_HOST_LINKER_FLAGS')) + extra_oeswift
 
     sbom_args = []
     if d.getVar('SWIFT_SPDX') == '1':
@@ -429,13 +440,15 @@ do_create_spdx[vardeps] += "SWIFT_SPDX SWIFT_SPDX_STATIC_LINK_PACKAGES"
 do_create_spdx[file-checksums] += "${@bb.utils.which(d.getVar('BBPATH'), 'lib/metaswift/spdx.py')}:True"
 
 python swift_do_package_update() {
+    import shlex
     import shutil
     import subprocess
 
     s = d.getVar('S')
     swift = os.path.join(d.getVar('STAGING_DIR_NATIVE'), 'usr/bin/swift')
+    host_linker_flags = shlex.split(d.getVar('SWIFT_HOST_LINKER_FLAGS'))
 
-    ret = subprocess.call([swift, 'package', 'update', '--package-path', s], env=swift_tool_env(d), cwd=s)
+    ret = subprocess.call([swift, 'package', 'update', '--package-path', s] + host_linker_flags, env=swift_tool_env(d), cwd=s)
     if ret != 0:
         bb.fatal('swift package update failed')
 
