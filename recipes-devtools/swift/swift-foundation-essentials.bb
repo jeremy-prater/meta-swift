@@ -11,10 +11,11 @@ SRCREV_FORMAT = "foundation_icu_syntax_collections"
 
 SRC_URI = "git://github.com/swiftlang/swift-foundation.git;protocol=https;name=foundation;tag=${SWIFT_TAG};nobranch=1;"
 SRC_URI += "git://github.com/swiftlang/swift-foundation-icu.git;protocol=https;name=icu;tag=${SWIFT_TAG};nobranch=1;destsuffix=swift-foundation-icu;"
-SRC_URI += "git://github.com/swiftlang/swift-syntax.git;protocol=https;name=syntax;tag=${SWIFT_TAG};nobranch=1;destsuffix=swift-foundation-icu;"
+SRC_URI += "git://github.com/swiftlang/swift-syntax.git;protocol=https;name=syntax;tag=${SWIFT_TAG};nobranch=1;destsuffix=swift-syntax;"
 SRC_URI += "git://github.com/apple/swift-collections.git;protocol=https;nobranch=1;name=collections;tag=1.1.6;destsuffix=swift-collections;"
 SRC_URI += "file://0001-build-with-64-bit-fsblkcnt_t-on-32-bit-glibc-platfor.patch;striplevel=1;"
 SRC_URI += "file://0002-build-with-64-bit-time_t-on-32-bit-platforms.patch;striplevel=1;"
+SRC_URI += "file://0003-use-local-swift-syntax-source-for-foundation-macros.patch;striplevel=1;"
 
 S = "${UNPACKDIR}/git"
 
@@ -23,7 +24,7 @@ RDEPENDS:${PN} += "icu swift-stdlib swift-foundation-icu"
 
 inherit swift-cmake-base
 
-TARGET_LDFLAGS += "-L${STAGING_DIR_TARGET}/usr/lib/swift/linux"
+TARGET_LDFLAGS += "-L${STAGING_DIR_TARGET}/${libdir}/swift/linux"
 
 # Enable Swift parts
 EXTRA_OECMAKE += "-DENABLE_SWIFT=YES"
@@ -32,7 +33,7 @@ EXTRA_OECMAKE += "-D_SwiftFoundationICU_SourceDIR=${UNPACKDIR}/swift-foundation-
 EXTRA_OECMAKE += "-D_SwiftCollections_SourceDIR=${UNPACKDIR}/swift-collections"
 EXTRA_OECMAKE += "-DSwiftFoundation_MODULE_TRIPLE=${SWIFT_TARGET_NAME}"
 EXTRA_OECMAKE += "-DSwiftCollections_MODULE_TRIPLE=${SWIFT_TARGET_NAME}"
-EXTRA_OECMAKE += "-DSwiftSyntax_DIR=${UNPACKDIR}/swift-syntax/cmake/modules"
+EXTRA_OECMAKE += "-D_SwiftSyntax_SourceDIR=${UNPACKDIR}/swift-syntax"
 
 # Ensure the right CPU is targeted
 cmake_do_generate_toolchain_file:append() {

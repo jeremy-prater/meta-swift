@@ -17,7 +17,7 @@ B = "${WORKDIR}/build"
 
 inherit swift
 
-TARGET_LDFLAGS += "-L${STAGING_DIR_TARGET}/usr/lib/swift/linux"
+TARGET_LDFLAGS += "-L${STAGING_DIR_TARGET}/${libdir}/swift/linux"
 
 do_install() {
     install -d ${D}${libdir}/swift/linux

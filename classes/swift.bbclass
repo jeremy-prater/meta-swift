@@ -32,7 +32,7 @@ SWIFT_GIT_SSH_COMMAND ?= "env -u LD_LIBRARY_PATH ssh"
 do_fix_gcc_install_dir() {
     # symbolic links do not work, will not be found by Swift clang driver
     # this is necessary to make the libstdc++ location heuristic work, necessary for C++ interop
-    (cd ${STAGING_DIR_TARGET}/usr/lib && rm -rf gcc && mkdir -p gcc && cp -rp ${TARGET_ARCH}${TARGET_VENDOR}-${TARGET_OS} gcc)
+    (cd ${STAGING_DIR_TARGET}/${libdir} && rm -rf gcc && mkdir -p gcc && cp -rp ${TARGET_ARCH}${TARGET_VENDOR}-${TARGET_OS} gcc)
 }
 
 addtask fix_gcc_install_dir before do_configure after do_prepare_recipe_sysroot
@@ -152,8 +152,8 @@ python swift_do_configure() {
             "-I${STAGING_INCDIR}",
             "-I${STAGING_DIR_TARGET}/usr/include/c++/${SWIFT_GCC_VERSION}",
             "-I${STAGING_DIR_TARGET}/usr/include/c++/${SWIFT_GCC_VERSION}/${TARGET_SYS}",
-            "-I${STAGING_DIR_NATIVE}/usr/lib/clang/${SWIFT_CLANG_VERSION}/include",
-            "-I${STAGING_DIR_NATIVE}/usr/lib/clang/${SWIFT_CLANG_VERSION}/include-fixed"
+            "-I${STAGING_DIR_NATIVE}/${libdir_native}/clang/${SWIFT_CLANG_VERSION}/include",
+            "-I${STAGING_DIR_NATIVE}/${libdir_native}/clang/${SWIFT_CLANG_VERSION}/include-fixed"
         ],
         "extra-swiftc-flags":[
             "-target", "${SWIFT_TARGET_NAME}",
@@ -161,30 +161,29 @@ python swift_do_configure() {
             "-tools-directory", "${STAGING_DIR_NATIVE}/usr/bin",
 
             "-enforce-exclusivity=unchecked",
-            "-resource-dir", "${STAGING_DIR_TARGET}/usr/lib/swift",
+            "-resource-dir", "${STAGING_DIR_TARGET}/${libdir}/swift",
             "-module-cache-path", "${B}/${BUILD_MODE}/ModuleCache",
             "-sdk", "${STAGING_DIR_TARGET}",
 
             "-I${STAGING_INCDIR}",
             "-I${STAGING_DIR_TARGET}/usr/include/c++/${SWIFT_GCC_VERSION}",
             "-I${STAGING_DIR_TARGET}/usr/include/c++/${SWIFT_GCC_VERSION}/${TARGET_SYS}",
-            "-I${STAGING_DIR_NATIVE}/usr/lib/clang/${SWIFT_CLANG_VERSION}/include",
-            "-I${STAGING_DIR_NATIVE}/usr/lib/clang/${SWIFT_CLANG_VERSION}/include-fixed",
+            "-I${STAGING_DIR_NATIVE}/${libdir_native}/clang/${SWIFT_CLANG_VERSION}/include",
+            "-I${STAGING_DIR_NATIVE}/${libdir_native}/clang/${SWIFT_CLANG_VERSION}/include-fixed",
 
-            "-Xlinker", "-rpath", "-Xlinker", "/usr/lib/swift/linux",
+            "-Xlinker", "-rpath", "-Xlinker", "/${libdir}/swift/linux",
 
             "-Xlinker", "-L${STAGING_DIR_TARGET}",
-            "-Xlinker", "-L${STAGING_DIR_TARGET}/lib",
-            "-Xlinker", "-L${STAGING_DIR_TARGET}/usr/lib",
-            "-Xlinker", "-L${STAGING_DIR_TARGET}/usr/lib/swift/linux",
-            "-Xlinker", "-L${STAGING_DIR_TARGET}/usr/lib/${TARGET_SYS}/${SWIFT_GCC_VERSION}",
+            "-Xlinker", "-L${STAGING_DIR_TARGET}/${libdir}",
+            "-Xlinker", "-L${STAGING_DIR_TARGET}/${libdir}/swift/linux",
+            "-Xlinker", "-L${STAGING_DIR_TARGET}/${libdir}/${TARGET_SYS}/${SWIFT_GCC_VERSION}",
 
             "-Xlinker", "--build-id=sha1",
 
-            "-Xclang-linker", "-B${STAGING_DIR_TARGET}/usr/lib",
-            "-Xclang-linker", "-B${STAGING_DIR_TARGET}/usr/lib/${TARGET_SYS}/${SWIFT_GCC_VERSION}",
+            "-Xclang-linker", "-B${STAGING_DIR_TARGET}/${libdir}",
+            "-Xclang-linker", "-B${STAGING_DIR_TARGET}/${libdir}/${TARGET_SYS}/${SWIFT_GCC_VERSION}",
 
-            "-Xcc", "--gcc-install-dir=${STAGING_DIR_TARGET}/usr/lib/gcc/${TARGET_SYS}/${SWIFT_GCC_VERSION}",
+            "-Xcc", "--gcc-install-dir=${STAGING_DIR_TARGET}/${libdir}/gcc/${TARGET_SYS}/${SWIFT_GCC_VERSION}",
 
             ${SWIFT_EXTRA_SWIFTC_CC_FLAGS}
         ],
@@ -278,5 +277,13 @@ do_package_update() {
 }
 do_package_update[network] = "1"
 addtask do_package_update after do_configure
+
+python do_compile:prepend() {
+    bb.build.exec_func('swift_multilib_prepare_sysroot', d)
+}
+
+do_install:append() {
+    swift_multilib_install_fixup
+}
 
 EXPORT_FUNCTIONS do_configure do_compile do_package_update

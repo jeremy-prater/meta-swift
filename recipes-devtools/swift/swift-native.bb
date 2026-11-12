@@ -25,6 +25,7 @@ SWIFT_LINUX_DISTRO = "amazonlinux2"
 
 SRC_DIR = "${SWIFT_TAG}-${SWIFT_LINUX_DISTRO}${SWIFT_ARCH_SUFFIX}"
 SRC_URI = "https://download.swift.org/swift-${SWIFT_VERSION}-release/${SWIFT_LINUX_DISTRO}${SWIFT_ARCH_SUFFIX}/${SWIFT_TAG}/${SWIFT_TAG}-${SWIFT_LINUX_DISTRO}${SWIFT_ARCH_SUFFIX}.tar.gz"
+SRC_URI += "file://0001-ptrauth-remove-simple-string-discriminator-fallback.patch"
 SRC_URI[sha256sum] = "${@swift_bundle_checksum(d, d.getVar('HOST_ARCH'))}"
 
 DEPENDS = "curl-native"

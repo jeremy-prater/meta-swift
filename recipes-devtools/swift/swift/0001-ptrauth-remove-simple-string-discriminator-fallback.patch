@@ -1,0 +1,11 @@
+--- a/usr/lib/clang/21/include/ptrauth.h
++++ b/usr/lib/clang/21/include/ptrauth.h
+@@ -435,8 +435,6 @@
+     (void)__data;                                                              \
+     ((ptrauth_generic_signature_t)0);                                          \
+   })
+-
+-#define ptrauth_string_discriminator(__string) ((ptrauth_extra_data_t)0)
+
+ #define __ptrauth_function_pointer
+ #define __ptrauth_return_address

@@ -47,8 +47,8 @@ OECMAKE_C_COMPILER = "clang"
 OECMAKE_CXX_COMPILER = "clang++"
 
 # Point clang to where the C++ runtime is for our target arch
-RUNTIME_FLAGS = "${TARGET_CC_ARCH} -w -fuse-ld=lld -B${STAGING_DIR_TARGET}/usr/lib/${TARGET_SYS}/${SWIFT_GCC_VERSION}"
-TARGET_LDFLAGS:append = " ${TARGET_LD_ARCH} -L${STAGING_DIR_TARGET}/usr/lib/${TARGET_SYS}/${SWIFT_GCC_VERSION}"
+RUNTIME_FLAGS = "${TARGET_CC_ARCH} -w -fuse-ld=lld -B${STAGING_DIR_TARGET}/${libdir}/${TARGET_SYS}/${SWIFT_GCC_VERSION}"
+TARGET_LDFLAGS:append = " ${TARGET_LD_ARCH} -L${STAGING_DIR_TARGET}/${libdir}/${TARGET_SYS}/${SWIFT_GCC_VERSION}"
 
 # Remove unsupported linker flags
 TARGET_LDFLAGS:remove = "-Wl,-O1"
@@ -76,27 +76,34 @@ EXTRA_OECMAKE:append = " -DLLVM_BUILD_LIBRARY_DIR=${HOST_LLVM_PATH}"
 EXTRA_SWIFTC_FLAGS ??= ""
 
 SWIFT_FLAGS = "-target ${SWIFT_TARGET_NAME} -use-ld=lld \
-    -resource-dir ${STAGING_DIR_TARGET}/usr/lib/swift \
+    -resource-dir ${STAGING_DIR_TARGET}/${libdir}/swift \
     -module-cache-path ${B}/${BUILD_MODE}/ModuleCache \
-    -Xclang-linker -B${STAGING_DIR_TARGET}/usr/lib \
-    -Xclang-linker -B${STAGING_DIR_TARGET}/usr/lib/${TARGET_SYS}/${SWIFT_GCC_VERSION} \
+    -Xclang-linker -B${STAGING_DIR_TARGET}/${libdir} \
+    -Xclang-linker -B${STAGING_DIR_TARGET}/${libdir}/${TARGET_SYS}/${SWIFT_GCC_VERSION} \
     ${SWIFT_EXTRA_SWIFTC_CC_FLAGS} \
-    -I${STAGING_DIR_NATIVE}/usr/lib/${TARGET_SYS}/gcc/${TARGET_SYS}/${SWIFT_GCC_VERSION}/include \
-    -I${STAGING_DIR_NATIVE}/usr/lib/${TARGET_SYS}/gcc/${TARGET_SYS}/${SWIFT_GCC_VERSION}/include-fixed \
-    -I${STAGING_DIR_NATIVE}/usr/lib/clang/${SWIFT_CLANG_VERSION}/include \
-    -I${STAGING_DIR_NATIVE}/usr/lib/clang/${SWIFT_CLANG_VERSION}/include-fixed \
-    -Xcc -I${STAGING_DIR_NATIVE}/usr/lib/${TARGET_SYS}/gcc/${TARGET_SYS}/${SWIFT_GCC_VERSION}/include \
-    -Xcc -I${STAGING_DIR_NATIVE}/usr/lib/${TARGET_SYS}/gcc/${TARGET_SYS}/${SWIFT_GCC_VERSION}/include-fixed \
-    -Xcc -I${STAGING_DIR_NATIVE}/usr/lib/clang/${SWIFT_CLANG_VERSION}/include \
-    -Xcc -I${STAGING_DIR_NATIVE}/usr/lib/clang/${SWIFT_CLANG_VERSION}/include-fixed \
+    -I${STAGING_DIR_NATIVE}/${libdir_native}/${TARGET_SYS}/gcc/${TARGET_SYS}/${SWIFT_GCC_VERSION}/include \
+    -I${STAGING_DIR_NATIVE}/${libdir_native}/${TARGET_SYS}/gcc/${TARGET_SYS}/${SWIFT_GCC_VERSION}/include-fixed \
+    -I${STAGING_DIR_NATIVE}/${libdir_native}/clang/${SWIFT_CLANG_VERSION}/include \
+    -I${STAGING_DIR_NATIVE}/${libdir_native}/clang/${SWIFT_CLANG_VERSION}/include-fixed \
+    -Xcc -I${STAGING_DIR_NATIVE}/${libdir_native}/${TARGET_SYS}/gcc/${TARGET_SYS}/${SWIFT_GCC_VERSION}/include \
+    -Xcc -I${STAGING_DIR_NATIVE}/${libdir_native}/${TARGET_SYS}/gcc/${TARGET_SYS}/${SWIFT_GCC_VERSION}/include-fixed \
+    -Xcc -I${STAGING_DIR_NATIVE}/${libdir_native}/clang/${SWIFT_CLANG_VERSION}/include \
+    -Xcc -I${STAGING_DIR_NATIVE}/${libdir_native}/clang/${SWIFT_CLANG_VERSION}/include-fixed \
     -L${STAGING_DIR_TARGET} \
-    -L${STAGING_DIR_TARGET}/lib \
-    -L${STAGING_DIR_TARGET}/usr/lib \
-    -L${STAGING_DIR_TARGET}/usr/lib/swift \
-    -L${STAGING_DIR_TARGET}/usr/lib/swift/linux \
-    -L${STAGING_DIR_TARGET}/usr/lib/${TARGET_SYS}/${SWIFT_GCC_VERSION} \
+    -L${STAGING_DIR_TARGET}/${libdir} \
+    -L${STAGING_DIR_TARGET}/${libdir}/swift \
+    -L${STAGING_DIR_TARGET}/${libdir}/swift/linux \
+    -L${STAGING_DIR_TARGET}/${libdir}/${TARGET_SYS}/${SWIFT_GCC_VERSION} \
     -sdk ${STAGING_DIR_TARGET} \
     ${EXTRA_SWIFTC_FLAGS} \
 "
 
-HOST_LLVM_PATH = "${STAGING_DIR_NATIVE}/usr/lib"
+HOST_LLVM_PATH = "${STAGING_DIR_NATIVE}/${libdir_native}"
+
+do_configure:prepend() {
+    swift_multilib_prepare_sysroot
+}
+
+do_install:append() {
+    swift_multilib_install_fixup
+}
